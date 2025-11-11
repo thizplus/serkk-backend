@@ -29,11 +29,12 @@ test: ## Run all tests
 
 test-unit: ## Run unit tests only
 	@echo "Running unit tests..."
-	go test ./tests/examples/unit/... -v
+	go test ./application/serviceimpl/... -v
+	go test ./pkg/... -v
 
 test-integration: ## Run integration tests only
 	@echo "Running integration tests..."
-	go test ./tests/examples/integration/... -v
+	go test ./infrastructure/... -v -tags=integration
 
 test-coverage: ## Run tests with coverage report
 	@echo "Running tests with coverage..."
@@ -44,6 +45,10 @@ test-coverage: ## Run tests with coverage report
 test-coverage-func: ## Show test coverage by function
 	go test ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
+
+coverage-check: ## Check coverage percentage
+	@go test ./... -coverprofile=coverage.out 2>/dev/null
+	@go tool cover -func=coverage.out | grep total | awk '{print "Total Coverage: " $$3}'
 
 test-benchmark: ## Run benchmark tests
 	go test -bench=. ./...
