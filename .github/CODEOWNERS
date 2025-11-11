@@ -1,0 +1,37 @@
+# CODEOWNERS file
+# Each line is a file pattern followed by one or more owners
+
+# Default owners for everything in the repo
+*       @owner
+
+# Infrastructure and deployment
+/.github/       @owner
+/deployment/    @owner
+Dockerfile      @owner
+docker-compose* @owner
+
+# Core application
+/cmd/           @owner
+/pkg/           @owner
+
+# Domain logic
+/domain/        @owner
+/application/   @owner
+
+# Infrastructure layer
+/infrastructure/        @owner
+
+# API handlers and routes
+/interfaces/api/        @owner
+
+# Database migrations
+/migrations/    @owner
+
+# Documentation
+*.md            @owner
+/docs/          @owner
+
+# Configuration
+*.yml           @owner
+*.yaml          @owner
+.env*           @owner
