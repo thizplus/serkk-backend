@@ -2,7 +2,8 @@ package postgres
 
 import (
 	"fmt"
-	"gofiber-template/domain/models"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,7 +23,8 @@ func NewDatabase(config DatabaseConfig) (*gorm.DB, error) {
 		config.Host, config.User, config.Password, config.DBName, config.Port, config.SSLMode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger:                                   logger.Default.LogMode(logger.Info),
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
@@ -32,38 +34,30 @@ func NewDatabase(config DatabaseConfig) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(
-		// Core models (enhanced/new)
-		&models.User{},
-		&models.Post{},
-		&models.Comment{},
-		&models.Media{},
-		&models.PostMedia{}, // Junction table for Post-Media many2many
+	// Run SQL migrations from files
+	return RunSQLMigrations(db)
+}
 
-		// Voting & Social
-		&models.Vote{},
-		&models.Follow{},
-		&models.SavedPost{},
+// RunSQLMigrations runs SQL migration files in order
+func RunSQLMigrations(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get database connection: %v", err)
+	}
 
-		// Notifications
-		&models.Notification{},
-		&models.NotificationSettings{},
-		&models.PushSubscription{},
+	// Read and execute 001_initial_schema.sql
+	migrationSQL, err := os.ReadFile("migrations/001_initial_schema.sql")
+	if err != nil {
+		// If migration file doesn't exist, file might not be found in some deployments
+		// In that case, we can fallback to embedded migrations or skip
+		return fmt.Errorf("failed to read migration file: %v", err)
+	}
 
-		// Tags
-		&models.Tag{},
+	// Execute the migration
+	_, err = sqlDB.Exec(string(migrationSQL))
+	if err != nil {
+		return fmt.Errorf("failed to execute migration: %v", err)
+	}
 
-		// Search
-		&models.SearchHistory{},
-
-		// Chat System (Order matters: Conversation first, then Message, then Block)
-		&models.Conversation{},
-		&models.Block{},
-		&models.Message{},
-
-		// Legacy models (keep for now, can remove later)
-		&models.Task{},
-		&models.File{},
-		&models.Job{},
-	)
+	return nil
 }
