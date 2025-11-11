@@ -11,6 +11,7 @@ import (
 	"gofiber-template/interfaces/api/routes"
 	websocketHandler "gofiber-template/interfaces/api/websocket"
 	"gofiber-template/pkg/di"
+	pkgMiddleware "gofiber-template/pkg/middleware"
 )
 
 func main() {
@@ -34,15 +35,20 @@ func main() {
 
 	// Setup middleware
 	app.Use(middleware.LoggerMiddleware())
-	app.Use(middleware.CorsMiddleware())
+
+	// Security middlewares
+	app.Use(pkgMiddleware.NewSecurityHeaders())
+	app.Use(pkgMiddleware.NewCORS())
+	app.Use(pkgMiddleware.NewGlobalRateLimiter())
 
 	// Create handlers from services
 	services := container.GetHandlerServices()
 
-	// Create ChatWebSocketHandler
+	// Create WebSocket Handlers
 	chatWSHandler := websocketHandler.NewChatWebSocketHandler(container.ChatHub)
+	notificationWSHandler := websocketHandler.NewNotificationWebSocketHandler(container.NotificationHub)
 
-	h := handlers.NewHandlers(services, container.GetConfig(), chatWSHandler, container.ChatHub, container.ConversationRepository, container.MediaUploadService)
+	h := handlers.NewHandlers(services, container.GetConfig(), chatWSHandler, notificationWSHandler, container.ChatHub, container.NotificationHub, container.ConversationRepository, container.MediaUploadService, container.R2Storage, container.MediaRepository, container.RedisService)
 
 	// Setup routes
 	routes.SetupRoutes(app, h)
@@ -53,8 +59,8 @@ func main() {
 	log.Printf("🌍 Environment: %s", container.GetConfig().App.Env)
 	log.Printf("📚 Health check: http://localhost:%s/health", port)
 	log.Printf("📖 API docs: http://localhost:%s/api/v1", port)
-	log.Printf("🔌 WebSocket: ws://localhost:%s/ws", port)
-	log.Printf("💬 Chat WebSocket: ws://localhost:%s/chat/ws", port)
+	log.Printf("💬 WebSocket Chat: ws://localhost:%s/ws/chat", port)
+	log.Printf("🔔 WebSocket Notifications: ws://localhost:%s/ws/notifications", port)
 
 	log.Fatal(app.Listen(":" + port))
 }
