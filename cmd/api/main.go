@@ -98,26 +98,38 @@ func main() {
 	log.Printf("🚀 Server starting on port %s", port)
 	log.Printf("🌍 Environment: %s", container.GetConfig().App.Env)
 	log.Printf("📚 Health check: http://localhost:%s/health", port)
-	log.Printf("📖 API docs: http://localhost:%s/api/v1", port)
+	log.Printf("📖 API docs: http://localhost:%s/swagger/index.html", port)
+	log.Printf("📊 Metrics: http://localhost:%s/metrics", port)
 	log.Printf("💬 WebSocket Chat: ws://localhost:%s/ws/chat", port)
 	log.Printf("🔔 WebSocket Notifications: ws://localhost:%s/ws/notifications", port)
 
-	log.Fatal(app.Listen(":" + port))
+	// Start server in goroutine to allow graceful shutdown
+	go func() {
+		if err := app.Listen(":" + port); err != nil {
+			log.Fatalf("❌ Server error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	// Graceful shutdown
+	log.Println("\n🛑 Gracefully shutting down...")
+	if err := app.Shutdown(); err != nil {
+		log.Printf("❌ Error shutting down server: %v", err)
+	}
+
+	// Cleanup resources
+	if err := container.Cleanup(); err != nil {
+		log.Printf("❌ Error during cleanup: %v", err)
+	}
+
+	log.Println("👋 Shutdown complete")
 }
 
 func setupGracefulShutdown(container *di.Container) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		<-c
-		log.Println("\n🛑 Gracefully shutting down...")
-
-		if err := container.Cleanup(); err != nil {
-			log.Printf("❌ Error during cleanup: %v", err)
-		}
-
-		log.Println("👋 Shutdown complete")
-		os.Exit(0)
-	}()
+	// This function is now handled inline in main()
+	// Kept for backward compatibility if needed
 }
