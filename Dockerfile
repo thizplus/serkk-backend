@@ -24,6 +24,10 @@ COPY . .
 # Remove .env file to ensure environment variables from container are used
 RUN rm -f .env
 
+# Install swag CLI and generate Swagger docs
+RUN go install github.com/swaggo/swag/cmd/swag@latest && \
+    swag init -g cmd/api/main.go -o docs
+
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags='-w -s -extldflags "-static"' \
