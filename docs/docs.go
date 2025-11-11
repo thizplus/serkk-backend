@@ -48,7 +48,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.ConfirmUploadRequest"
+                            "$ref": "#/definitions/handlers.ConfirmUploadRequest"
                         }
                     }
                 ],
@@ -109,7 +109,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadRequest"
+                            "$ref": "#/definitions/handlers.PresignedUploadRequest"
                         }
                     }
                 ],
@@ -117,7 +117,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadResponse"
+                            "$ref": "#/definitions/handlers.PresignedUploadResponse"
                         }
                     },
                     "400": {
@@ -169,7 +169,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchPresignedUploadRequest"
+                            "$ref": "#/definitions/handlers.BatchPresignedUploadRequest"
                         }
                     }
                 ],
@@ -177,7 +177,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchPresignedUploadResponse"
+                            "$ref": "#/definitions/handlers.BatchPresignedUploadResponse"
                         }
                     },
                     "400": {
@@ -229,7 +229,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmUploadRequest"
+                            "$ref": "#/definitions/handlers.BatchConfirmUploadRequest"
                         }
                     }
                 ],
@@ -237,7 +237,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmUploadResponse"
+                            "$ref": "#/definitions/handlers.BatchConfirmUploadResponse"
                         }
                     },
                     "400": {
@@ -277,7 +277,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.ExchangeCodeRequest"
+                            "$ref": "#/definitions/dto.ExchangeCodeRequest"
                         }
                     }
                 ],
@@ -285,7 +285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.ExchangeCodeResponse"
+                            "$ref": "#/definitions/dto.ExchangeCodeResponse"
                         }
                     },
                     "400": {
@@ -315,7 +315,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.OAuthURLResponse"
+                            "$ref": "#/definitions/dto.OAuthURLResponse"
                         }
                     }
                 }
@@ -354,7 +354,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.OAuthLoginResponse"
+                            "$ref": "#/definitions/dto.OAuthLoginResponse"
                         }
                     },
                     "400": {
@@ -387,7 +387,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -429,7 +429,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.CreateUserRequest"
+                            "$ref": "#/definitions/dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -465,13 +465,13 @@ const docTemplate = `{
                     "200": {
                         "description": "System is healthy",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_health.HealthCheck"
+                            "$ref": "#/definitions/health.HealthCheck"
                         }
                     },
                     "503": {
                         "description": "System is unhealthy",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_health.HealthCheck"
+                            "$ref": "#/definitions/health.HealthCheck"
                         }
                     }
                 }
@@ -542,7 +542,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Current metrics",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_metrics.MetricsSnapshot"
+                            "$ref": "#/definitions/metrics.MetricsSnapshot"
                         }
                     }
                 }
@@ -573,7 +573,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.CreatePostRequest"
+                            "$ref": "#/definitions/dto.CreatePostRequest"
                         }
                     }
                 ],
@@ -679,7 +679,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.UpdatePostRequest"
+                            "$ref": "#/definitions/dto.UpdatePostRequest"
                         }
                     }
                 ],
@@ -774,7 +774,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.UpdateUserRequest"
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
                         }
                     }
                 ],
@@ -805,7 +805,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "gofiber-template_domain_dto.CreatePostRequest": {
+        "dto.CreatePostRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -845,7 +845,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.CreateUserRequest": {
+        "dto.CreateUserRequest": {
             "type": "object",
             "required": [
                 "displayName",
@@ -875,7 +875,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.ExchangeCodeRequest": {
+        "dto.ExchangeCodeRequest": {
             "type": "object",
             "required": [
                 "code"
@@ -889,7 +889,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.ExchangeCodeResponse": {
+        "dto.ExchangeCodeResponse": {
             "type": "object",
             "properties": {
                 "isNewUser": {
@@ -899,11 +899,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/gofiber-template_domain_dto.UserResponse"
+                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "gofiber-template_domain_dto.LoginRequest": {
+        "dto.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -920,7 +920,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.OAuthLoginResponse": {
+        "dto.OAuthLoginResponse": {
             "type": "object",
             "properties": {
                 "isNewUser": {
@@ -934,11 +934,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/gofiber-template_domain_dto.UserResponse"
+                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "gofiber-template_domain_dto.OAuthURLResponse": {
+        "dto.OAuthURLResponse": {
             "type": "object",
             "properties": {
                 "url": {
@@ -946,7 +946,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.UpdatePostRequest": {
+        "dto.UpdatePostRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -968,7 +968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.UpdateUserRequest": {
+        "dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -994,7 +994,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_domain_dto.UserResponse": {
+        "dto.UserResponse": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -1049,111 +1049,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gofiber-template_pkg_health.CheckResult": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "$ref": "#/definitions/time.Duration"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/gofiber-template_pkg_health.Status"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "gofiber-template_pkg_health.HealthCheck": {
-            "type": "object",
-            "properties": {
-                "checks": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/gofiber-template_pkg_health.CheckResult"
-                    }
-                },
-                "status": {
-                    "$ref": "#/definitions/gofiber-template_pkg_health.Status"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "uptime": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "gofiber-template_pkg_health.Status": {
-            "type": "string",
-            "enum": [
-                "healthy",
-                "unhealthy",
-                "degraded"
-            ],
-            "x-enum-varnames": [
-                "StatusHealthy",
-                "StatusUnhealthy",
-                "StatusDegraded"
-            ]
-        },
-        "gofiber-template_pkg_metrics.MetricsSnapshot": {
-            "type": "object",
-            "properties": {
-                "avg_response_time_ms": {
-                    "type": "number"
-                },
-                "custom_counters": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "integer",
-                        "format": "int64"
-                    }
-                },
-                "failed_requests": {
-                    "type": "integer"
-                },
-                "max_response_time_ms": {
-                    "type": "integer"
-                },
-                "min_response_time_ms": {
-                    "type": "integer"
-                },
-                "status_2xx": {
-                    "type": "integer"
-                },
-                "status_3xx": {
-                    "type": "integer"
-                },
-                "status_4xx": {
-                    "type": "integer"
-                },
-                "status_5xx": {
-                    "type": "integer"
-                },
-                "successful_requests": {
-                    "type": "integer"
-                },
-                "total_errors": {
-                    "type": "integer"
-                },
-                "total_requests": {
-                    "type": "integer"
-                },
-                "uptime": {
-                    "type": "string"
-                }
-            }
-        },
-        "interfaces_api_handlers.BatchConfirmResult": {
+        "handlers.BatchConfirmResult": {
             "type": "object",
             "properties": {
                 "error": {
@@ -1173,7 +1069,7 @@ const docTemplate = `{
                 }
             }
         },
-        "interfaces_api_handlers.BatchConfirmUploadRequest": {
+        "handlers.BatchConfirmUploadRequest": {
             "type": "object",
             "required": [
                 "uploads"
@@ -1184,12 +1080,12 @@ const docTemplate = `{
                     "maxItems": 200,
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.ConfirmUploadRequest"
+                        "$ref": "#/definitions/handlers.ConfirmUploadRequest"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.BatchConfirmUploadResponse": {
+        "handlers.BatchConfirmUploadResponse": {
             "type": "object",
             "properties": {
                 "failCount": {
@@ -1198,7 +1094,7 @@ const docTemplate = `{
                 "failed": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmResult"
+                        "$ref": "#/definitions/handlers.BatchConfirmResult"
                     }
                 },
                 "successCount": {
@@ -1207,7 +1103,7 @@ const docTemplate = `{
                 "successful": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmResult"
+                        "$ref": "#/definitions/handlers.BatchConfirmResult"
                     }
                 },
                 "total": {
@@ -1215,7 +1111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "interfaces_api_handlers.BatchPresignedUploadRequest": {
+        "handlers.BatchPresignedUploadRequest": {
             "type": "object",
             "required": [
                 "files"
@@ -1226,12 +1122,12 @@ const docTemplate = `{
                     "maxItems": 200,
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadRequest"
+                        "$ref": "#/definitions/handlers.PresignedUploadRequest"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.BatchPresignedUploadResponse": {
+        "handlers.BatchPresignedUploadResponse": {
             "type": "object",
             "properties": {
                 "total": {
@@ -1240,12 +1136,12 @@ const docTemplate = `{
                 "uploads": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadResponse"
+                        "$ref": "#/definitions/handlers.PresignedUploadResponse"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.ConfirmUploadRequest": {
+        "handlers.ConfirmUploadRequest": {
             "type": "object",
             "required": [
                 "fileKey",
@@ -1292,7 +1188,7 @@ const docTemplate = `{
                 }
             }
         },
-        "interfaces_api_handlers.PresignedUploadRequest": {
+        "handlers.PresignedUploadRequest": {
             "type": "object",
             "required": [
                 "contentType",
@@ -1321,7 +1217,7 @@ const docTemplate = `{
                 }
             }
         },
-        "interfaces_api_handlers.PresignedUploadResponse": {
+        "handlers.PresignedUploadResponse": {
             "type": "object",
             "properties": {
                 "expiresAt": {
@@ -1346,29 +1242,111 @@ const docTemplate = `{
                 }
             }
         },
-        "time.Duration": {
-            "type": "integer",
-            "format": "int64",
+        "health.CheckResult": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "Swagger-compatible annotation",
+                    "type": "string",
+                    "example": "15ms"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/health.Status"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.HealthCheck": {
+            "type": "object",
+            "properties": {
+                "checks": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/health.CheckResult"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/health.Status"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.Status": {
+            "type": "string",
             "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                "healthy",
+                "unhealthy",
+                "degraded"
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "StatusHealthy",
+                "StatusUnhealthy",
+                "StatusDegraded"
             ]
+        },
+        "metrics.MetricsSnapshot": {
+            "type": "object",
+            "properties": {
+                "avg_response_time_ms": {
+                    "type": "number"
+                },
+                "custom_counters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "failed_requests": {
+                    "type": "integer"
+                },
+                "max_response_time_ms": {
+                    "type": "integer"
+                },
+                "min_response_time_ms": {
+                    "type": "integer"
+                },
+                "status_2xx": {
+                    "type": "integer"
+                },
+                "status_3xx": {
+                    "type": "integer"
+                },
+                "status_4xx": {
+                    "type": "integer"
+                },
+                "status_5xx": {
+                    "type": "integer"
+                },
+                "successful_requests": {
+                    "type": "integer"
+                },
+                "total_errors": {
+                    "type": "integer"
+                },
+                "total_requests": {
+                    "type": "integer"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {

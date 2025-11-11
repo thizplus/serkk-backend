@@ -42,7 +42,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.ConfirmUploadRequest"
+                            "$ref": "#/definitions/handlers.ConfirmUploadRequest"
                         }
                     }
                 ],
@@ -103,7 +103,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadRequest"
+                            "$ref": "#/definitions/handlers.PresignedUploadRequest"
                         }
                     }
                 ],
@@ -111,7 +111,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadResponse"
+                            "$ref": "#/definitions/handlers.PresignedUploadResponse"
                         }
                     },
                     "400": {
@@ -163,7 +163,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchPresignedUploadRequest"
+                            "$ref": "#/definitions/handlers.BatchPresignedUploadRequest"
                         }
                     }
                 ],
@@ -171,7 +171,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchPresignedUploadResponse"
+                            "$ref": "#/definitions/handlers.BatchPresignedUploadResponse"
                         }
                     },
                     "400": {
@@ -223,7 +223,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmUploadRequest"
+                            "$ref": "#/definitions/handlers.BatchConfirmUploadRequest"
                         }
                     }
                 ],
@@ -231,7 +231,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmUploadResponse"
+                            "$ref": "#/definitions/handlers.BatchConfirmUploadResponse"
                         }
                     },
                     "400": {
@@ -271,7 +271,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.ExchangeCodeRequest"
+                            "$ref": "#/definitions/dto.ExchangeCodeRequest"
                         }
                     }
                 ],
@@ -279,7 +279,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.ExchangeCodeResponse"
+                            "$ref": "#/definitions/dto.ExchangeCodeResponse"
                         }
                     },
                     "400": {
@@ -309,7 +309,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.OAuthURLResponse"
+                            "$ref": "#/definitions/dto.OAuthURLResponse"
                         }
                     }
                 }
@@ -348,7 +348,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.OAuthLoginResponse"
+                            "$ref": "#/definitions/dto.OAuthLoginResponse"
                         }
                     },
                     "400": {
@@ -381,7 +381,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -423,7 +423,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.CreateUserRequest"
+                            "$ref": "#/definitions/dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -459,13 +459,13 @@
                     "200": {
                         "description": "System is healthy",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_health.HealthCheck"
+                            "$ref": "#/definitions/health.HealthCheck"
                         }
                     },
                     "503": {
                         "description": "System is unhealthy",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_health.HealthCheck"
+                            "$ref": "#/definitions/health.HealthCheck"
                         }
                     }
                 }
@@ -536,7 +536,7 @@
                     "200": {
                         "description": "Current metrics",
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_pkg_metrics.MetricsSnapshot"
+                            "$ref": "#/definitions/metrics.MetricsSnapshot"
                         }
                     }
                 }
@@ -567,7 +567,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.CreatePostRequest"
+                            "$ref": "#/definitions/dto.CreatePostRequest"
                         }
                     }
                 ],
@@ -673,7 +673,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.UpdatePostRequest"
+                            "$ref": "#/definitions/dto.UpdatePostRequest"
                         }
                     }
                 ],
@@ -768,7 +768,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gofiber-template_domain_dto.UpdateUserRequest"
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
                         }
                     }
                 ],
@@ -799,7 +799,7 @@
         }
     },
     "definitions": {
-        "gofiber-template_domain_dto.CreatePostRequest": {
+        "dto.CreatePostRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -839,7 +839,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.CreateUserRequest": {
+        "dto.CreateUserRequest": {
             "type": "object",
             "required": [
                 "displayName",
@@ -869,7 +869,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.ExchangeCodeRequest": {
+        "dto.ExchangeCodeRequest": {
             "type": "object",
             "required": [
                 "code"
@@ -883,7 +883,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.ExchangeCodeResponse": {
+        "dto.ExchangeCodeResponse": {
             "type": "object",
             "properties": {
                 "isNewUser": {
@@ -893,11 +893,11 @@
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/gofiber-template_domain_dto.UserResponse"
+                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "gofiber-template_domain_dto.LoginRequest": {
+        "dto.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -914,7 +914,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.OAuthLoginResponse": {
+        "dto.OAuthLoginResponse": {
             "type": "object",
             "properties": {
                 "isNewUser": {
@@ -928,11 +928,11 @@
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/gofiber-template_domain_dto.UserResponse"
+                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "gofiber-template_domain_dto.OAuthURLResponse": {
+        "dto.OAuthURLResponse": {
             "type": "object",
             "properties": {
                 "url": {
@@ -940,7 +940,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.UpdatePostRequest": {
+        "dto.UpdatePostRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -962,7 +962,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.UpdateUserRequest": {
+        "dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -988,7 +988,7 @@
                 }
             }
         },
-        "gofiber-template_domain_dto.UserResponse": {
+        "dto.UserResponse": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -1043,111 +1043,7 @@
                 }
             }
         },
-        "gofiber-template_pkg_health.CheckResult": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "$ref": "#/definitions/time.Duration"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/gofiber-template_pkg_health.Status"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "gofiber-template_pkg_health.HealthCheck": {
-            "type": "object",
-            "properties": {
-                "checks": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/gofiber-template_pkg_health.CheckResult"
-                    }
-                },
-                "status": {
-                    "$ref": "#/definitions/gofiber-template_pkg_health.Status"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "uptime": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "gofiber-template_pkg_health.Status": {
-            "type": "string",
-            "enum": [
-                "healthy",
-                "unhealthy",
-                "degraded"
-            ],
-            "x-enum-varnames": [
-                "StatusHealthy",
-                "StatusUnhealthy",
-                "StatusDegraded"
-            ]
-        },
-        "gofiber-template_pkg_metrics.MetricsSnapshot": {
-            "type": "object",
-            "properties": {
-                "avg_response_time_ms": {
-                    "type": "number"
-                },
-                "custom_counters": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "integer",
-                        "format": "int64"
-                    }
-                },
-                "failed_requests": {
-                    "type": "integer"
-                },
-                "max_response_time_ms": {
-                    "type": "integer"
-                },
-                "min_response_time_ms": {
-                    "type": "integer"
-                },
-                "status_2xx": {
-                    "type": "integer"
-                },
-                "status_3xx": {
-                    "type": "integer"
-                },
-                "status_4xx": {
-                    "type": "integer"
-                },
-                "status_5xx": {
-                    "type": "integer"
-                },
-                "successful_requests": {
-                    "type": "integer"
-                },
-                "total_errors": {
-                    "type": "integer"
-                },
-                "total_requests": {
-                    "type": "integer"
-                },
-                "uptime": {
-                    "type": "string"
-                }
-            }
-        },
-        "interfaces_api_handlers.BatchConfirmResult": {
+        "handlers.BatchConfirmResult": {
             "type": "object",
             "properties": {
                 "error": {
@@ -1167,7 +1063,7 @@
                 }
             }
         },
-        "interfaces_api_handlers.BatchConfirmUploadRequest": {
+        "handlers.BatchConfirmUploadRequest": {
             "type": "object",
             "required": [
                 "uploads"
@@ -1178,12 +1074,12 @@
                     "maxItems": 200,
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.ConfirmUploadRequest"
+                        "$ref": "#/definitions/handlers.ConfirmUploadRequest"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.BatchConfirmUploadResponse": {
+        "handlers.BatchConfirmUploadResponse": {
             "type": "object",
             "properties": {
                 "failCount": {
@@ -1192,7 +1088,7 @@
                 "failed": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmResult"
+                        "$ref": "#/definitions/handlers.BatchConfirmResult"
                     }
                 },
                 "successCount": {
@@ -1201,7 +1097,7 @@
                 "successful": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.BatchConfirmResult"
+                        "$ref": "#/definitions/handlers.BatchConfirmResult"
                     }
                 },
                 "total": {
@@ -1209,7 +1105,7 @@
                 }
             }
         },
-        "interfaces_api_handlers.BatchPresignedUploadRequest": {
+        "handlers.BatchPresignedUploadRequest": {
             "type": "object",
             "required": [
                 "files"
@@ -1220,12 +1116,12 @@
                     "maxItems": 200,
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadRequest"
+                        "$ref": "#/definitions/handlers.PresignedUploadRequest"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.BatchPresignedUploadResponse": {
+        "handlers.BatchPresignedUploadResponse": {
             "type": "object",
             "properties": {
                 "total": {
@@ -1234,12 +1130,12 @@
                 "uploads": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/interfaces_api_handlers.PresignedUploadResponse"
+                        "$ref": "#/definitions/handlers.PresignedUploadResponse"
                     }
                 }
             }
         },
-        "interfaces_api_handlers.ConfirmUploadRequest": {
+        "handlers.ConfirmUploadRequest": {
             "type": "object",
             "required": [
                 "fileKey",
@@ -1286,7 +1182,7 @@
                 }
             }
         },
-        "interfaces_api_handlers.PresignedUploadRequest": {
+        "handlers.PresignedUploadRequest": {
             "type": "object",
             "required": [
                 "contentType",
@@ -1315,7 +1211,7 @@
                 }
             }
         },
-        "interfaces_api_handlers.PresignedUploadResponse": {
+        "handlers.PresignedUploadResponse": {
             "type": "object",
             "properties": {
                 "expiresAt": {
@@ -1340,29 +1236,111 @@
                 }
             }
         },
-        "time.Duration": {
-            "type": "integer",
-            "format": "int64",
+        "health.CheckResult": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "Swagger-compatible annotation",
+                    "type": "string",
+                    "example": "15ms"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/health.Status"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.HealthCheck": {
+            "type": "object",
+            "properties": {
+                "checks": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/health.CheckResult"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/health.Status"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.Status": {
+            "type": "string",
             "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                "healthy",
+                "unhealthy",
+                "degraded"
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "StatusHealthy",
+                "StatusUnhealthy",
+                "StatusDegraded"
             ]
+        },
+        "metrics.MetricsSnapshot": {
+            "type": "object",
+            "properties": {
+                "avg_response_time_ms": {
+                    "type": "number"
+                },
+                "custom_counters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "failed_requests": {
+                    "type": "integer"
+                },
+                "max_response_time_ms": {
+                    "type": "integer"
+                },
+                "min_response_time_ms": {
+                    "type": "integer"
+                },
+                "status_2xx": {
+                    "type": "integer"
+                },
+                "status_3xx": {
+                    "type": "integer"
+                },
+                "status_4xx": {
+                    "type": "integer"
+                },
+                "status_5xx": {
+                    "type": "integer"
+                },
+                "successful_requests": {
+                    "type": "integer"
+                },
+                "total_errors": {
+                    "type": "integer"
+                },
+                "total_requests": {
+                    "type": "integer"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {

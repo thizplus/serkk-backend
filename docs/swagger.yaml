@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  gofiber-template_domain_dto.CreatePostRequest:
+  dto.CreatePostRequest:
     properties:
       content:
         maxLength: 40000
@@ -29,7 +29,7 @@ definitions:
     - content
     - title
     type: object
-  gofiber-template_domain_dto.CreateUserRequest:
+  dto.CreateUserRequest:
     properties:
       displayName:
         maxLength: 100
@@ -52,7 +52,7 @@ definitions:
     - password
     - username
     type: object
-  gofiber-template_domain_dto.ExchangeCodeRequest:
+  dto.ExchangeCodeRequest:
     properties:
       code:
         type: string
@@ -61,16 +61,16 @@ definitions:
     required:
     - code
     type: object
-  gofiber-template_domain_dto.ExchangeCodeResponse:
+  dto.ExchangeCodeResponse:
     properties:
       isNewUser:
         type: boolean
       token:
         type: string
       user:
-        $ref: '#/definitions/gofiber-template_domain_dto.UserResponse'
+        $ref: '#/definitions/dto.UserResponse'
     type: object
-  gofiber-template_domain_dto.LoginRequest:
+  dto.LoginRequest:
     properties:
       email:
         maxLength: 255
@@ -82,7 +82,7 @@ definitions:
     - email
     - password
     type: object
-  gofiber-template_domain_dto.OAuthLoginResponse:
+  dto.OAuthLoginResponse:
     properties:
       isNewUser:
         type: boolean
@@ -92,14 +92,14 @@ definitions:
       token:
         type: string
       user:
-        $ref: '#/definitions/gofiber-template_domain_dto.UserResponse'
+        $ref: '#/definitions/dto.UserResponse'
     type: object
-  gofiber-template_domain_dto.OAuthURLResponse:
+  dto.OAuthURLResponse:
     properties:
       url:
         type: string
     type: object
-  gofiber-template_domain_dto.UpdatePostRequest:
+  dto.UpdatePostRequest:
     properties:
       content:
         maxLength: 40000
@@ -115,7 +115,7 @@ definitions:
         minLength: 1
         type: string
     type: object
-  gofiber-template_domain_dto.UpdateUserRequest:
+  dto.UpdateUserRequest:
     properties:
       avatar:
         maxLength: 500
@@ -134,7 +134,7 @@ definitions:
         maxLength: 255
         type: string
     type: object
-  gofiber-template_domain_dto.UserResponse:
+  dto.UserResponse:
     properties:
       avatar:
         type: string
@@ -171,77 +171,7 @@ definitions:
       website:
         type: string
     type: object
-  gofiber-template_pkg_health.CheckResult:
-    properties:
-      duration:
-        $ref: '#/definitions/time.Duration'
-      error:
-        type: string
-      message:
-        type: string
-      status:
-        $ref: '#/definitions/gofiber-template_pkg_health.Status'
-      timestamp:
-        type: string
-    type: object
-  gofiber-template_pkg_health.HealthCheck:
-    properties:
-      checks:
-        additionalProperties:
-          $ref: '#/definitions/gofiber-template_pkg_health.CheckResult'
-        type: object
-      status:
-        $ref: '#/definitions/gofiber-template_pkg_health.Status'
-      timestamp:
-        type: string
-      uptime:
-        type: string
-      version:
-        type: string
-    type: object
-  gofiber-template_pkg_health.Status:
-    enum:
-    - healthy
-    - unhealthy
-    - degraded
-    type: string
-    x-enum-varnames:
-    - StatusHealthy
-    - StatusUnhealthy
-    - StatusDegraded
-  gofiber-template_pkg_metrics.MetricsSnapshot:
-    properties:
-      avg_response_time_ms:
-        type: number
-      custom_counters:
-        additionalProperties:
-          format: int64
-          type: integer
-        type: object
-      failed_requests:
-        type: integer
-      max_response_time_ms:
-        type: integer
-      min_response_time_ms:
-        type: integer
-      status_2xx:
-        type: integer
-      status_3xx:
-        type: integer
-      status_4xx:
-        type: integer
-      status_5xx:
-        type: integer
-      successful_requests:
-        type: integer
-      total_errors:
-        type: integer
-      total_requests:
-        type: integer
-      uptime:
-        type: string
-    type: object
-  interfaces_api_handlers.BatchConfirmResult:
+  handlers.BatchConfirmResult:
     properties:
       error:
         type: string
@@ -254,55 +184,55 @@ definitions:
       success:
         type: boolean
     type: object
-  interfaces_api_handlers.BatchConfirmUploadRequest:
+  handlers.BatchConfirmUploadRequest:
     properties:
       uploads:
         items:
-          $ref: '#/definitions/interfaces_api_handlers.ConfirmUploadRequest'
+          $ref: '#/definitions/handlers.ConfirmUploadRequest'
         maxItems: 200
         minItems: 1
         type: array
     required:
     - uploads
     type: object
-  interfaces_api_handlers.BatchConfirmUploadResponse:
+  handlers.BatchConfirmUploadResponse:
     properties:
       failCount:
         type: integer
       failed:
         items:
-          $ref: '#/definitions/interfaces_api_handlers.BatchConfirmResult'
+          $ref: '#/definitions/handlers.BatchConfirmResult'
         type: array
       successCount:
         type: integer
       successful:
         items:
-          $ref: '#/definitions/interfaces_api_handlers.BatchConfirmResult'
+          $ref: '#/definitions/handlers.BatchConfirmResult'
         type: array
       total:
         type: integer
     type: object
-  interfaces_api_handlers.BatchPresignedUploadRequest:
+  handlers.BatchPresignedUploadRequest:
     properties:
       files:
         items:
-          $ref: '#/definitions/interfaces_api_handlers.PresignedUploadRequest'
+          $ref: '#/definitions/handlers.PresignedUploadRequest'
         maxItems: 200
         minItems: 1
         type: array
     required:
     - files
     type: object
-  interfaces_api_handlers.BatchPresignedUploadResponse:
+  handlers.BatchPresignedUploadResponse:
     properties:
       total:
         type: integer
       uploads:
         items:
-          $ref: '#/definitions/interfaces_api_handlers.PresignedUploadResponse'
+          $ref: '#/definitions/handlers.PresignedUploadResponse'
         type: array
     type: object
-  interfaces_api_handlers.ConfirmUploadRequest:
+  handlers.ConfirmUploadRequest:
     properties:
       contentType:
         description: MIME type
@@ -336,7 +266,7 @@ definitions:
     - fileSize
     - mediaId
     type: object
-  interfaces_api_handlers.PresignedUploadRequest:
+  handlers.PresignedUploadRequest:
     properties:
       contentType:
         type: string
@@ -357,7 +287,7 @@ definitions:
     - filename
     - mediaType
     type: object
-  interfaces_api_handlers.PresignedUploadResponse:
+  handlers.PresignedUploadResponse:
     properties:
       expiresAt:
         description: When the presigned URL expires
@@ -375,27 +305,78 @@ definitions:
         description: Presigned URL for frontend to upload
         type: string
     type: object
-  time.Duration:
+  health.CheckResult:
+    properties:
+      duration:
+        description: Swagger-compatible annotation
+        example: 15ms
+        type: string
+      error:
+        type: string
+      message:
+        type: string
+      status:
+        $ref: '#/definitions/health.Status'
+      timestamp:
+        type: string
+    type: object
+  health.HealthCheck:
+    properties:
+      checks:
+        additionalProperties:
+          $ref: '#/definitions/health.CheckResult'
+        type: object
+      status:
+        $ref: '#/definitions/health.Status'
+      timestamp:
+        type: string
+      uptime:
+        type: string
+      version:
+        type: string
+    type: object
+  health.Status:
     enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    format: int64
-    type: integer
+    - healthy
+    - unhealthy
+    - degraded
+    type: string
     x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
+    - StatusHealthy
+    - StatusUnhealthy
+    - StatusDegraded
+  metrics.MetricsSnapshot:
+    properties:
+      avg_response_time_ms:
+        type: number
+      custom_counters:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      failed_requests:
+        type: integer
+      max_response_time_ms:
+        type: integer
+      min_response_time_ms:
+        type: integer
+      status_2xx:
+        type: integer
+      status_3xx:
+        type: integer
+      status_4xx:
+        type: integer
+      status_5xx:
+        type: integer
+      successful_requests:
+        type: integer
+      total_errors:
+        type: integer
+      total_requests:
+        type: integer
+      uptime:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact:
@@ -421,7 +402,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/interfaces_api_handlers.ConfirmUploadRequest'
+          $ref: '#/definitions/handlers.ConfirmUploadRequest'
       produces:
       - application/json
       responses:
@@ -462,14 +443,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/interfaces_api_handlers.PresignedUploadRequest'
+          $ref: '#/definitions/handlers.PresignedUploadRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/interfaces_api_handlers.PresignedUploadResponse'
+            $ref: '#/definitions/handlers.PresignedUploadResponse'
         "400":
           description: Bad Request
           schema:
@@ -502,14 +483,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/interfaces_api_handlers.BatchPresignedUploadRequest'
+          $ref: '#/definitions/handlers.BatchPresignedUploadRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/interfaces_api_handlers.BatchPresignedUploadResponse'
+            $ref: '#/definitions/handlers.BatchPresignedUploadResponse'
         "400":
           description: Bad Request
           schema:
@@ -542,14 +523,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/interfaces_api_handlers.BatchConfirmUploadRequest'
+          $ref: '#/definitions/handlers.BatchConfirmUploadRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/interfaces_api_handlers.BatchConfirmUploadResponse'
+            $ref: '#/definitions/handlers.BatchConfirmUploadResponse'
         "400":
           description: Bad Request
           schema:
@@ -576,14 +557,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.ExchangeCodeRequest'
+          $ref: '#/definitions/dto.ExchangeCodeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gofiber-template_domain_dto.ExchangeCodeResponse'
+            $ref: '#/definitions/dto.ExchangeCodeResponse'
         "400":
           description: Bad Request
           schema:
@@ -603,7 +584,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gofiber-template_domain_dto.OAuthURLResponse'
+            $ref: '#/definitions/dto.OAuthURLResponse'
       summary: Get Google OAuth URL
       tags:
       - OAuth
@@ -629,7 +610,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gofiber-template_domain_dto.OAuthLoginResponse'
+            $ref: '#/definitions/dto.OAuthLoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -649,7 +630,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -677,7 +658,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.CreateUserRequest'
+          $ref: '#/definitions/dto.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -703,11 +684,11 @@ paths:
         "200":
           description: System is healthy
           schema:
-            $ref: '#/definitions/gofiber-template_pkg_health.HealthCheck'
+            $ref: '#/definitions/health.HealthCheck'
         "503":
           description: System is unhealthy
           schema:
-            $ref: '#/definitions/gofiber-template_pkg_health.HealthCheck'
+            $ref: '#/definitions/health.HealthCheck'
       summary: Health check
       tags:
       - Health
@@ -755,7 +736,7 @@ paths:
         "200":
           description: Current metrics
           schema:
-            $ref: '#/definitions/gofiber-template_pkg_metrics.MetricsSnapshot'
+            $ref: '#/definitions/metrics.MetricsSnapshot'
       summary: Get application metrics
       tags:
       - Metrics
@@ -770,7 +751,7 @@ paths:
         name: post
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.CreatePostRequest'
+          $ref: '#/definitions/dto.CreatePostRequest'
       produces:
       - application/json
       responses:
@@ -841,7 +822,7 @@ paths:
         name: post
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.UpdatePostRequest'
+          $ref: '#/definitions/dto.UpdatePostRequest'
       produces:
       - application/json
       responses:
@@ -903,7 +884,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/gofiber-template_domain_dto.UpdateUserRequest'
+          $ref: '#/definitions/dto.UpdateUserRequest'
       produces:
       - application/json
       responses:

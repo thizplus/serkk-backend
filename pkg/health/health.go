@@ -31,7 +31,7 @@ type CheckResult struct {
 	Status    Status        `json:"status"`
 	Message   string        `json:"message,omitempty"`
 	Timestamp time.Time     `json:"timestamp"`
-	Duration  time.Duration `json:"duration"`
+	Duration  time.Duration `json:"duration" swaggertype:"string" example:"15ms"` // Swagger-compatible annotation
 	Error     string        `json:"error,omitempty"`
 }
 
