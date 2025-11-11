@@ -35,31 +35,31 @@ type Services struct {
 
 // Handlers contains all HTTP handlers
 type Handlers struct {
-	UserHandler         *UserHandler
-	ProfileHandler      *ProfileHandler
-	TaskHandler         *TaskHandler
-	FileHandler         *FileHandler
-	JobHandler          *JobHandler
-	PostHandler         *PostHandler
-	CommentHandler      *CommentHandler
-	VoteHandler         *VoteHandler
-	FollowHandler       *FollowHandler
-	SavedPostHandler    *SavedPostHandler
-	NotificationHandler *NotificationHandler
-	TagHandler          *TagHandler
-	SearchHandler       *SearchHandler
-	MediaHandler        *MediaHandler
-	OAuthHandler        *OAuthHandler
-	SEOHandler          *SEOHandler
-	PushHandler         *PushHandler
-	ConversationHandler *ConversationHandler
-	MessageHandler        *MessageHandler
-	BlockHandler          *BlockHandler
-	ChatWSHandler         *websocketHandler.ChatWebSocketHandler
-	NotificationWSHandler *websocketHandler.NotificationWebSocketHandler
-	FileUploadHandler     *FileUploadHandler
+	UserHandler            *UserHandler
+	ProfileHandler         *ProfileHandler
+	TaskHandler            *TaskHandler
+	FileHandler            *FileHandler
+	JobHandler             *JobHandler
+	PostHandler            *PostHandler
+	CommentHandler         *CommentHandler
+	VoteHandler            *VoteHandler
+	FollowHandler          *FollowHandler
+	SavedPostHandler       *SavedPostHandler
+	NotificationHandler    *NotificationHandler
+	TagHandler             *TagHandler
+	SearchHandler          *SearchHandler
+	MediaHandler           *MediaHandler
+	OAuthHandler           *OAuthHandler
+	SEOHandler             *SEOHandler
+	PushHandler            *PushHandler
+	ConversationHandler    *ConversationHandler
+	MessageHandler         *MessageHandler
+	BlockHandler           *BlockHandler
+	ChatWSHandler          *websocketHandler.ChatWebSocketHandler
+	NotificationWSHandler  *websocketHandler.NotificationWebSocketHandler
+	FileUploadHandler      *FileUploadHandler
 	PresignedUploadHandler *PresignedUploadHandler
-	WebhookHandler        *WebhookHandler
+	WebhookHandler         *WebhookHandler
 }
 
 // NewHandlers creates a new instance of Handlers with all dependencies
@@ -94,6 +94,6 @@ func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocke
 			}
 			return nil
 		}(),
-		WebhookHandler:        NewWebhookHandler(services.MediaService, services.PostService, services.MessageService, redisService.(*redis.RedisService), notificationHub),
+		WebhookHandler: NewWebhookHandler(services.MediaService, services.PostService, services.MessageService, redisService.(*redis.RedisService), notificationHub),
 	}
 }

@@ -3,10 +3,10 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/go-playground/validator/v10"
 	"reflect"
 	"regexp"
 	"strings"
-	"github.com/go-playground/validator/v10"
 )
 
 var validate *validator.Validate

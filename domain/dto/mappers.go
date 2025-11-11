@@ -390,7 +390,7 @@ func MessageToMessageResponse(message *models.Message) *MessageResponse {
 		UpdatedAt:      message.UpdatedAt,
 
 		// Helper fields
-		SenderId:   message.SenderID,
+		SenderId: message.SenderID,
 	}
 
 	// Unmarshal Media JSONB to []MessageMedia

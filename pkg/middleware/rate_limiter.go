@@ -17,8 +17,8 @@ type RateLimiterConfig struct {
 // DefaultRateLimiterConfig returns default rate limiter settings
 func DefaultRateLimiterConfig() RateLimiterConfig {
 	return RateLimiterConfig{
-		Max:        100,                // 100 requests
-		Expiration: 1 * time.Minute,    // per minute
+		Max:        100,             // 100 requests
+		Expiration: 1 * time.Minute, // per minute
 		Message:    "Too many requests, please try again later",
 	}
 }
@@ -26,8 +26,8 @@ func DefaultRateLimiterConfig() RateLimiterConfig {
 // StrictRateLimiterConfig returns strict rate limiter for sensitive endpoints
 func StrictRateLimiterConfig() RateLimiterConfig {
 	return RateLimiterConfig{
-		Max:        5,                  // 5 requests
-		Expiration: 1 * time.Minute,    // per minute
+		Max:        5,               // 5 requests
+		Expiration: 1 * time.Minute, // per minute
 		Message:    "Too many attempts, please try again later",
 	}
 }
@@ -35,8 +35,8 @@ func StrictRateLimiterConfig() RateLimiterConfig {
 // AuthRateLimiterConfig returns rate limiter for auth endpoints
 func AuthRateLimiterConfig() RateLimiterConfig {
 	return RateLimiterConfig{
-		Max:        10,                 // 10 requests
-		Expiration: 5 * time.Minute,    // per 5 minutes
+		Max:        10,              // 10 requests
+		Expiration: 5 * time.Minute, // per 5 minutes
 		Message:    "Too many authentication attempts, please try again later",
 	}
 }

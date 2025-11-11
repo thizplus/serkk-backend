@@ -127,8 +127,8 @@ func TestCompression_JSONResponse(t *testing.T) {
 		data := make([]map[string]string, 100)
 		for i := 0; i < 100; i++ {
 			data[i] = map[string]string{
-				"id":   "test",
-				"name": "Test User",
+				"id":    "test",
+				"name":  "Test User",
 				"email": "test@example.com",
 			}
 		}

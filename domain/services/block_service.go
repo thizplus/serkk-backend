@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-	"gofiber-template/domain/dto"
 	"github.com/google/uuid"
+	"gofiber-template/domain/dto"
 )
 
 type BlockService interface {

@@ -2,7 +2,6 @@ package di
 
 import (
 	"context"
-	"log"
 	"gofiber-template/application/serviceimpl"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
@@ -19,6 +18,7 @@ import (
 	"gofiber-template/pkg/metrics"
 	"gofiber-template/pkg/scheduler"
 	"gorm.io/gorm"
+	"log"
 )
 
 type Container struct {

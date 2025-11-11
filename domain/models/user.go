@@ -1,8 +1,9 @@
 package models
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"time"
 )
 
 type User struct {
@@ -40,4 +41,12 @@ type User struct {
 
 func (User) TableName() string {
 	return "users"
+}
+
+// BeforeCreate hook to generate UUID before creating user
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	return nil
 }

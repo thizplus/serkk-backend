@@ -22,22 +22,22 @@ type UpdateUserRequest struct {
 }
 
 type UserResponse struct {
-	ID              uuid.UUID `json:"id"`
-	Email           string    `json:"email,omitempty"` // Only for owner
-	Username        string    `json:"username"`
-	DisplayName     string    `json:"displayName"`
-	Avatar          string    `json:"avatar,omitempty"`
-	Bio             string    `json:"bio,omitempty"`
-	Location        string    `json:"location,omitempty"`
-	Website         string    `json:"website,omitempty"`
-	Karma           int       `json:"karma"`
-	FollowersCount  int       `json:"followersCount"`
-	FollowingCount  int       `json:"followingCount"`
-	Role            string    `json:"role,omitempty"`
-	IsActive        bool      `json:"isActive"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
-	IsFollowing     *bool     `json:"isFollowing,omitempty"` // Only when authenticated
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email,omitempty"` // Only for owner
+	Username       string    `json:"username"`
+	DisplayName    string    `json:"displayName"`
+	Avatar         string    `json:"avatar,omitempty"`
+	Bio            string    `json:"bio,omitempty"`
+	Location       string    `json:"location,omitempty"`
+	Website        string    `json:"website,omitempty"`
+	Karma          int       `json:"karma"`
+	FollowersCount int       `json:"followersCount"`
+	FollowingCount int       `json:"followingCount"`
+	Role           string    `json:"role,omitempty"`
+	IsActive       bool      `json:"isActive"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	IsFollowing    *bool     `json:"isFollowing,omitempty"` // Only when authenticated
 }
 
 type UserListResponse struct {

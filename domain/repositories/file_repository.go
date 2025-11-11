@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"context"
-	"gofiber-template/domain/models"
 	"github.com/google/uuid"
+	"gofiber-template/domain/models"
 )
 
 type FileRepository interface {

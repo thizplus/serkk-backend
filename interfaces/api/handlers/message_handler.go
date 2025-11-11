@@ -1,9 +1,9 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"context"
+	"context"
 	"fmt"
+	apperrors "gofiber-template/pkg/errors"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -14,8 +14,8 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
-	chatWebsocket "gofiber-template/infrastructure/websocket"
 	"gofiber-template/infrastructure/storage"
+	chatWebsocket "gofiber-template/infrastructure/websocket"
 	"gofiber-template/pkg/utils"
 )
 
@@ -95,7 +95,9 @@ func (h *MessageHandler) sendTextMessage(c *fiber.Ctx, userID uuid.UUID, convers
 
 	message, err := h.messageService.SendMessage(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to send message").WithInternal(err))
+		// Log the actual error for debugging
+		log.Printf("[SendMessage] Error for user %s in conversation %s: %v", userID, conversationID, err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage(err.Error()).WithInternal(err))
 	}
 
 	// Send WebSocket notification to receiver
@@ -411,7 +413,7 @@ func (h *MessageHandler) validateFile(file multipart.File, fileHeader *multipart
 	maxSizes := map[string]int64{
 		"image": 20 * 1024 * 1024,  // 20MB
 		"video": 500 * 1024 * 1024, // 500MB
-		"file":  100 * 1024 * 1024,  // 100MB
+		"file":  100 * 1024 * 1024, // 100MB
 	}
 
 	if fileHeader.Size > maxSizes[messageType] {

@@ -42,7 +42,7 @@ func (h *NotificationWebSocketHandler) HandleNotificationWebSocket(c *websocket.
 	if userID == uuid.Nil {
 		log.Printf("❌ Notification WebSocket: Unauthorized connection attempt")
 		c.WriteJSON(map[string]interface{}{
-			"type":  "error",
+			"type": "error",
 			"error": map[string]string{
 				"code":    "unauthorized",
 				"message": "Authentication required",

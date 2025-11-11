@@ -1,13 +1,13 @@
 package websocket
 
 import (
-	"log"
-	"os"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
-	"gofiber-template/pkg/utils"
 	websocketManager "gofiber-template/infrastructure/websocket"
+	"gofiber-template/pkg/utils"
+	"log"
+	"os"
 )
 
 type WebSocketHandler struct{}

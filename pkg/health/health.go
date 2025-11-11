@@ -19,11 +19,11 @@ const (
 
 // HealthCheck represents a health check response
 type HealthCheck struct {
-	Status      Status                 `json:"status"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Version     string                 `json:"version"`
-	Uptime      string                 `json:"uptime"`
-	Checks      map[string]CheckResult `json:"checks"`
+	Status    Status                 `json:"status"`
+	Timestamp time.Time              `json:"timestamp"`
+	Version   string                 `json:"version"`
+	Uptime    string                 `json:"uptime"`
+	Checks    map[string]CheckResult `json:"checks"`
 }
 
 // CheckResult represents the result of a single check

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
@@ -16,6 +15,7 @@ import (
 	"gofiber-template/infrastructure/redis"
 	"gofiber-template/infrastructure/websocket"
 	"gofiber-template/pkg/utils"
+	"gorm.io/datatypes"
 )
 
 type MessageServiceImpl struct {
@@ -267,13 +267,13 @@ func (s *MessageServiceImpl) GetMessageContext(ctx context.Context, messageID uu
 	}
 
 	return &dto.MessageContextResponse{
-		TargetMessage:  *dto.MessageToMessageResponse(targetMessage),
-		Before:         beforeDTOs,
-		After:          afterDTOs,
-		BeforeCursor:   beforeCursor,
-		AfterCursor:    afterCursor,
-		HasMoreBefore:  len(messagesBefore) == 20,
-		HasMoreAfter:   len(messagesAfter) == 20,
+		TargetMessage: *dto.MessageToMessageResponse(targetMessage),
+		Before:        beforeDTOs,
+		After:         afterDTOs,
+		BeforeCursor:  beforeCursor,
+		AfterCursor:   afterCursor,
+		HasMoreBefore: len(messagesBefore) == 20,
+		HasMoreAfter:  len(messagesAfter) == 20,
 	}, nil
 }
 

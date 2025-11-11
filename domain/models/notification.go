@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Notification struct {
@@ -30,4 +31,12 @@ type Notification struct {
 
 func (Notification) TableName() string {
 	return "notifications"
+}
+
+// BeforeCreate hook to generate UUID before creating Notification
+func (n *Notification) BeforeCreate(tx *gorm.DB) error {
+	if n.ID == uuid.Nil {
+		n.ID = uuid.New()
+	}
+	return nil
 }

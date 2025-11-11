@@ -55,19 +55,19 @@ func (h *FileUploadHandler) UploadFile(c *fiber.Ctx) error {
 		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to upload file",
+			"error":  "Failed to upload file",
 			"detail": err.Error(),
 		})
 	}
 
 	// Return response
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id":        media.ID,
-		"filename":  media.FileName,
-		"extension": media.Extension,
-		"size":      media.Size,
-		"mime_type": media.MimeType,
-		"url":       media.URL,
+		"id":          media.ID,
+		"filename":    media.FileName,
+		"extension":   media.Extension,
+		"size":        media.Size,
+		"mime_type":   media.MimeType,
+		"url":         media.URL,
 		"uploaded_at": media.CreatedAt,
 	})
 }

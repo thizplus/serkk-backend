@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"os"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"os"
 )
 
 func LoggerMiddleware() fiber.Handler {

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Media struct {
@@ -20,7 +21,7 @@ type Media struct {
 
 	// URLs (R2)
 	URL       string `gorm:"not null"` // Full R2 public URL
-	Thumbnail string                   // Thumbnail URL
+	Thumbnail string // Thumbnail URL
 
 	// Dimensions
 	Width  int
@@ -43,4 +44,12 @@ type Media struct {
 
 func (Media) TableName() string {
 	return "media"
+}
+
+// BeforeCreate hook to generate UUID before creating media
+func (m *Media) BeforeCreate(tx *gorm.DB) error {
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
+	}
+	return nil
 }

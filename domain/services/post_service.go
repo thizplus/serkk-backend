@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/repositories"
-	"github.com/google/uuid"
 )
 
 type PostService interface {

@@ -3,10 +3,10 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"sync"
 	"github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
+	"log"
+	"sync"
 )
 
 type WebSocketManager struct {
@@ -25,10 +25,10 @@ type Client struct {
 }
 
 type Message struct {
-	Type    string      `json:"type"`
-	Data    interface{} `json:"data"`
-	UserID  string      `json:"userId,omitempty"`
-	RoomID  string      `json:"roomId,omitempty"`
+	Type   string      `json:"type"`
+	Data   interface{} `json:"data"`
+	UserID string      `json:"userId,omitempty"`
+	RoomID string      `json:"roomId,omitempty"`
 }
 
 type BroadcastMessage struct {
@@ -226,7 +226,7 @@ func HandleWebSocketMessage(conn *websocket.Conn, messageType int, data []byte) 
 				response := Message{
 					Type: "room_joined",
 					Data: map[string]interface{}{
-						"roomId": roomID,
+						"roomId":  roomID,
 						"message": fmt.Sprintf("Joined room %s", roomID),
 					},
 				}

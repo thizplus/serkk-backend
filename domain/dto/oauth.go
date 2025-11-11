@@ -8,14 +8,14 @@ type GoogleOAuthRequest struct {
 
 // OAuthUserInfo - User information from OAuth provider
 type OAuthUserInfo struct {
-	Provider    string `json:"provider"`
-	OAuthID     string `json:"oauthId"`
-	Email       string `json:"email"`
-	Name        string `json:"name"`
-	Picture     string `json:"picture"`
-	GivenName   string `json:"givenName"`
-	FamilyName  string `json:"familyName"`
-	Verified    bool   `json:"verified"`
+	Provider   string `json:"provider"`
+	OAuthID    string `json:"oauthId"`
+	Email      string `json:"email"`
+	Name       string `json:"name"`
+	Picture    string `json:"picture"`
+	GivenName  string `json:"givenName"`
+	FamilyName string `json:"familyName"`
+	Verified   bool   `json:"verified"`
 }
 
 // OAuthLoginResponse - Response after successful OAuth login

@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type UploadFileRequest struct {
@@ -52,6 +52,6 @@ type DeleteFileRequest struct {
 }
 
 type DeleteFileResponse struct {
-	Message string `json:"message"`
+	Message string    `json:"message"`
 	FileID  uuid.UUID `json:"fileId"`
 }

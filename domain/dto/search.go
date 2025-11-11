@@ -15,12 +15,12 @@ type SearchRequest struct {
 
 // SearchResponse - Response for search results
 type SearchResponse struct {
-	Query   string           `json:"query"`
-	Type    string           `json:"type"`
-	Posts   []PostResponse   `json:"posts,omitempty"`
-	Users   []UserResponse   `json:"users,omitempty"`
-	Tags    []TagResponse    `json:"tags,omitempty"`
-	Meta    PaginationMeta   `json:"meta"`
+	Query string         `json:"query"`
+	Type  string         `json:"type"`
+	Posts []PostResponse `json:"posts,omitempty"`
+	Users []UserResponse `json:"users,omitempty"`
+	Tags  []TagResponse  `json:"tags,omitempty"`
+	Meta  PaginationMeta `json:"meta"`
 }
 
 // SearchHistoryResponse - Response for search history

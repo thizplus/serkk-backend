@@ -1,8 +1,8 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"log"
+	apperrors "gofiber-template/pkg/errors"
+	"log"
 	"strconv"
 	"time"
 

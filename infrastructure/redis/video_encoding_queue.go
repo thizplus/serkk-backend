@@ -16,14 +16,14 @@ const (
 
 // VideoEncodingJob represents a video encoding job in the queue
 type VideoEncodingJob struct {
-	MediaID     uuid.UUID `json:"media_id"`
-	VideoID     string    `json:"video_id"`      // Bunny Stream video ID
-	Status      string    `json:"status"`        // pending, processing, completed, failed
-	Progress    int       `json:"progress"`      // 0-100
-	QueuedAt    time.Time `json:"queued_at"`
+	MediaID     uuid.UUID  `json:"media_id"`
+	VideoID     string     `json:"video_id"` // Bunny Stream video ID
+	Status      string     `json:"status"`   // pending, processing, completed, failed
+	Progress    int        `json:"progress"` // 0-100
+	QueuedAt    time.Time  `json:"queued_at"`
 	StartedAt   *time.Time `json:"started_at,omitempty"`
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	Error       string    `json:"error,omitempty"`
+	Error       string     `json:"error,omitempty"`
 }
 
 // EnqueueVideoEncoding adds a video to the encoding queue

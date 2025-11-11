@@ -361,7 +361,7 @@ func (s *PostServiceImpl) PublishDraftPostsWithMedia(ctx context.Context, mediaI
 		// All videos are ready immediately after upload
 		// Check if all videos in this post are completed (using fresh data)
 		allVideosReady := true // Always true now (no encoding)
-		_ = freshMediaList      // Use variable to avoid unused error
+		_ = freshMediaList     // Use variable to avoid unused error
 
 		// Publish if all videos are ready (always true now)
 		if allVideosReady {

@@ -1,13 +1,13 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"strconv"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
+	"strconv"
 )
 
 type FileHandler struct {

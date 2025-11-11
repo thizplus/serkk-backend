@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	ErrInvalidPath     = errors.New("invalid path format")
-	ErrUnsafePath      = errors.New("unsafe path detected")
-	ErrPathTooLong     = errors.New("path is too long")
-	ErrEmptyPath       = errors.New("path cannot be empty")
+	ErrInvalidPath      = errors.New("invalid path format")
+	ErrUnsafePath       = errors.New("unsafe path detected")
+	ErrPathTooLong      = errors.New("path is too long")
+	ErrEmptyPath        = errors.New("path cannot be empty")
 	ErrInvalidCharacter = errors.New("path contains invalid characters")
 )
 

@@ -13,11 +13,11 @@ import (
 )
 
 type WebhookHandler struct {
-	mediaService     services.MediaService
-	postService      services.PostService
-	messageService   services.MessageService
-	redisService     *redis.RedisService
-	notificationHub  *websocket.NotificationHub
+	mediaService    services.MediaService
+	postService     services.PostService
+	messageService  services.MessageService
+	redisService    *redis.RedisService
+	notificationHub *websocket.NotificationHub
 }
 
 func NewWebhookHandler(mediaService services.MediaService, postService services.PostService, messageService services.MessageService, redisService *redis.RedisService, notificationHub *websocket.NotificationHub) *WebhookHandler {
@@ -75,11 +75,11 @@ type BunnyStreamWebhookPayload struct {
 	*/
 
 	// Optional fields (may not be in minimal callback)
-	EncodeProgress       int    `json:"EncodeProgress,omitempty"`       // 0-100
+	EncodeProgress       int    `json:"EncodeProgress,omitempty"` // 0-100
 	Width                int    `json:"Width,omitempty"`
 	Height               int    `json:"Height,omitempty"`
 	AvailableResolutions string `json:"AvailableResolutions,omitempty"`
-	Length               int    `json:"Length,omitempty"`               // Duration in seconds
+	Length               int    `json:"Length,omitempty"` // Duration in seconds
 	Title                string `json:"Title,omitempty"`
 	ThumbnailCount       int    `json:"ThumbnailCount,omitempty"`
 }

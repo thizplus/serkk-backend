@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type VoteRepositoryImpl struct {

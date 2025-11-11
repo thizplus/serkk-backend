@@ -1,8 +1,8 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"fmt"
+	"fmt"
+	apperrors "gofiber-template/pkg/errors"
 
 	"github.com/gofiber/fiber/v2"
 	"gofiber-template/domain/dto"

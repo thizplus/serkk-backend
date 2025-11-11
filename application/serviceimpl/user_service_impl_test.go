@@ -10,11 +10,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"golang.org/x/crypto/bcrypt"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories/mocks"
 	"gofiber-template/pkg/testutil"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func setupUserService() (*UserServiceImpl, *mocks.MockUserRepository, *mocks.MockFollowRepository) {

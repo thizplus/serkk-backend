@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gorm.io/gorm"
 )
 
 type UserRepositoryImpl struct {
@@ -93,7 +93,7 @@ func (r *UserRepositoryImpl) SearchForChat(ctx context.Context, currentUserID uu
 		Where("is_active = ?", true).
 		Where(
 			r.db.Where("LOWER(username) LIKE ?", "%"+query+"%").
-			Or("LOWER(display_name) LIKE ?", "%"+query+"%"),
+				Or("LOWER(display_name) LIKE ?", "%"+query+"%"),
 		).
 		// Exclude blocked users
 		Where("id NOT IN (?)", blockedUsersSubquery).

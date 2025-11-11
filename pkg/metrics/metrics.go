@@ -9,9 +9,9 @@ import (
 // Metrics holds application metrics
 type Metrics struct {
 	// Request metrics
-	totalRequests     uint64
-	successfulReqs    uint64
-	failedReqs        uint64
+	totalRequests  uint64
+	successfulReqs uint64
+	failedReqs     uint64
 
 	// Response time metrics
 	totalResponseTime uint64 // in milliseconds
@@ -38,19 +38,19 @@ type Metrics struct {
 
 // MetricsSnapshot represents a snapshot of metrics
 type MetricsSnapshot struct {
-	TotalRequests     uint64            `json:"total_requests"`
-	SuccessfulReqs    uint64            `json:"successful_requests"`
-	FailedReqs        uint64            `json:"failed_requests"`
-	AvgResponseTime   float64           `json:"avg_response_time_ms"`
-	MinResponseTime   uint64            `json:"min_response_time_ms"`
-	MaxResponseTime   uint64            `json:"max_response_time_ms"`
-	Status2xx         uint64            `json:"status_2xx"`
-	Status3xx         uint64            `json:"status_3xx"`
-	Status4xx         uint64            `json:"status_4xx"`
-	Status5xx         uint64            `json:"status_5xx"`
-	TotalErrors       uint64            `json:"total_errors"`
-	Uptime            string            `json:"uptime"`
-	CustomCounters    map[string]uint64 `json:"custom_counters,omitempty"`
+	TotalRequests   uint64            `json:"total_requests"`
+	SuccessfulReqs  uint64            `json:"successful_requests"`
+	FailedReqs      uint64            `json:"failed_requests"`
+	AvgResponseTime float64           `json:"avg_response_time_ms"`
+	MinResponseTime uint64            `json:"min_response_time_ms"`
+	MaxResponseTime uint64            `json:"max_response_time_ms"`
+	Status2xx       uint64            `json:"status_2xx"`
+	Status3xx       uint64            `json:"status_3xx"`
+	Status4xx       uint64            `json:"status_4xx"`
+	Status5xx       uint64            `json:"status_5xx"`
+	TotalErrors     uint64            `json:"total_errors"`
+	Uptime          string            `json:"uptime"`
+	CustomCounters  map[string]uint64 `json:"custom_counters,omitempty"`
 }
 
 // NewMetrics creates a new metrics instance

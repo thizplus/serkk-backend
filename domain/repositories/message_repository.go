@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"context"
-	"time"
-	"gofiber-template/domain/models"
 	"github.com/google/uuid"
+	"gofiber-template/domain/models"
+	"time"
 )
 
 type MessageRepository interface {

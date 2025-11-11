@@ -63,12 +63,12 @@ func main() {
 			CORSRules: []types.CORSRule{
 				{
 					AllowedOrigins: []string{
-						"http://localhost:3000",           // Development frontend
-						"http://localhost:8080",           // Development backend
-						"https://voobize.com",             // Production frontend
-						"https://www.voobize.com",         // Production frontend (www)
-						"https://api.voobize.com",         // Production backend
-						"*",                               // Allow all origins (can be restricted later)
+						"http://localhost:3000",   // Development frontend
+						"http://localhost:8080",   // Development backend
+						"https://voobize.com",     // Production frontend
+						"https://www.voobize.com", // Production frontend (www)
+						"https://api.voobize.com", // Production backend
+						"*",                       // Allow all origins (can be restricted later)
 					},
 					AllowedMethods: []string{
 						"GET",

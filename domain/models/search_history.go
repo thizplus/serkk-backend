@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SearchHistory struct {
@@ -19,4 +20,12 @@ type SearchHistory struct {
 
 func (SearchHistory) TableName() string {
 	return "search_history"
+}
+
+// BeforeCreate hook to generate UUID before creating SearchHistory
+func (sh *SearchHistory) BeforeCreate(tx *gorm.DB) error {
+	if sh.ID == uuid.Nil {
+		sh.ID = uuid.New()
+	}
+	return nil
 }

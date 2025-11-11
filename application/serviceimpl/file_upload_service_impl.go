@@ -17,8 +17,8 @@ import (
 )
 
 type FileUploadServiceImpl struct {
-	mediaRepo        repositories.MediaRepository
-	mediaUploadSvc   *storage.MediaUploadService
+	mediaRepo      repositories.MediaRepository
+	mediaUploadSvc *storage.MediaUploadService
 }
 
 func NewFileUploadService(
@@ -38,20 +38,20 @@ const (
 
 var AllowedMimeTypes = map[string]bool{
 	// Documents
-	"application/pdf":                                                        true,
-	"application/msword":                                                     true,
+	"application/pdf":    true,
+	"application/msword": true,
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
 
 	// Spreadsheets
-	"application/vnd.ms-excel":                                              true,
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":     true,
+	"application/vnd.ms-excel": true,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true,
 
 	// Presentations
-	"application/vnd.ms-powerpoint":                                              true,
-	"application/vnd.openxmlformats-officedocument.presentationml.presentation":  true,
+	"application/vnd.ms-powerpoint":                                             true,
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
 
 	// Archives
-	"application/zip":         true,
+	"application/zip":              true,
 	"application/x-zip-compressed": true,
 	"application/x-rar-compressed": true,
 

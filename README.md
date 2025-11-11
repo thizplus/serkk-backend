@@ -207,6 +207,10 @@ See [DOCKER.md](DOCKER.md) for detailed deployment instructions.
 Comprehensive guides available:
 
 - **[GETTING_STARTED_TH.md](GETTING_STARTED_TH.md)** - 🇹🇭 Thai language guide (คู่มือภาษาไทย)
+- **[EASYPANEL_DEPLOY.md](EASYPANEL_DEPLOY.md)** - 🎯 Deploy with EasyPanel (แนะนำ! 10 นาที)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 🚀 Complete production deployment guide (992 lines)
+- **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** - ⚡ Quick 10-minute deployment
+- **[deploy/README.md](deploy/README.md)** - Deployment files and scripts
 - **[ENVIRONMENT.md](ENVIRONMENT.md)** - Environment configuration
 - **[DOCKER.md](DOCKER.md)** - Docker deployment guide
 - **[SHUTDOWN.md](SHUTDOWN.md)** - Graceful shutdown documentation
@@ -389,11 +393,61 @@ make stress-test
 
 ## 🐳 Deployment
 
-### Docker
+### 🚀 Production Deployment
 
-See [DOCKER.md](DOCKER.md) for comprehensive Docker deployment guide.
+**Choose your deployment method:**
 
-**Quick Deploy:**
+#### 🎯 EasyPanel (แนะนำ! ง่ายสุด) - 10 นาที
+GUI-based deployment with zero configuration → **[EASYPANEL_DEPLOY.md](EASYPANEL_DEPLOY.md)**
+
+**เหมาะสำหรับ:**
+- Solo developers / Small teams
+- ไม่อยากยุ่งกับ manual config
+- ต้องการ GUI สำหรับจัดการทุกอย่าง
+- Deploy ทั้ง backend + frontend + database ในที่เดียว
+
+**ข้อดี:**
+- ✅ Deploy ด้วย GUI (ไม่ต้อง command line)
+- ✅ SSL certificate อัตโนมัติ
+- ✅ Database management UI ในตัว
+- ✅ Monitoring & Logs ในตัว
+- ✅ One-click updates
+- ✅ ฟรี (open source)
+
+```bash
+# ติดตั้ง EasyPanel ใน 1 คำสั่ง
+curl -sSL https://get.easypanel.io | sh
+```
+
+---
+
+#### 1. Quick Deploy (10-15 minutes) ⚡
+Fast setup for experienced users → **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)**
+
+```bash
+# Ubuntu 22.04 LTS + PostgreSQL + Redis + Nginx + SSL
+git clone https://github.com/thizplus/serkk-backend.git
+cd serkk-backend
+cp .env.production.example .env
+# Follow QUICK_DEPLOY.md for 7 simple steps
+```
+
+#### 2. Comprehensive Guide (Full Documentation) 📚
+Complete step-by-step instructions → **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+- Server setup & hardening
+- Database configuration
+- Systemd service setup
+- Nginx reverse proxy
+- SSL certificate (Let's Encrypt)
+- Monitoring & logging
+- Backup strategies
+- Security checklist
+- Troubleshooting
+
+#### 3. Docker Deployment 🐳
+Container-based deployment → **[DOCKER.md](DOCKER.md)**
+
 ```bash
 # Production
 docker-compose up -d
@@ -402,28 +456,51 @@ docker-compose up -d
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### Kubernetes
+#### 4. Ready-to-use Configuration Files 📦
+Pre-configured files in `deploy/` directory → **[deploy/README.md](deploy/README.md)**
 
 ```bash
-# Convert docker-compose to k8s manifests
-kompose convert -f docker-compose.yml
-
-# Apply manifests
-kubectl apply -f .
+deploy/
+├── nginx/gofiber-api.conf         # Nginx config
+├── systemd/gofiber-api.service    # Systemd service
+├── scripts/deploy.sh              # Auto-deploy script
+└── scripts/backup-db.sh           # Database backup
 ```
 
-### Manual Deployment
+### 🔐 Pre-deployment Checklist
+
+Before deploying to production:
+
+- [ ] Update `JWT_SECRET` (use: `openssl rand -base64 32`)
+- [ ] Set secure database password
+- [ ] Configure `CORS_ALLOWED_ORIGINS`
+- [ ] Setup domain DNS (A record)
+- [ ] Update OAuth credentials (Google)
+- [ ] Enable rate limiting
+- [ ] Review `.env.production.example`
+- [ ] Setup SSL certificate
+- [ ] Configure firewall rules
+- [ ] Test database connection
+
+### 📝 Quick Manual Deployment
 
 ```bash
-# Build for production
-make ci-build
+# 1. Clone repository
+git clone https://github.com/thizplus/serkk-backend.git
+cd serkk-backend
 
-# Run migrations
-# (Automatic on startup)
+# 2. Setup environment
+cp .env.production.example .env
+vim .env  # Edit with your values
 
-# Start application
+# 3. Build application
+go build -o bin/api cmd/api/main.go
+
+# 4. Start service (migrations run automatically)
 ./bin/api
 ```
+
+**For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ## 🔧 Development
 

@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type CreateJobRequest struct {
@@ -48,8 +48,8 @@ type JobExecutionRequest struct {
 }
 
 type JobExecutionResponse struct {
-	JobID     uuid.UUID `json:"jobId"`
-	Status    string    `json:"status"`
-	Message   string    `json:"message"`
+	JobID      uuid.UUID `json:"jobId"`
+	Status     string    `json:"status"`
+	Message    string    `json:"message"`
 	ExecutedAt time.Time `json:"executedAt"`
 }

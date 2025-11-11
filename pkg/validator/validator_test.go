@@ -14,8 +14,8 @@ type TestUser struct {
 }
 
 type TestPost struct {
-	Title   string `validate:"required,min=3,max=200"`
-	Content string `validate:"required,min=10"`
+	Title   string   `validate:"required,min=3,max=200"`
+	Content string   `validate:"required,min=10"`
 	Tags    []string `validate:"max=5"`
 }
 

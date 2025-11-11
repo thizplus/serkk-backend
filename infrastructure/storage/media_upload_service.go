@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"image"
 	"image/gif"
-	"image/jpeg"
-	"image/png"
 	_ "image/gif"
+	"image/jpeg"
 	_ "image/jpeg"
+	"image/png"
 	_ "image/png"
 	"io"
 	"mime/multipart"
@@ -26,13 +26,13 @@ type MediaUploadService struct {
 }
 
 type UploadResult struct {
-	URL              string
-	Thumbnail        string
-	MimeType         string
-	Size             int64
-	Width            int
-	Height           int
-	Duration         int // For videos
+	URL       string
+	Thumbnail string
+	MimeType  string
+	Size      int64
+	Width     int
+	Height    int
+	Duration  int // For videos
 	// Video streaming fields (for Bunny Stream)
 	VideoID          string
 	HLSURL           string
@@ -145,10 +145,10 @@ func (s *MediaUploadService) UploadVideo(ctx context.Context, file multipart.Fil
 	thumbnailURL := s.bunnyStream.GetThumbnailURL(createResp.VideoID)
 
 	return &UploadResult{
-		URL:              hlsURL,              // HLS URL for playback
-		Thumbnail:        thumbnailURL,        // Thumbnail URL
+		URL:              hlsURL,                  // HLS URL for playback
+		Thumbnail:        thumbnailURL,            // Thumbnail URL
 		MimeType:         "application/x-mpegURL", // HLS MIME type
-		Size:             0,                   // Size not available immediately
+		Size:             0,                       // Size not available immediately
 		VideoID:          createResp.VideoID,
 		HLSURL:           hlsURL,
 		EncodingStatus:   "pending", // Initial status

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 

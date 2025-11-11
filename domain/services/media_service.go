@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"mime/multipart"
-	"github.com/google/uuid"
 )
 
 type MediaService interface {

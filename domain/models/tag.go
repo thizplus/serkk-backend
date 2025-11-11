@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Tag struct {
@@ -18,4 +19,12 @@ type Tag struct {
 
 func (Tag) TableName() string {
 	return "tags"
+}
+
+// BeforeCreate hook to generate UUID before creating Tag
+func (t *Tag) BeforeCreate(tx *gorm.DB) error {
+	if t.ID == uuid.Nil {
+		t.ID = uuid.New()
+	}
+	return nil
 }

@@ -141,9 +141,9 @@ func registerCustomValidators(v *validator.Validate) {
 		}
 		for _, char := range username {
 			if !((char >= 'a' && char <= 'z') ||
-				 (char >= 'A' && char <= 'Z') ||
-				 (char >= '0' && char <= '9') ||
-				 char == '_' || char == '-') {
+				(char >= 'A' && char <= 'Z') ||
+				(char >= '0' && char <= '9') ||
+				char == '_' || char == '-') {
 				return false
 			}
 		}

@@ -10,11 +10,11 @@ type APIResponse struct {
 }
 
 type PaginatedResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Success bool           `json:"success"`
+	Message string         `json:"message"`
+	Data    interface{}    `json:"data,omitempty"`
 	Meta    PaginationMeta `json:"meta"`
-	Error   string      `json:"error,omitempty"`
+	Error   string         `json:"error,omitempty"`
 }
 
 type PaginationMeta struct {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gofiber-template/domain/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateTestUser creates a test user

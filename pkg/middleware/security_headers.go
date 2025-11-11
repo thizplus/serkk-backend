@@ -6,13 +6,13 @@ import (
 
 // SecurityHeadersConfig holds security headers configuration
 type SecurityHeadersConfig struct {
-	XFrameOptions             string
-	XContentTypeOptions       string
-	XSSProtection             string
-	StrictTransportSecurity   string
-	ContentSecurityPolicy     string
-	ReferrerPolicy            string
-	PermissionsPolicy         string
+	XFrameOptions           string
+	XContentTypeOptions     string
+	XSSProtection           string
+	StrictTransportSecurity string
+	ContentSecurityPolicy   string
+	ReferrerPolicy          string
+	PermissionsPolicy       string
 }
 
 // DefaultSecurityHeadersConfig returns default security headers

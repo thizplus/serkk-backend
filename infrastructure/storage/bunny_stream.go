@@ -24,21 +24,21 @@ type CreateVideoResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	// Full response fields
-	VideoLibraryID      int64  `json:"videoLibraryId"`
-	Title               string `json:"title"`
-	DateUploaded        string `json:"dateUploaded"`
-	Views               int    `json:"views"`
-	IsPublic            bool   `json:"isPublic"`
-	Length              int    `json:"length"`
-	Status              int    `json:"status"`
-	Framerate           int    `json:"framerate"`
-	Width               int    `json:"width"`
-	Height              int    `json:"height"`
+	VideoLibraryID       int64  `json:"videoLibraryId"`
+	Title                string `json:"title"`
+	DateUploaded         string `json:"dateUploaded"`
+	Views                int    `json:"views"`
+	IsPublic             bool   `json:"isPublic"`
+	Length               int    `json:"length"`
+	Status               int    `json:"status"`
+	Framerate            int    `json:"framerate"`
+	Width                int    `json:"width"`
+	Height               int    `json:"height"`
 	AvailableResolutions string `json:"availableResolutions"`
-	ThumbnailCount      int    `json:"thumbnailCount"`
-	EncodeProgress      int    `json:"encodeProgress"`
-	StorageSize         int64  `json:"storageSize"`
-	HasMP4Fallback      bool   `json:"hasMP4Fallback"`
+	ThumbnailCount       int    `json:"thumbnailCount"`
+	EncodeProgress       int    `json:"encodeProgress"`
+	StorageSize          int64  `json:"storageSize"`
+	HasMP4Fallback       bool   `json:"hasMP4Fallback"`
 }
 
 // GetVideoResponse represents the response from Bunny Stream GetVideo API

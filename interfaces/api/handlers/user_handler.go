@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"strconv"
 	"github.com/gofiber/fiber/v2"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
 	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
+	"strconv"
 )
 
 type UserHandler struct {

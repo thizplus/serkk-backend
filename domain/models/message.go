@@ -30,16 +30,16 @@ type MessageMedia struct {
 	Height    *int    `json:"height,omitempty"`
 	Duration  *int    `json:"duration,omitempty"` // seconds, for videos
 	// Video streaming fields (for Bunny Stream HLS)
-	MediaID          *string `json:"mediaId,omitempty"`          // Media table ID (for tracking video encoding)
-	VideoID          *string `json:"videoId,omitempty"`          // Bunny Stream video ID
+	MediaID          *string `json:"mediaId,omitempty"` // Media table ID (for tracking video encoding)
+	VideoID          *string `json:"videoId,omitempty"` // Bunny Stream video ID
 	HLSURL           *string `json:"hlsUrl,omitempty"`
 	EncodingStatus   *string `json:"encodingStatus,omitempty"`   // "pending", "processing", "completed", "failed"
 	EncodingProgress *int    `json:"encodingProgress,omitempty"` // 0-100
 }
 
 type Message struct {
-	ID             uuid.UUID `gorm:"primaryKey;type:uuid"`
-	ConversationID uuid.UUID `gorm:"not null;index:idx_conversation_messages"`
+	ID             uuid.UUID    `gorm:"primaryKey;type:uuid"`
+	ConversationID uuid.UUID    `gorm:"not null;index:idx_conversation_messages"`
 	Conversation   Conversation `gorm:"foreignKey:ConversationID"`
 
 	// Sender & Receiver
@@ -58,7 +58,7 @@ type Message struct {
 	Media datatypes.JSON `gorm:"type:jsonb"`
 
 	// Read Status
-	IsRead bool       `gorm:"default:false;index"`
+	IsRead bool `gorm:"default:false;index"`
 	ReadAt *time.Time
 
 	// Timestamps (for cursor pagination)

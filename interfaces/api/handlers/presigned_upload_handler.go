@@ -15,8 +15,8 @@ import (
 )
 
 type PresignedUploadHandler struct {
-	r2Storage   storage.R2Storage
-	mediaRepo   repositories.MediaRepository
+	r2Storage storage.R2Storage
+	mediaRepo repositories.MediaRepository
 }
 
 func NewPresignedUploadHandler(r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository) *PresignedUploadHandler {
@@ -364,20 +364,20 @@ type BatchConfirmUploadRequest struct {
 
 // BatchConfirmUploadResponse represents the batch response for confirmed uploads
 type BatchConfirmUploadResponse struct {
-	Successful []BatchConfirmResult `json:"successful"`
-	Failed     []BatchConfirmResult `json:"failed"`
-	Total      int                  `json:"total"`
-	SuccessCount int                `json:"successCount"`
-	FailCount    int                `json:"failCount"`
+	Successful   []BatchConfirmResult `json:"successful"`
+	Failed       []BatchConfirmResult `json:"failed"`
+	Total        int                  `json:"total"`
+	SuccessCount int                  `json:"successCount"`
+	FailCount    int                  `json:"failCount"`
 }
 
 // BatchConfirmResult represents the result of a single file confirmation
 type BatchConfirmResult struct {
-	MediaID  uuid.UUID `json:"mediaId"`
-	FileURL  string    `json:"fileUrl,omitempty"`
-	FileKey  string    `json:"fileKey"`
-	Success  bool      `json:"success"`
-	Error    string    `json:"error,omitempty"`
+	MediaID uuid.UUID `json:"mediaId"`
+	FileURL string    `json:"fileUrl,omitempty"`
+	FileKey string    `json:"fileKey"`
+	Success bool      `json:"success"`
+	Error   string    `json:"error,omitempty"`
 }
 
 // BatchConfirmUpload confirms multiple uploads at once

@@ -2,16 +2,16 @@ package repositories
 
 import (
 	"context"
-	"gofiber-template/domain/models"
 	"github.com/google/uuid"
+	"gofiber-template/domain/models"
 )
 
 type PostSortBy string
 
 const (
-	SortByHot       PostSortBy = "hot"        // votes / (hours + 2)^1.5
-	SortByNew       PostSortBy = "new"        // created_at DESC
-	SortByTop       PostSortBy = "top"        // votes DESC
+	SortByHot           PostSortBy = "hot"           // votes / (hours + 2)^1.5
+	SortByNew           PostSortBy = "new"           // created_at DESC
+	SortByTop           PostSortBy = "top"           // votes DESC
 	SortByControversial PostSortBy = "controversial" // high engagement but mixed votes
 )
 

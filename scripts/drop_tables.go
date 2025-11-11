@@ -40,6 +40,7 @@ func main() {
 		"push_subscriptions",
 		"tags",
 		"search_histories",
+		"search_history", // Old table (singular - deprecated)
 		"messages",
 		"blocks",
 		"conversations",

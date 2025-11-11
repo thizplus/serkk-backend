@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gorm.io/gorm"
 )
 
 type CommentRepositoryImpl struct {

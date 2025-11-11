@@ -1,3 +1,4 @@
+//go:build cgo
 // +build cgo
 
 package database
@@ -13,7 +14,7 @@ import (
 )
 
 type TestModel struct {
-	ID   uint   `gorm:"primaryKey"`
+	ID   uint `gorm:"primaryKey"`
 	Name string
 }
 

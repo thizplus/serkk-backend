@@ -13,9 +13,9 @@ import (
 )
 
 type CommentServiceImpl struct {
-	commentRepo repositories.CommentRepository
-	postRepo    repositories.PostRepository
-	voteRepo    repositories.VoteRepository
+	commentRepo  repositories.CommentRepository
+	postRepo     repositories.PostRepository
+	voteRepo     repositories.VoteRepository
 	notifService services.NotificationService
 }
 

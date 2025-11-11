@@ -9,9 +9,9 @@ import (
 
 // PushSubscriptionRequest represents the subscription data from the browser
 type PushSubscriptionRequest struct {
-	Endpoint       string                 `json:"endpoint" validate:"required,url"`
-	ExpirationTime *int64                 `json:"expirationTime"`
-	Keys           PushSubscriptionKeys   `json:"keys" validate:"required"`
+	Endpoint       string               `json:"endpoint" validate:"required,url"`
+	ExpirationTime *int64               `json:"expirationTime"`
+	Keys           PushSubscriptionKeys `json:"keys" validate:"required"`
 }
 
 type PushSubscriptionKeys struct {

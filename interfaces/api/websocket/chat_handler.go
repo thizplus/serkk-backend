@@ -43,7 +43,7 @@ func (h *ChatWebSocketHandler) HandleChatWebSocket(c *websocket.Conn) {
 	if userID == uuid.Nil {
 		log.Printf("❌ Chat WebSocket: Unauthorized connection attempt")
 		c.WriteJSON(map[string]interface{}{
-			"type":  "error",
+			"type": "error",
 			"error": map[string]string{
 				"code":    "unauthorized",
 				"message": "Authentication required",

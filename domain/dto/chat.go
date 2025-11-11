@@ -12,13 +12,13 @@ import (
 
 // ConversationResponse - Single conversation
 type ConversationResponse struct {
-	ID               uuid.UUID        `json:"id"`
-	OtherUser        UserResponse     `json:"otherUser"` // The other participant
-	LastMessage      *MessageResponse `json:"lastMessage,omitempty"`
-	LastMessageAt    time.Time        `json:"lastMessageAt"`
-	UnreadCount      int              `json:"unreadCount"`
-	CreatedAt        time.Time        `json:"createdAt"`
-	UpdatedAt        time.Time        `json:"updatedAt"`
+	ID            uuid.UUID        `json:"id"`
+	OtherUser     UserResponse     `json:"otherUser"` // The other participant
+	LastMessage   *MessageResponse `json:"lastMessage,omitempty"`
+	LastMessageAt time.Time        `json:"lastMessageAt"`
+	UnreadCount   int              `json:"unreadCount"`
+	CreatedAt     time.Time        `json:"createdAt"`
+	UpdatedAt     time.Time        `json:"updatedAt"`
 }
 
 // ConversationListResponse - List of conversations with cursor pagination
@@ -81,7 +81,7 @@ type MessageResponse struct {
 	TempID         *string        `json:"tempId,omitempty"` // Echo back client's tempId if provided
 
 	// Helper fields for frontend (denormalized for convenience)
-	SenderId   uuid.UUID `json:"senderId"`   // Same as Sender.ID, for easier access
+	SenderId uuid.UUID `json:"senderId"` // Same as Sender.ID, for easier access
 }
 
 // MessageListResponse - List of messages with cursor pagination
@@ -93,13 +93,13 @@ type MessageListResponse struct {
 
 // MessageContextResponse - Message with surrounding context (for jump to message)
 type MessageContextResponse struct {
-	TargetMessage  MessageResponse   `json:"targetMessage"`
-	Before         []MessageResponse `json:"before"` // 20 messages before
-	After          []MessageResponse `json:"after"`  // 20 messages after
-	BeforeCursor   *string           `json:"beforeCursor,omitempty"`
-	AfterCursor    *string           `json:"afterCursor,omitempty"`
-	HasMoreBefore  bool              `json:"hasMoreBefore"`
-	HasMoreAfter   bool              `json:"hasMoreAfter"`
+	TargetMessage MessageResponse   `json:"targetMessage"`
+	Before        []MessageResponse `json:"before"` // 20 messages before
+	After         []MessageResponse `json:"after"`  // 20 messages after
+	BeforeCursor  *string           `json:"beforeCursor,omitempty"`
+	AfterCursor   *string           `json:"afterCursor,omitempty"`
+	HasMoreBefore bool              `json:"hasMoreBefore"`
+	HasMoreAfter  bool              `json:"hasMoreAfter"`
 }
 
 // MarkMessagesAsReadRequest - Request to mark messages as read
@@ -118,9 +118,9 @@ type BlockUserRequest struct {
 
 // BlockStatusResponse - Block status between two users
 type BlockStatusResponse struct {
-	IsBlocked       bool `json:"isBlocked"`       // Current user blocked the other user
-	IsBlockedBy     bool `json:"isBlockedBy"`     // Current user is blocked by the other user
-	CanMessage      bool `json:"canMessage"`      // Whether messaging is allowed
+	IsBlocked   bool `json:"isBlocked"`   // Current user blocked the other user
+	IsBlockedBy bool `json:"isBlockedBy"` // Current user is blocked by the other user
+	CanMessage  bool `json:"canMessage"`  // Whether messaging is allowed
 }
 
 // BlockedUserResponse - Blocked user info

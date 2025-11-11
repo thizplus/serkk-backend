@@ -1,8 +1,8 @@
 package handlers
 
 import (
-		apperrors "gofiber-template/pkg/errors"
-"strconv"
+	apperrors "gofiber-template/pkg/errors"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

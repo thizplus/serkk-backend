@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"log"
 	"github.com/gofiber/fiber/v2"
 	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
+	"log"
 )
 
 func ErrorHandler() fiber.ErrorHandler {
