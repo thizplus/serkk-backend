@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -56,8 +57,29 @@ func ProductionCORSConfig(allowedOrigins []string) CORSConfig {
 	return config
 }
 
-// NewCORS creates CORS middleware with default config
+// NewCORS creates CORS middleware with environment-aware config
 func NewCORS() fiber.Handler {
+	// Check for production origins from environment
+	allowedOriginsEnv := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOriginsEnv == "" {
+		// Fallback to FRONTEND_URL if CORS_ALLOWED_ORIGINS not set
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL != "" {
+			allowedOriginsEnv = frontendURL
+		}
+	}
+
+	// If environment variables are set, use production config
+	if allowedOriginsEnv != "" {
+		origins := strings.Split(allowedOriginsEnv, ",")
+		// Trim spaces from origins
+		for i := range origins {
+			origins[i] = strings.TrimSpace(origins[i])
+		}
+		return NewProductionCORS(origins)
+	}
+
+	// Otherwise use default (development) config
 	config := DefaultCORSConfig()
 	return NewCORSWithConfig(config)
 }
