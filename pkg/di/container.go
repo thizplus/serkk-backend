@@ -13,6 +13,10 @@ import (
 	"gofiber-template/infrastructure/workers"
 	"gofiber-template/interfaces/api/handlers"
 	"gofiber-template/pkg/config"
+	"gofiber-template/pkg/database"
+	"gofiber-template/pkg/health"
+	"gofiber-template/pkg/logger"
+	"gofiber-template/pkg/metrics"
 	"gofiber-template/pkg/scheduler"
 	"gorm.io/gorm"
 )
@@ -21,15 +25,22 @@ type Container struct {
 	// Configuration
 	Config *config.Config
 
+	// Monitoring & Logging
+	Logger        *logger.Logger
+	HealthChecker *health.HealthChecker
+	Metrics       *metrics.Metrics
+
 	// Infrastructure
 	DB                 *gorm.DB
 	RedisClient        *redis.RedisClient
 	RedisService       *redis.RedisService
 	BunnyStorage       storage.BunnyStorage
 	BunnyStreamService *storage.BunnyStreamService
+	R2Storage          storage.R2Storage
 	MediaUploadService *storage.MediaUploadService
 	EventScheduler     scheduler.EventScheduler
 	ChatHub            *websocket.ChatHub
+	NotificationHub    *websocket.NotificationHub
 	VideoEncoderWorker *workers.VideoEncoderWorker
 
 	// Repositories - Legacy
@@ -93,6 +104,11 @@ func (c *Container) Initialize() error {
 		return err
 	}
 
+	// Initialize monitoring first so we can use logger throughout
+	if err := c.initMonitoring(); err != nil {
+		return err
+	}
+
 	if err := c.initInfrastructure(); err != nil {
 		return err
 	}
@@ -101,15 +117,20 @@ func (c *Container) Initialize() error {
 		return err
 	}
 
+	// ⭐ Initialize WebSocket hubs BEFORE services (to avoid circular dependency)
+	if err := c.initNotificationHub(); err != nil {
+		return err
+	}
+
 	if err := c.initServices(); err != nil {
 		return err
 	}
 
-	if err := c.initScheduler(); err != nil {
+	if err := c.initChatHub(); err != nil {
 		return err
 	}
 
-	if err := c.initChatHub(); err != nil {
+	if err := c.initScheduler(); err != nil {
 		return err
 	}
 
@@ -127,6 +148,28 @@ func (c *Container) initConfig() error {
 	}
 	c.Config = cfg
 	log.Println("✓ Configuration loaded")
+	return nil
+}
+
+func (c *Container) initMonitoring() error {
+	// Initialize Logger based on environment
+	var loggerConfig logger.Config
+	if c.Config.App.Env == "development" {
+		loggerConfig = logger.DevelopmentConfig()
+	} else {
+		loggerConfig = logger.ProductionConfig()
+	}
+
+	c.Logger = logger.New(loggerConfig)
+	logger.Init(loggerConfig) // Initialize global logger
+	log.Println("✓ Logger initialized")
+
+	// Initialize Metrics
+	c.Metrics = metrics.NewMetrics()
+	log.Println("✓ Metrics initialized")
+
+	// Health Checker will be initialized after infrastructure
+	// to add database health check
 	return nil
 }
 
@@ -148,11 +191,30 @@ func (c *Container) initInfrastructure() error {
 	c.DB = db
 	log.Println("✓ Database connected")
 
+	// Configure connection pool
+	var poolConfig database.PoolConfig
+	if c.Config.App.Env == "production" {
+		poolConfig = database.ProductionPoolConfig()
+	} else {
+		poolConfig = database.DevelopmentPoolConfig()
+	}
+	if err := database.ConfigureConnectionPool(db, poolConfig); err != nil {
+		log.Printf("Warning: Failed to configure connection pool: %v", err)
+	} else {
+		log.Println("✓ Database connection pool configured")
+	}
+
 	// Run migrations
 	if err := postgres.Migrate(db); err != nil {
 		return err
 	}
 	log.Println("✓ Database migrated")
+
+	// Initialize Health Checker with database check
+	c.HealthChecker = health.NewHealthChecker(c.Config.App.Version)
+	c.HealthChecker.AddChecker(health.NewDatabaseChecker(db))
+	c.HealthChecker.AddChecker(health.NewMemoryChecker(500)) // 500MB threshold
+	log.Println("✓ Health checker initialized")
 
 	// Initialize Redis
 	redisConfig := redis.RedisConfig{
@@ -191,6 +253,25 @@ func (c *Container) initInfrastructure() error {
 		c.Config.Bunny.StreamCDNURL,
 	)
 	log.Println("✓ Bunny Stream initialized")
+
+	// Initialize R2 Storage (if configured)
+	if c.Config.R2.AccountID != "" && c.Config.R2.AccessKeyID != "" {
+		r2Storage, err := storage.NewR2Storage(
+			c.Config.R2.AccountID,
+			c.Config.R2.AccessKeyID,
+			c.Config.R2.SecretAccessKey,
+			c.Config.R2.BucketName,
+			c.Config.R2.PublicURL,
+		)
+		if err != nil {
+			log.Printf("Warning: R2 Storage initialization failed: %v", err)
+		} else {
+			c.R2Storage = r2Storage
+			log.Println("✓ R2 Storage initialized")
+		}
+	} else {
+		log.Println("ℹ R2 Storage not configured (skipped)")
+	}
 
 	// Initialize MediaUploadService
 	c.MediaUploadService = storage.NewMediaUploadService(c.BunnyStorage, c.BunnyStreamService)
@@ -258,6 +339,7 @@ func (c *Container) initServices() error {
 		c.SavedPostRepository,
 		c.TagService,
 		c.MediaRepository,
+		c.NotificationHub,
 	)
 
 	// 3. Depends on NotificationService
@@ -385,9 +467,25 @@ func (c *Container) initChatHub() error {
 		c.PushService,
 	)
 
+	// ⭐ Inject ChatHub back to MessageService (to avoid circular dependency)
+	if messageServiceImpl, ok := c.MessageService.(*serviceimpl.MessageServiceImpl); ok {
+		messageServiceImpl.SetChatHub(c.ChatHub)
+		log.Println("✓ ChatHub injected to MessageService")
+	}
+
 	// Start ChatHub in background
 	go c.ChatHub.Run()
 	log.Println("✓ ChatHub started")
+
+	return nil
+}
+
+func (c *Container) initNotificationHub() error {
+	c.NotificationHub = websocket.NewNotificationHub()
+
+	// Start NotificationHub in background
+	go c.NotificationHub.Run()
+	log.Println("✓ NotificationHub started")
 
 	return nil
 }
@@ -398,10 +496,13 @@ func (c *Container) initVideoEncoderWorker() error {
 		c.BunnyStreamService,
 		c.MediaRepository,
 		c.NotificationService,
+		c.PostService,
+		c.NotificationHub,
 	)
 
 	// Start worker in background
 	c.VideoEncoderWorker.Start()
+	log.Println("✓ VideoEncoderWorker started")
 
 	return nil
 }
@@ -493,4 +594,16 @@ func (c *Container) GetHandlerServices() *handlers.Services {
 		// Upload services
 		FileUploadService: c.FileUploadService,
 	}
+}
+
+func (c *Container) GetLogger() *logger.Logger {
+	return c.Logger
+}
+
+func (c *Container) GetHealthChecker() *health.HealthChecker {
+	return c.HealthChecker
+}
+
+func (c *Container) GetMetrics() *metrics.Metrics {
+	return c.Metrics
 }

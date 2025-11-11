@@ -26,4 +26,7 @@ type MessageService interface {
 	ListMediaMessages(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID, mediaType *string, cursor *string, limit int) (*dto.MessageListResponse, error)
 	ListMessagesWithLinks(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID, cursor *string, limit int) (*dto.MessageListResponse, error)
 	ListFileMessages(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID, cursor *string, limit int) (*dto.MessageListResponse, error)
+
+	// Update message video status (called from webhook)
+	UpdateMessageVideoStatus(ctx context.Context, messageID uuid.UUID, media *dto.MediaResponse) error
 }

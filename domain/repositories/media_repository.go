@@ -13,6 +13,7 @@ type MediaRepository interface {
 	// Get media
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Media, error)
 	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*models.Media, error)
+	GetByVideoID(ctx context.Context, videoID string) (*models.Media, error)
 
 	// List media
 	ListByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.Media, error)

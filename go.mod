@@ -19,12 +19,14 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/redis/go-redis/v9 v9.4.0
+	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.42.0
 	golang.org/x/image v0.32.0
 	golang.org/x/oauth2 v0.32.0
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.4
+	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.0
 )
 
@@ -78,5 +80,4 @@ require (
 	golang.org/x/text v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.2 // indirect
-	gorm.io/driver/sqlite v1.6.0 // indirect
 )

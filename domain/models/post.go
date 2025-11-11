@@ -28,7 +28,8 @@ type Post struct {
 	Tags  []Tag   `gorm:"many2many:post_tags;"`
 
 	// Status
-	IsDeleted bool `gorm:"default:false;index"`
+	Status    string `gorm:"type:varchar(20);default:'published';index"` // draft, published
+	IsDeleted bool   `gorm:"default:false;index"`
 
 	// Timestamps
 	CreatedAt time.Time `gorm:"index"`

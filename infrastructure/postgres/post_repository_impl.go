@@ -29,11 +29,22 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models
 	var post models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			// Order media by display_order from post_media junction table
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Where("post_media.post_id = ?", id).
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			// Order source post media as well
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
 		Where("id = ? AND is_deleted = ?", id, false).
 		First(&post).Error
@@ -62,13 +73,23 @@ func (r *PostRepositoryImpl) List(ctx context.Context, offset, limit int, sortBy
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			// Order media by display_order
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			// Order source post media
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
-		Where("is_deleted = ?", false)
+		Where("is_deleted = ? AND status = ?", false, "published")
 
 	switch sortBy {
 	case repositories.SortByHot:
@@ -93,11 +114,19 @@ func (r *PostRepositoryImpl) ListByAuthor(ctx context.Context, authorID uuid.UUI
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
 		Where("author_id = ? AND is_deleted = ?", authorID, false).
 		Order("created_at DESC").
@@ -114,15 +143,23 @@ func (r *PostRepositoryImpl) ListByTag(ctx context.Context, tagName string, offs
 
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
 		Joins("JOIN post_tags ON post_tags.post_id = posts.id").
 		Joins("JOIN tags ON tags.id = post_tags.tag_id").
-		Where("LOWER(TRIM(tags.name)) = LOWER(TRIM(?)) AND posts.is_deleted = ?", tagName, false)
+		Where("LOWER(TRIM(tags.name)) = LOWER(TRIM(?)) AND posts.is_deleted = ? AND posts.status = ?", tagName, false, "published")
 
 	switch sortBy {
 	case repositories.SortByHot:
@@ -143,14 +180,22 @@ func (r *PostRepositoryImpl) ListByTagID(ctx context.Context, tagID uuid.UUID, o
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
 		Joins("JOIN post_tags ON post_tags.post_id = posts.id").
-		Where("post_tags.tag_id = ? AND posts.is_deleted = ?", tagID, false)
+		Where("post_tags.tag_id = ? AND posts.is_deleted = ? AND posts.status = ?", tagID, false, "published")
 
 	switch sortBy {
 	case repositories.SortByHot:
@@ -173,13 +218,21 @@ func (r *PostRepositoryImpl) Search(ctx context.Context, query string, offset, l
 
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media").
+		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("SourcePost.Tags").
-		Where(`is_deleted = ? AND (
+		Where(`is_deleted = ? AND status = ? AND (
 			title ILIKE ? OR
 			content ILIKE ? OR
 			EXISTS (
@@ -188,7 +241,7 @@ func (r *PostRepositoryImpl) Search(ctx context.Context, query string, offset, l
 				WHERE post_tags.post_id = posts.id
 				AND tags.name ILIKE ?
 			)
-		)`, false, searchQuery, searchQuery, searchQuery).
+		)`, false, "published", searchQuery, searchQuery, searchQuery).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&posts).Error
@@ -199,9 +252,13 @@ func (r *PostRepositoryImpl) GetCrossposts(ctx context.Context, postID uuid.UUID
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN post_media ON post_media.media_id = media.id").
+				Order("post_media.display_order ASC")
+		}).
 		Preload("Tags").
-		Where("source_post_id = ? AND is_deleted = ?", postID, false).
+		Where("source_post_id = ? AND is_deleted = ? AND status = ?", postID, false, "published").
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&posts).Error
@@ -210,7 +267,7 @@ func (r *PostRepositoryImpl) GetCrossposts(ctx context.Context, postID uuid.UUID
 
 func (r *PostRepositoryImpl) Count(ctx context.Context) (int64, error) {
 	var count int64
-	err := r.db.WithContext(ctx).Model(&models.Post{}).Where("is_deleted = ?", false).Count(&count).Error
+	err := r.db.WithContext(ctx).Model(&models.Post{}).Where("is_deleted = ? AND status = ?", false, "published").Count(&count).Error
 	return count, err
 }
 
@@ -245,21 +302,43 @@ func (r *PostRepositoryImpl) UpdateVoteCount(ctx context.Context, postID uuid.UU
 }
 
 func (r *PostRepositoryImpl) AttachMedia(ctx context.Context, postID uuid.UUID, mediaIDs []uuid.UUID) error {
-	post := &models.Post{ID: postID}
-	var mediaList []models.Media
-	for _, mediaID := range mediaIDs {
-		mediaList = append(mediaList, models.Media{ID: mediaID})
+	// Insert into post_media junction table with display_order
+	// Order is determined by the position in the mediaIDs array
+	for i, mediaID := range mediaIDs {
+		postMedia := &models.PostMedia{
+			PostID:       postID,
+			MediaID:      mediaID,
+			DisplayOrder: i, // Index in array = display order
+		}
+
+		// Use FirstOrCreate to avoid duplicates (if media already attached)
+		err := r.db.WithContext(ctx).
+			Where("post_id = ? AND media_id = ?", postID, mediaID).
+			FirstOrCreate(postMedia).Error
+		if err != nil {
+			return err
+		}
 	}
-	return r.db.WithContext(ctx).Model(post).Association("Media").Append(mediaList)
+	return nil
 }
 
 func (r *PostRepositoryImpl) DetachMedia(ctx context.Context, postID uuid.UUID, mediaIDs []uuid.UUID) error {
-	post := &models.Post{ID: postID}
-	var mediaList []models.Media
-	for _, mediaID := range mediaIDs {
-		mediaList = append(mediaList, models.Media{ID: mediaID})
-	}
-	return r.db.WithContext(ctx).Model(post).Association("Media").Delete(mediaList)
+	// Delete from post_media junction table
+	return r.db.WithContext(ctx).
+		Where("post_id = ? AND media_id IN ?", postID, mediaIDs).
+		Delete(&models.PostMedia{}).Error
+}
+
+func (r *PostRepositoryImpl) GetPostsByMediaID(ctx context.Context, mediaID uuid.UUID) ([]*models.Post, error) {
+	var posts []*models.Post
+	err := r.db.WithContext(ctx).
+		Preload("Author").
+		Preload("Media").
+		Preload("Tags").
+		Joins("JOIN post_media ON posts.id = post_media.post_id").
+		Where("post_media.media_id = ? AND posts.is_deleted = ?", mediaID, false).
+		Find(&posts).Error
+	return posts, err
 }
 
 func (r *PostRepositoryImpl) AttachTags(ctx context.Context, postID uuid.UUID, tagIDs []uuid.UUID) error {

@@ -13,6 +13,7 @@ type CreatePostRequest struct {
 	MediaIDs     []uuid.UUID `json:"mediaIds" validate:"omitempty,dive,uuid"`
 	Tags         []string    `json:"tags" validate:"omitempty,max=5,dive,min=1,max=50"`
 	SourcePostID *uuid.UUID  `json:"sourcePostId" validate:"omitempty,uuid"` // For crossposting
+	IsDraft      bool        `json:"isDraft"`                                 // true = save as draft (for video encoding)
 }
 
 // UpdatePostRequest - Request for updating a post
@@ -33,6 +34,7 @@ type PostResponse struct {
 	Media        []MediaResponse `json:"media,omitempty"`
 	Tags         []TagResponse  `json:"tags,omitempty"`
 	SourcePost   *PostResponse  `json:"sourcePost,omitempty"` // For crossposts
+	Status       string         `json:"status"`               // "draft" or "published"
 	CreatedAt    time.Time      `json:"createdAt"`
 	UpdatedAt    time.Time      `json:"updatedAt"`
 

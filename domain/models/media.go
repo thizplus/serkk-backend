@@ -18,8 +18,8 @@ type Media struct {
 	MimeType  string `gorm:"not null"`
 	Size      int64  `gorm:"not null"` // bytes
 
-	// URLs (Bunny CDN)
-	URL       string `gorm:"not null"` // Full CDN URL
+	// URLs (R2)
+	URL       string `gorm:"not null"` // Full R2 public URL
 	Thumbnail string                   // Thumbnail URL
 
 	// Dimensions
@@ -29,11 +29,9 @@ type Media struct {
 	// Video specific
 	Duration float64 // seconds (for videos)
 
-	// Video streaming (Bunny Stream)
-	VideoID          string `gorm:"type:varchar(255);index"`                      // Bunny Stream video ID
-	HLSURL           string `gorm:"type:text"`                                    // HLS playlist URL (m3u8)
-	EncodingStatus   string `gorm:"type:varchar(20);default:'pending';index"`    // pending, processing, completed, failed
-	EncodingProgress int    `gorm:"default:0"`                                    // 0-100 percentage
+	// Polymorphic source tracking (for videos in different features)
+	SourceType *string    `gorm:"type:varchar(50);index:idx_media_source"` // "post", "message", "reel", "comment", etc.
+	SourceID   *uuid.UUID `gorm:"type:uuid;index:idx_media_source"`        // ID of the source entity
 
 	// Usage tracking
 	Posts      []Post `gorm:"many2many:post_media;"`

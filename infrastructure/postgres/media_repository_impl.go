@@ -43,6 +43,17 @@ func (r *MediaRepositoryImpl) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]
 	return mediaList, err
 }
 
+func (r *MediaRepositoryImpl) GetByVideoID(ctx context.Context, videoID string) (*models.Media, error) {
+	var media models.Media
+	err := r.db.WithContext(ctx).
+		Where("video_id = ?", videoID).
+		First(&media).Error
+	if err != nil {
+		return nil, err
+	}
+	return &media, nil
+}
+
 func (r *MediaRepositoryImpl) ListByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.Media, error) {
 	var mediaList []*models.Media
 	err := r.db.WithContext(ctx).

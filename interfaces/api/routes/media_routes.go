@@ -9,9 +9,10 @@ import (
 func SetupMediaRoutes(api fiber.Router, h *handlers.Handlers) {
 	media := api.Group("/media")
 
-	// Public route
+	// Public routes
 	media.Get("/:id", h.MediaHandler.GetMedia)
 	media.Get("/user/:userId", h.MediaHandler.GetUserMedia)
+	media.Get("/:id/encoding-status", h.MediaHandler.GetEncodingStatus) // Video encoding status
 
 	// Protected routes (require authentication)
 	media.Use(middleware.Protected())

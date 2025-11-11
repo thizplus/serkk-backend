@@ -53,11 +53,7 @@ type MessageMedia struct {
 	Width     *int    `json:"width,omitempty"`
 	Height    *int    `json:"height,omitempty"`
 	Duration  *int    `json:"duration,omitempty"` // seconds, for videos
-	// Video streaming fields (for Bunny Stream HLS)
-	VideoID          *string `json:"videoId,omitempty"`
-	HLSURL           *string `json:"hlsUrl,omitempty"`
-	EncodingStatus   *string `json:"encodingStatus,omitempty"`   // "pending", "processing", "completed", "failed"
-	EncodingProgress *int    `json:"encodingProgress,omitempty"` // 0-100
+	MediaID   *string `json:"mediaId,omitempty"`  // Media table ID (for tracking)
 }
 
 // SendMessageRequest - Request to send a message

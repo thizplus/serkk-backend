@@ -22,6 +22,8 @@ type VideoEncoderWorker struct {
 	bunnyStream     *storage.BunnyStreamService
 	mediaRepo       repositories.MediaRepository
 	notifService    services.NotificationService
+	postService     services.PostService
+	notificationHub *websocket.NotificationHub
 	running         bool
 	stopChan        chan struct{}
 }
@@ -31,13 +33,17 @@ func NewVideoEncoderWorker(
 	bunnyStream *storage.BunnyStreamService,
 	mediaRepo repositories.MediaRepository,
 	notifService services.NotificationService,
+	postService services.PostService,
+	notificationHub *websocket.NotificationHub,
 ) *VideoEncoderWorker {
 	return &VideoEncoderWorker{
-		redisService: redisService,
-		bunnyStream:  bunnyStream,
-		mediaRepo:    mediaRepo,
-		notifService: notifService,
-		stopChan:     make(chan struct{}),
+		redisService:    redisService,
+		bunnyStream:     bunnyStream,
+		mediaRepo:       mediaRepo,
+		notifService:    notifService,
+		postService:     postService,
+		notificationHub: notificationHub,
+		stopChan:        make(chan struct{}),
 	}
 }
 
@@ -119,30 +125,37 @@ func (w *VideoEncoderWorker) processNextJob() {
 	}
 
 	// Map Bunny Stream status to our status
-	// Status: 0: Queued, 1: Processing, 2: Encoding, 3: Finished, 4: Resolution Finished, 5: Failed
+	// Status codes:
+	// 0: Queued, 1: Processing, 2: Encoding, 3: Finished, 4: Resolution Finished, 5: Failed
+	// 6: PresignedUploadStarted, 7: PresignedUploadFinished, 8: PresignedUploadFailed
+	// 9: CaptionsGenerated, 10: TitleOrDescriptionGenerated
 	var status string
 	var progress int
 	var hlsURL string
 
 	switch videoInfo.Status {
-	case 0, 1, 2: // Queued, Processing, Encoding
+	case 0, 1, 2, 6: // Queued, Processing, Encoding, PresignedUploadStarted
 		status = "processing"
 		progress = videoInfo.EncodeProgress
 		// Re-queue for next check
 		if err := w.redisService.EnqueueVideoEncoding(ctx, job.MediaID, job.VideoID); err != nil {
 			log.Printf("❌ Failed to re-queue job: %v", err)
 		}
-	case 3, 4: // Finished, Resolution Finished
+	case 3, 4, 7, 9, 10: // Finished, Resolution Finished, PresignedUploadFinished, CaptionsGenerated, TitleOrDescriptionGenerated
 		status = "completed"
 		progress = 100
 		hlsURL = w.bunnyStream.GetHLSURL(job.VideoID)
-	case 5: // Failed
+	case 5, 8: // Failed, PresignedUploadFailed
 		status = "failed"
 		progress = 0
 	default:
-		log.Printf("⚠️  Unknown video status: %d", videoInfo.Status)
+		log.Printf("⚠️  Unknown Bunny Stream status code: %d", videoInfo.Status)
 		status = "processing"
 		progress = videoInfo.EncodeProgress
+		// Re-queue for safety
+		if err := w.redisService.EnqueueVideoEncoding(ctx, job.MediaID, job.VideoID); err != nil {
+			log.Printf("❌ Failed to re-queue job: %v", err)
+		}
 	}
 
 	// Update Redis
@@ -160,22 +173,10 @@ func (w *VideoEncoderWorker) processNextJob() {
 }
 
 // updateMediaStatus updates the media record in the database
+// NOTE: DEPRECATED - No longer used as we migrated from Bunny Stream to R2
 func (w *VideoEncoderWorker) updateMediaStatus(ctx context.Context, mediaID uuid.UUID, status string, progress int, hlsURL string) {
-	media, err := w.mediaRepo.GetByID(ctx, mediaID)
-	if err != nil {
-		log.Printf("❌ Failed to get media: %v", err)
-		return
-	}
-
-	media.EncodingStatus = status
-	media.EncodingProgress = progress
-	if hlsURL != "" {
-		media.HLSURL = hlsURL
-	}
-
-	if err := w.mediaRepo.Update(ctx, media); err != nil {
-		log.Printf("❌ Failed to update media: %v", err)
-	}
+	log.Printf("⚠️ updateMediaStatus is deprecated - Bunny Stream encoding is no longer used")
+	// No-op - this worker is deprecated
 }
 
 // sendEncodingNotification sends a notification to the user when encoding completes
@@ -187,21 +188,41 @@ func (w *VideoEncoderWorker) sendEncodingNotification(ctx context.Context, job *
 		return
 	}
 
-	// Send WebSocket notification
+	// Send WebSocket notification via ChatHub
 	var message string
+	var eventType string
+	var progress int
 
 	if status == "completed" {
 		message = "Your video has been processed and is ready to view!"
+		eventType = "video.encoding.completed"
+		progress = 100 // Completed = 100%
 	} else {
 		message = "Video processing failed. Please try uploading again."
+		eventType = "video.encoding.failed"
+		progress = 0
 	}
 
-	websocket.Manager.BroadcastToUser(media.UserID, "video_encoding", map[string]interface{}{
-		"media_id": job.MediaID,
-		"video_id": job.VideoID,
-		"status":   status,
-		"message":  message,
-	})
+	// Send via NotificationHub
+	if w.notificationHub != nil {
+		w.notificationHub.SendToUser(media.UserID, &websocket.NotificationMessage{
+			Type: eventType,
+			Payload: map[string]interface{}{
+				"mediaId":  job.MediaID.String(),
+				"videoId":  job.VideoID,
+				"status":   status,
+				"progress": progress,
+				"message":  message,
+			},
+		})
+		log.Printf("📢 Video encoding notification sent: user=%s, status=%s, progress=%d%%", media.UserID, status, progress)
+	}
 
-	log.Printf("📢 Notification sent: user=%s, status=%s", media.UserID, status)
+	// Auto-publish draft posts when video encoding completes
+	if status == "completed" && w.postService != nil {
+		err := w.postService.PublishDraftPostsWithMedia(ctx, job.MediaID)
+		if err != nil {
+			log.Printf("❌ Failed to auto-publish draft posts for media %s: %v", job.MediaID, err)
+		}
+	}
 }

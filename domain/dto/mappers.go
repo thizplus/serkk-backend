@@ -154,6 +154,7 @@ func PostToPostResponse(post *models.Post) *PostResponse {
 		Author:       *UserToUserResponse(&post.Author),
 		Votes:        post.Votes,
 		CommentCount: post.CommentCount,
+		Status:       post.Status,
 		CreatedAt:    post.CreatedAt,
 		UpdatedAt:    post.UpdatedAt,
 	}
@@ -280,17 +281,20 @@ func MediaToMediaResponse(media *models.Media) *MediaResponse {
 	}
 
 	return &MediaResponse{
-		ID:        media.ID,
-		Type:      media.Type,
-		FileName:  media.FileName,
-		MimeType:  media.MimeType,
-		Size:      media.Size,
-		URL:       media.URL,
-		Thumbnail: media.Thumbnail,
-		Width:     media.Width,
-		Height:    media.Height,
-		Duration:  media.Duration,
-		CreatedAt: media.CreatedAt,
+		ID:         media.ID,
+		UserID:     media.UserID,
+		Type:       media.Type,
+		FileName:   media.FileName,
+		MimeType:   media.MimeType,
+		Size:       media.Size,
+		URL:        media.URL,
+		Thumbnail:  media.Thumbnail,
+		Width:      media.Width,
+		Height:     media.Height,
+		Duration:   media.Duration,
+		SourceType: media.SourceType,
+		SourceID:   media.SourceID,
+		CreatedAt:  media.CreatedAt,
 	}
 }
 

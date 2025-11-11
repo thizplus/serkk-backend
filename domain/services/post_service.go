@@ -29,4 +29,7 @@ type PostService interface {
 
 	// Feed
 	GetFeed(ctx context.Context, userID uuid.UUID, offset, limit int, sortBy repositories.PostSortBy) (*dto.PostFeedResponse, error)
+
+	// Draft posts management
+	PublishDraftPostsWithMedia(ctx context.Context, mediaID uuid.UUID) error
 }

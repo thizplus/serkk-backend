@@ -48,6 +48,7 @@ type PostRepository interface {
 	// Media association
 	AttachMedia(ctx context.Context, postID uuid.UUID, mediaIDs []uuid.UUID) error
 	DetachMedia(ctx context.Context, postID uuid.UUID, mediaIDs []uuid.UUID) error
+	GetPostsByMediaID(ctx context.Context, mediaID uuid.UUID) ([]*models.Post, error)
 
 	// Tag association
 	AttachTags(ctx context.Context, postID uuid.UUID, tagIDs []uuid.UUID) error

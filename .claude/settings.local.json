@@ -41,7 +41,18 @@
       "Bash(for file in media.go user.go task.go search_history.go push_subscription.go notification.go message.go job.go file.go conversation.go comment.go block.go)",
       "Bash(do sed -i 's/primaryKey;type:uuid;default:gen_random_uuid/primaryKey;type:uuid/g' \"$file\")",
       "Bash(done)",
-      "Bash(if exist .git rmdir /s /q .git)"
+      "Bash(if exist .git rmdir /s /q .git)",
+      "Bash(timeout 30 go build:*)",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "Bash(powershell -ExecutionPolicy Bypass -File fix_responses.ps1)",
+      "Bash(for file in interfaces/api/handlers/*.go)",
+      "Bash(do if grep -q \"apperrors\" \"$file\")",
+      "Bash(then if ! grep -q 'apperrors \"\"gofiber-template/pkg/errors\"\"' \"$file\")",
+      "Bash(then echo \"Missing import in: $file\")",
+      "Bash(fi)",
+      "Bash(go test:*)",
+      "Bash(make test-unit:*)"
     ],
     "deny": [],
     "ask": []

@@ -36,6 +36,10 @@ func main() {
 	// Setup middleware
 	app.Use(middleware.LoggerMiddleware())
 
+	// Monitoring middlewares
+	app.Use(pkgMiddleware.NewRequestLogger(container.GetLogger()))
+	app.Use(pkgMiddleware.NewMetricsMiddleware(container.GetMetrics()))
+
 	// Security middlewares
 	app.Use(pkgMiddleware.NewSecurityHeaders())
 	app.Use(pkgMiddleware.NewCORS())
@@ -49,6 +53,16 @@ func main() {
 	notificationWSHandler := websocketHandler.NewNotificationWebSocketHandler(container.NotificationHub)
 
 	h := handlers.NewHandlers(services, container.GetConfig(), chatWSHandler, notificationWSHandler, container.ChatHub, container.NotificationHub, container.ConversationRepository, container.MediaUploadService, container.R2Storage, container.MediaRepository, container.RedisService)
+
+	// Create monitoring handlers
+	healthHandler := handlers.NewHealthHandler(container.GetHealthChecker())
+	metricsHandler := handlers.NewMetricsHandler(container.GetMetrics())
+
+	// Setup health and metrics endpoints (before other routes)
+	app.Get("/health", healthHandler.Check)
+	app.Get("/health/live", healthHandler.Live)
+	app.Get("/health/ready", healthHandler.Ready)
+	app.Get("/metrics", metricsHandler.GetMetrics)
 
 	// Setup routes
 	routes.SetupRoutes(app, h)

@@ -12,6 +12,7 @@ type Config struct {
 	Redis    RedisConfig
 	JWT      JWTConfig
 	Bunny    BunnyConfig
+	R2       R2Config
 	OAuth    OAuthConfig
 	VAPID    VAPIDConfig
 }
@@ -20,6 +21,7 @@ type AppConfig struct {
 	Name        string
 	Port        string
 	Env         string
+	Version     string
 	FrontendURL string
 }
 
@@ -56,6 +58,14 @@ type BunnyConfig struct {
 	StreamCDNURL    string
 }
 
+type R2Config struct {
+	AccountID       string
+	AccessKeyID     string
+	SecretAccessKey string
+	BucketName      string
+	PublicURL       string
+}
+
 type OAuthConfig struct {
 	Google GoogleOAuthConfig
 }
@@ -84,6 +94,7 @@ func LoadConfig() (*Config, error) {
 			Name:        getEnv("APP_NAME", "GoFiber Template"),
 			Port:        getEnv("APP_PORT", "3000"),
 			Env:         getEnv("APP_ENV", "development"),
+			Version:     getEnv("APP_VERSION", "1.0.0"),
 			FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 		},
 		Database: DatabaseConfig{
@@ -114,6 +125,13 @@ func LoadConfig() (*Config, error) {
 			StreamAPIKey:    getEnv("BUNNY_STREAM_API_KEY", ""),
 			StreamLibraryID: getEnv("BUNNY_STREAM_LIBRARY_ID", "533535"),
 			StreamCDNURL:    getEnv("BUNNY_STREAM_CDN_URL", "https://vz-b1631ae0-4c8.b-cdn.net"),
+		},
+		R2: R2Config{
+			AccountID:       getEnv("R2_ACCOUNT_ID", ""),
+			AccessKeyID:     getEnv("R2_ACCESS_KEY_ID", ""),
+			SecretAccessKey: getEnv("R2_SECRET_ACCESS_KEY", ""),
+			BucketName:      getEnv("R2_BUCKET_NAME", ""),
+			PublicURL:       getEnv("R2_PUBLIC_URL", ""),
 		},
 		OAuth: OAuthConfig{
 			Google: GoogleOAuthConfig{

@@ -3,9 +3,10 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"gofiber-template/interfaces/api/handlers"
+	"gofiber-template/pkg/config"
 )
 
-func SetupRoutes(app *fiber.App, h *handlers.Handlers) {
+func SetupRoutes(app *fiber.App, h *handlers.Handlers, cfg ...*config.Config) {
 	// Setup health and root routes
 	SetupHealthRoutes(app)
 
@@ -38,6 +39,9 @@ func SetupRoutes(app *fiber.App, h *handlers.Handlers) {
 	// Setup upload routes
 	SetupUploadRoutes(api, h)
 
+	// Setup webhook routes (for external services like Bunny Stream)
+	SetupWebhookRoutes(api, h)
+
 	// Setup legacy routes (can be removed if not needed)
 	SetupTaskRoutes(api, h)
 	SetupFileRoutes(api, h)
@@ -46,4 +50,5 @@ func SetupRoutes(app *fiber.App, h *handlers.Handlers) {
 	// Setup WebSocket routes (needs app, not api group)
 	SetupWebSocketRoutes(app)
 	SetupChatWebSocketRoutes(app, h)
+	SetupNotificationWebSocketRoutes(app, h)
 }
