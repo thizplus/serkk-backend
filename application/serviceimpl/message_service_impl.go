@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
 	"gofiber-template/infrastructure/redis"
+	"gofiber-template/infrastructure/websocket"
 	"gofiber-template/pkg/utils"
 )
 
@@ -22,6 +24,7 @@ type MessageServiceImpl struct {
 	blockRepo        repositories.BlockRepository
 	userRepo         repositories.UserRepository
 	redisService     *redis.RedisService
+	chatHub          *websocket.ChatHub
 }
 
 func NewMessageService(
@@ -37,7 +40,13 @@ func NewMessageService(
 		blockRepo:        blockRepo,
 		userRepo:         userRepo,
 		redisService:     redisService,
+		chatHub:          nil, // Will be set later via SetChatHub
 	}
+}
+
+// SetChatHub sets the ChatHub dependency (to avoid circular dependency)
+func (s *MessageServiceImpl) SetChatHub(chatHub *websocket.ChatHub) {
+	s.chatHub = chatHub
 }
 
 func (s *MessageServiceImpl) SendMessage(ctx context.Context, userID uuid.UUID, req *dto.SendMessageRequest) (*dto.MessageResponse, error) {
@@ -462,6 +471,13 @@ func (s *MessageServiceImpl) ListFileMessages(ctx context.Context, conversationI
 		NextCursor: nextCursor,
 		HasMore:    len(messages) == limit,
 	}, nil
+}
+
+// UpdateMessageVideoStatus updates video encoding fields in message.media JSONB
+// NOTE: DEPRECATED - No longer used as we migrated from Bunny Stream to R2
+// Videos are now uploaded directly to R2 and don't require encoding status updates
+func (s *MessageServiceImpl) UpdateMessageVideoStatus(ctx context.Context, messageID uuid.UUID, media *dto.MediaResponse) error {
+	return fmt.Errorf("UpdateMessageVideoStatus is deprecated - Bunny Stream encoding is no longer used")
 }
 
 // Ensure interface compliance

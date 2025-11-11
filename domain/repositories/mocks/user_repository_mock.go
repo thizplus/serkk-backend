@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"gofiber-template/domain/dto"
 	"gofiber-template/domain/models"
 )
 
@@ -19,7 +18,7 @@ func (m *MockUserRepository) Create(ctx context.Context, user *models.User) erro
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (m *MockUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -27,7 +26,7 @@ func (m *MockUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*model
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+func (m *MockUserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	args := m.Called(ctx, email)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -35,7 +34,7 @@ func (m *MockUserRepository) FindByEmail(ctx context.Context, email string) (*mo
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepository) FindByUsername(ctx context.Context, username string) (*models.User, error) {
+func (m *MockUserRepository) GetByUsername(ctx context.Context, username string) (*models.User, error) {
 	args := m.Called(ctx, username)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -43,8 +42,16 @@ func (m *MockUserRepository) FindByUsername(ctx context.Context, username string
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepository) Update(ctx context.Context, user *models.User) error {
-	args := m.Called(ctx, user)
+func (m *MockUserRepository) GetByOAuth(ctx context.Context, provider, oauthID string) (*models.User, error) {
+	args := m.Called(ctx, provider, oauthID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
+func (m *MockUserRepository) Update(ctx context.Context, id uuid.UUID, user *models.User) error {
+	args := m.Called(ctx, id, user)
 	return args.Error(0)
 }
 
@@ -53,44 +60,31 @@ func (m *MockUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) EmailExists(ctx context.Context, email string) (bool, error) {
-	args := m.Called(ctx, email)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *MockUserRepository) UsernameExists(ctx context.Context, username string) (bool, error) {
-	args := m.Called(ctx, username)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *MockUserRepository) Search(ctx context.Context, query string, limit, offset int) ([]*models.User, int64, error) {
-	args := m.Called(ctx, query, limit, offset)
-	if args.Get(0) == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
-	}
-	return args.Get(0).([]*models.User), args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockUserRepository) GetFollowers(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*models.User, int64, error) {
-	args := m.Called(ctx, userID, limit, offset)
-	if args.Get(0) == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
-	}
-	return args.Get(0).([]*models.User), args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockUserRepository) GetFollowing(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*models.User, int64, error) {
-	args := m.Called(ctx, userID, limit, offset)
-	if args.Get(0) == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
-	}
-	return args.Get(0).([]*models.User), args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockUserRepository) UpdateProfile(ctx context.Context, userID uuid.UUID, dto dto.UpdateProfileDTO) (*models.User, error) {
-	args := m.Called(ctx, userID, dto)
+func (m *MockUserRepository) List(ctx context.Context, offset, limit int) ([]*models.User, error) {
+	args := m.Called(ctx, offset, limit)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.User), args.Error(1)
+	return args.Get(0).([]*models.User), args.Error(1)
+}
+
+func (m *MockUserRepository) Count(ctx context.Context) (int64, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockUserRepository) SearchForChat(ctx context.Context, currentUserID uuid.UUID, query string, limit int) ([]*models.User, error) {
+	args := m.Called(ctx, currentUserID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.User), args.Error(1)
+}
+
+func (m *MockUserRepository) GetSuggestedForChat(ctx context.Context, currentUserID uuid.UUID, limit int) ([]*models.User, error) {
+	args := m.Called(ctx, currentUserID, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.User), args.Error(1)
 }

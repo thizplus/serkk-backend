@@ -113,57 +113,10 @@ func (s *MediaServiceImpl) UploadVideo(ctx context.Context, userID uuid.UUID, fi
 		return nil, errors.New("invalid video format. Allowed: mp4, mov, avi, webm")
 	}
 
-	// Open file
-	src, err := file.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer src.Close()
-
-	// Upload to Bunny Stream
-	createResp, err := s.bunnyStream.CreateVideo(src, file.Filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to upload to Bunny Stream: %w", err)
-	}
-
-	// Generate media ID
-	mediaID := uuid.New()
-
-	// Create media record with pending encoding status
-	media := &models.Media{
-		ID:               mediaID,
-		UserID:           userID,
-		Type:             "video",
-		FileName:         file.Filename,
-		Extension:        strings.TrimPrefix(ext, "."),
-		MimeType:         file.Header.Get("Content-Type"),
-		Size:             file.Size,
-		URL:              s.bunnyStream.GetHLSURL(createResp.VideoID), // HLS URL (will work after encoding)
-		Thumbnail:        s.bunnyStream.GetThumbnailURL(createResp.VideoID),
-		VideoID:          createResp.VideoID,
-		EncodingStatus:   "pending",
-		EncodingProgress: 0,
-		CreatedAt:        time.Now(),
-	}
-
-	// Save to database
-	err = s.mediaRepo.Create(ctx, media)
-	if err != nil {
-		// TODO: Consider deleting from Bunny Stream on DB failure
-		return nil, err
-	}
-
-	// Enqueue for encoding (async processing)
-	if s.redisService != nil {
-		err = s.redisService.EnqueueVideoEncoding(ctx, mediaID, createResp.VideoID)
-		if err != nil {
-			// Log error but don't fail the upload
-			// Worker will still process based on database status
-			fmt.Printf("Warning: Failed to enqueue video encoding: %v\n", err)
-		}
-	}
-
-	return dto.MediaToMediaUploadResponse(media), nil
+	// NOTE: This function is deprecated - Bunny Stream is no longer used
+	// Videos should be uploaded to R2 using presigned URLs
+	// This function is kept for backward compatibility but will return an error
+	return nil, fmt.Errorf("UploadVideo is deprecated - please use R2 presigned upload instead")
 }
 
 func (s *MediaServiceImpl) GetMedia(ctx context.Context, mediaID uuid.UUID) (*dto.MediaResponse, error) {
@@ -281,7 +234,71 @@ func (s *MediaServiceImpl) CleanupUnusedMedia(ctx context.Context, olderThanDays
 	return deletedCount, nil
 }
 
-// Helper function
+// UpdateVideoEncodingStatus updates the encoding status of a video
+func (s *MediaServiceImpl) UpdateVideoEncodingStatus(ctx context.Context, videoID string, status string, progress int, width int, height int, duration int) error {
+	// NOTE: DEPRECATED - No longer used as we migrated from Bunny Stream to R2
+	return fmt.Errorf("UpdateVideoEncodingStatus is deprecated - Bunny Stream is no longer used")
+}
+
+// GetEncodingStatus retrieves encoding status for a video
+func (s *MediaServiceImpl) GetEncodingStatus(ctx context.Context, mediaID uuid.UUID) (*dto.VideoEncodingStatusResponse, error) {
+	media, err := s.mediaRepo.GetByID(ctx, mediaID)
+	if err != nil {
+		return nil, err
+	}
+
+	if media.Type != "video" {
+		return nil, errors.New("media is not a video")
+	}
+
+	// NOTE: Simplified response - no encoding status as we use R2 direct play
+	return &dto.VideoEncodingStatusResponse{
+		MediaID:   media.ID,
+		URL:       media.URL,
+		Thumbnail: media.Thumbnail,
+		Width:     media.Width,
+		Height:    media.Height,
+		Duration:  media.Duration,
+	}, nil
+}
+
+// GetMediaByVideoID retrieves media by Bunny Stream video ID
+// NOTE: DEPRECATED - Bunny Stream is no longer used
+func (s *MediaServiceImpl) GetMediaByVideoID(ctx context.Context, videoID string) (*dto.MediaResponse, error) {
+	return nil, fmt.Errorf("GetMediaByVideoID is deprecated - Bunny Stream video IDs are no longer used")
+}
+
+// CreateVideo creates a video media record with source tracking (polymorphic)
+// NOTE: DEPRECATED - Use R2 presigned upload instead
+func (s *MediaServiceImpl) CreateVideo(
+	ctx context.Context,
+	userID uuid.UUID,
+	sourceType string,
+	sourceID *uuid.UUID,
+	file multipart.File,
+	filename string,
+) (*dto.MediaResponse, error) {
+	return nil, fmt.Errorf("CreateVideo is deprecated - please use R2 presigned upload instead")
+}
+
+// UpdateSourceID updates the source_id of a media record
+func (s *MediaServiceImpl) UpdateSourceID(ctx context.Context, mediaID uuid.UUID, sourceID uuid.UUID) error {
+	media, err := s.mediaRepo.GetByID(ctx, mediaID)
+	if err != nil {
+		return fmt.Errorf("failed to get media: %w", err)
+	}
+
+	media.SourceID = &sourceID
+
+	err = s.mediaRepo.Update(ctx, media)
+	if err != nil {
+		return fmt.Errorf("failed to update media source_id: %w", err)
+	}
+
+	return nil
+}
+
+// Helper functions
 func (s *MediaServiceImpl) contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {
@@ -289,6 +306,43 @@ func (s *MediaServiceImpl) contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// mediaToUploadResponse converts Media model to MediaUploadResponse DTO
+func mediaToUploadResponse(m *models.Media) *dto.MediaUploadResponse {
+	return &dto.MediaUploadResponse{
+		ID:        m.ID,
+		Type:      m.Type,
+		FileName:  m.FileName,
+		MimeType:  m.MimeType,
+		Size:      m.Size,
+		URL:       m.URL,
+		Thumbnail: m.Thumbnail,
+		Width:     m.Width,
+		Height:    m.Height,
+		Duration:  m.Duration,
+		CreatedAt: m.CreatedAt,
+	}
+}
+
+// mediaToResponse converts Media model to MediaResponse DTO
+func mediaToResponse(m *models.Media) *dto.MediaResponse {
+	return &dto.MediaResponse{
+		ID:         m.ID,
+		UserID:     m.UserID,
+		Type:       m.Type,
+		FileName:   m.FileName,
+		MimeType:   m.MimeType,
+		Size:       m.Size,
+		URL:        m.URL,
+		Thumbnail:  m.Thumbnail,
+		Width:      m.Width,
+		Height:     m.Height,
+		Duration:   m.Duration,
+		SourceType: m.SourceType,
+		SourceID:   m.SourceID,
+		CreatedAt:  m.CreatedAt,
+	}
 }
 
 var _ services.MediaService = (*MediaServiceImpl)(nil)

@@ -3,6 +3,7 @@ package serviceimpl
 import (
 	"context"
 	"errors"
+	"log"
 	"math"
 	"time"
 
@@ -11,15 +12,17 @@ import (
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/infrastructure/websocket"
 )
 
 type PostServiceImpl struct {
-	postRepo      repositories.PostRepository
-	userRepo      repositories.UserRepository
-	voteRepo      repositories.VoteRepository
-	savedPostRepo repositories.SavedPostRepository
-	tagService    services.TagService
-	mediaRepo     repositories.MediaRepository
+	postRepo        repositories.PostRepository
+	userRepo        repositories.UserRepository
+	voteRepo        repositories.VoteRepository
+	savedPostRepo   repositories.SavedPostRepository
+	tagService      services.TagService
+	mediaRepo       repositories.MediaRepository
+	notificationHub *websocket.NotificationHub
 }
 
 func NewPostService(
@@ -29,18 +32,37 @@ func NewPostService(
 	savedPostRepo repositories.SavedPostRepository,
 	tagService services.TagService,
 	mediaRepo repositories.MediaRepository,
+	notificationHub *websocket.NotificationHub,
 ) services.PostService {
 	return &PostServiceImpl{
-		postRepo:      postRepo,
-		userRepo:      userRepo,
-		voteRepo:      voteRepo,
-		savedPostRepo: savedPostRepo,
-		tagService:    tagService,
-		mediaRepo:     mediaRepo,
+		postRepo:        postRepo,
+		userRepo:        userRepo,
+		voteRepo:        voteRepo,
+		savedPostRepo:   savedPostRepo,
+		tagService:      tagService,
+		mediaRepo:       mediaRepo,
+		notificationHub: notificationHub,
 	}
 }
 
 func (s *PostServiceImpl) CreatePost(ctx context.Context, userID uuid.UUID, req *dto.CreatePostRequest) (*dto.PostResponse, error) {
+	// Determine post status (draft or published)
+	status := "published" // Default
+
+	// Check if user explicitly wants draft
+	if req.IsDraft {
+		status = "draft"
+	} else if len(req.MediaIDs) > 0 {
+		// Check if any attached video is still processing
+		hasProcessingVideo, err := s.hasProcessingVideo(ctx, req.MediaIDs)
+		if err != nil {
+			return nil, err
+		}
+		if hasProcessingVideo {
+			status = "draft" // Auto-draft if video is processing
+		}
+	}
+
 	// Create post
 	post := &models.Post{
 		ID:           uuid.New(),
@@ -49,6 +71,7 @@ func (s *PostServiceImpl) CreatePost(ctx context.Context, userID uuid.UUID, req 
 		AuthorID:     userID,
 		Votes:        0,
 		CommentCount: 0,
+		Status:       status,
 		IsDeleted:    false,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -91,6 +114,14 @@ func (s *PostServiceImpl) CreatePost(ctx context.Context, userID uuid.UUID, req 
 
 	// Get full post with relations
 	return s.GetPost(ctx, post.ID, &userID)
+}
+
+// hasProcessingVideo checks if any of the media IDs are videos with processing status
+func (s *PostServiceImpl) hasProcessingVideo(ctx context.Context, mediaIDs []uuid.UUID) (bool, error) {
+	// NOTE: We no longer encode videos (R2 direct play)
+	// All videos are ready immediately after upload
+	// This function always returns false now (no videos are processing)
+	return false, nil
 }
 
 func (s *PostServiceImpl) GetPost(ctx context.Context, postID uuid.UUID, userID *uuid.UUID) (*dto.PostResponse, error) {
@@ -291,6 +322,74 @@ func (s *PostServiceImpl) GetFeed(ctx context.Context, userID uuid.UUID, offset,
 		Posts: listResp.Posts,
 		Meta:  listResp.Meta,
 	}, nil
+}
+
+// PublishDraftPostsWithMedia auto-publishes draft posts when all videos are ready
+func (s *PostServiceImpl) PublishDraftPostsWithMedia(ctx context.Context, mediaID uuid.UUID) error {
+	// Get all posts that contain this media
+	posts, err := s.postRepo.GetPostsByMediaID(ctx, mediaID)
+	if err != nil {
+		return err
+	}
+
+	// Process each draft post
+	for _, post := range posts {
+		// Skip if not draft
+		if post.Status != "draft" {
+			continue
+		}
+
+		// ⭐ Reload media data to get latest encoding status
+		// (Preloaded media might be stale)
+		mediaIDs := make([]uuid.UUID, len(post.Media))
+		for i, media := range post.Media {
+			mediaIDs[i] = media.ID
+		}
+
+		// Get fresh media data from database
+		freshMediaList := make([]*models.Media, 0, len(mediaIDs))
+		for _, mediaID := range mediaIDs {
+			freshMedia, err := s.mediaRepo.GetByID(ctx, mediaID)
+			if err != nil {
+				log.Printf("Warning: Failed to reload media %s: %v", mediaID, err)
+				continue
+			}
+			freshMediaList = append(freshMediaList, freshMedia)
+		}
+
+		// NOTE: We no longer encode videos (R2 direct play)
+		// All videos are ready immediately after upload
+		// Check if all videos in this post are completed (using fresh data)
+		allVideosReady := true // Always true now (no encoding)
+		_ = freshMediaList      // Use variable to avoid unused error
+
+		// Publish if all videos are ready (always true now)
+		if allVideosReady {
+			post.Status = "published"
+			post.UpdatedAt = time.Now()
+			err := s.postRepo.Update(ctx, post.ID, post)
+			if err != nil {
+				log.Printf("Failed to publish draft post %s: %v", post.ID, err)
+				continue
+			}
+			log.Printf("✅ Auto-published draft post %s (all videos ready)", post.ID)
+
+			// ⭐ Send WebSocket notification to post owner
+			if s.notificationHub != nil {
+				s.notificationHub.SendToUser(post.AuthorID, &websocket.NotificationMessage{
+					Type: "post.auto_published",
+					Payload: map[string]interface{}{
+						"postId":      post.ID.String(),
+						"status":      "published",
+						"publishedAt": post.UpdatedAt.Format(time.RFC3339),
+					},
+				})
+				log.Printf("📡 Sent WebSocket event 'post.auto_published' to user %s", post.AuthorID)
+			}
+		}
+	}
+
+	return nil
 }
 
 // Helper function to build post list response with user-specific data
