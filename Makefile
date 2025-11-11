@@ -103,6 +103,24 @@ db-seed: ## Seed database with test data (for development)
 	@echo "Seeding database..."
 	@echo "Note: Implement seeding logic in your application if needed"
 
+db-backup: ## Backup database (requires DB_* env vars)
+	@echo "Creating database backup..."
+	@mkdir -p backups
+	pg_dump -h $(DB_HOST) -U $(DB_USER) -d $(DB_NAME) > backups/backup_$$(date +%Y%m%d_%H%M%S).sql
+	@echo "Backup created in backups/ directory"
+
+db-restore: ## Restore database from backup (requires BACKUP_FILE env var)
+	@echo "Restoring database from $(BACKUP_FILE)..."
+	psql -h $(DB_HOST) -U $(DB_USER) -d $(DB_NAME) < $(BACKUP_FILE)
+	@echo "Database restored"
+
+db-reset: ## Drop and recreate database (WARNING: destroys all data)
+	@echo "WARNING: This will destroy all data!"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	dropdb -h $(DB_HOST) -U $(DB_USER) $(DB_NAME) --if-exists
+	createdb -h $(DB_HOST) -U $(DB_USER) $(DB_NAME)
+	@echo "Database reset complete"
+
 # Docker commands
 docker-build: ## Build Docker image
 	docker build -t gofiber-template .
@@ -125,6 +143,18 @@ profile-mem: ## Run memory profiling
 	go test -memprofile mem.prof -bench=. ./...
 	go tool pprof mem.prof
 
+health: ## Check application health
+	@curl -s http://localhost:3000/health | jq . || echo "Server not running or jq not installed"
+
+health-live: ## Check liveness probe
+	@curl -s http://localhost:3000/health/live | jq . || echo "Server not running"
+
+health-ready: ## Check readiness probe
+	@curl -s http://localhost:3000/health/ready | jq . || echo "Server not running"
+
+metrics: ## Show application metrics
+	@curl -s http://localhost:3000/metrics | jq . || echo "Server not running or jq not installed"
+
 # Security commands
 security-check: ## Run security checks using gosec
 	gosec ./...
@@ -133,6 +163,11 @@ security-check: ## Run security checks using gosec
 docs: ## Generate documentation
 	godoc -http=:6060
 	@echo "Documentation available at http://localhost:6060"
+
+swagger: ## Generate Swagger documentation
+	@echo "Generating Swagger documentation..."
+	swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal
+	@echo "Swagger docs generated in docs/ directory"
 
 # Example test commands
 example-user-test: ## Run user service test examples
@@ -219,6 +254,18 @@ stats: ## Show project statistics
 	@echo "Test files: $$(find . -name '*_test.go' | wc -l)"
 	@echo "Packages: $$(go list ./... | wc -l)"
 	@echo "Dependencies: $$(go list -m all | wc -l)"
+
+version: ## Show application version and Go version
+	@echo "Go version: $$(go version)"
+	@echo "App version: $$(grep 'APP_VERSION=' .env.example | cut -d '=' -f 2 || echo 'Not set')"
+	@echo "Git commit: $$(git rev-parse --short HEAD 2>/dev/null || echo 'Not a git repo')"
+	@echo "Git branch: $$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'Not a git repo')"
+
+update-deps: ## Update all dependencies to latest versions
+	@echo "Updating dependencies..."
+	go get -u ./...
+	go mod tidy
+	@echo "Dependencies updated"
 
 # Default goal
 .DEFAULT_GOAL := help
