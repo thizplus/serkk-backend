@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"fmt"
+	"gofiber-template/domain/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"gofiber-template/domain/models"
 )
 
 type DatabaseConfig struct {
@@ -38,6 +38,7 @@ func Migrate(db *gorm.DB) error {
 		&models.Post{},
 		&models.Comment{},
 		&models.Media{},
+		&models.PostMedia{}, // Junction table for Post-Media many2many
 
 		// Voting & Social
 		&models.Vote{},
