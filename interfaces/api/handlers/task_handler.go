@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
@@ -41,11 +42,11 @@ func (h *TaskHandler) CreateTask(c *fiber.Ctx) error {
 
 	task, err := h.taskService.CreateTask(c.Context(), user.ID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Task creation failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Task creation failed").WithInternal(err))
 	}
 
 	taskResponse := dto.TaskToTaskResponse(task, nil)
-	return utils.SuccessResponse(c, "Task created successfully", taskResponse)
+	return utils.SuccessResponse(c, taskResponse, "Task created successfully")
 }
 
 func (h *TaskHandler) GetTask(c *fiber.Ctx) error {
@@ -61,7 +62,7 @@ func (h *TaskHandler) GetTask(c *fiber.Ctx) error {
 	}
 
 	taskResponse := dto.TaskToTaskResponse(task, &task.User)
-	return utils.SuccessResponse(c, "Task retrieved successfully", taskResponse)
+	return utils.SuccessResponse(c, taskResponse, "Task retrieved successfully")
 }
 
 func (h *TaskHandler) UpdateTask(c *fiber.Ctx) error {
@@ -78,11 +79,11 @@ func (h *TaskHandler) UpdateTask(c *fiber.Ctx) error {
 
 	task, err := h.taskService.UpdateTask(c.Context(), taskID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Task update failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Task update failed").WithInternal(err))
 	}
 
 	taskResponse := dto.TaskToTaskResponse(task, &task.User)
-	return utils.SuccessResponse(c, "Task updated successfully", taskResponse)
+	return utils.SuccessResponse(c, taskResponse, "Task updated successfully")
 }
 
 func (h *TaskHandler) DeleteTask(c *fiber.Ctx) error {
@@ -94,10 +95,10 @@ func (h *TaskHandler) DeleteTask(c *fiber.Ctx) error {
 
 	err = h.taskService.DeleteTask(c.Context(), taskID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Task deletion failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Task deletion failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Task deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Task deleted successfully")
 }
 
 func (h *TaskHandler) GetUserTasks(c *fiber.Ctx) error {
@@ -121,7 +122,7 @@ func (h *TaskHandler) GetUserTasks(c *fiber.Ctx) error {
 
 	tasks, total, err := h.taskService.GetUserTasks(c.Context(), user.ID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve tasks", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve tasks").WithInternal(err))
 	}
 
 	taskResponses := make([]dto.TaskResponse, len(tasks))
@@ -138,7 +139,7 @@ func (h *TaskHandler) GetUserTasks(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Tasks retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Tasks retrieved successfully")
 }
 
 func (h *TaskHandler) ListTasks(c *fiber.Ctx) error {
@@ -157,7 +158,7 @@ func (h *TaskHandler) ListTasks(c *fiber.Ctx) error {
 
 	tasks, total, err := h.taskService.ListTasks(c.Context(), offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve tasks", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve tasks").WithInternal(err))
 	}
 
 	taskResponses := make([]dto.TaskResponse, len(tasks))
@@ -174,5 +175,5 @@ func (h *TaskHandler) ListTasks(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Tasks retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Tasks retrieved successfully")
 }

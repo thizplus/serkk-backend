@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 
@@ -35,11 +36,11 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 
 	user, err := h.userService.Register(c.Context(), &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Registration failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Registration failed").WithInternal(err))
 	}
 
 	userResponse := dto.UserToUserResponse(user)
-	return utils.SuccessResponse(c, "User registered successfully", userResponse)
+	return utils.SuccessResponse(c, userResponse, "User registered successfully")
 }
 
 func (h *UserHandler) Login(c *fiber.Ctx) error {
@@ -59,14 +60,14 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 
 	token, user, err := h.userService.Login(c.Context(), &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Login failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrInvalidCredentials.WithInternal(err))
 	}
 
 	loginResponse := &dto.LoginResponse{
 		Token: token,
 		User:  *dto.UserToUserResponse(user),
 	}
-	return utils.SuccessResponse(c, "Login successful", loginResponse)
+	return utils.SuccessResponse(c, loginResponse, "Login successful")
 }
 
 func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
@@ -77,11 +78,11 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 
 	profile, err := h.userService.GetProfile(c.Context(), user.ID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "User not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrUserNotFound.WithInternal(err))
 	}
 
 	profileResponse := dto.UserToUserResponse(profile)
-	return utils.SuccessResponse(c, "Profile retrieved successfully", profileResponse)
+	return utils.SuccessResponse(c, profileResponse, "Profile retrieved successfully")
 }
 
 func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
@@ -97,11 +98,11 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	updatedUser, err := h.userService.UpdateProfile(c.Context(), user.ID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Profile update failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Profile update failed").WithInternal(err))
 	}
 
 	userResponse := dto.UserToUserResponse(updatedUser)
-	return utils.SuccessResponse(c, "Profile updated successfully", userResponse)
+	return utils.SuccessResponse(c, userResponse, "Profile updated successfully")
 }
 
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
@@ -112,10 +113,10 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 
 	err = h.userService.DeleteUser(c.Context(), user.ID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "User deletion failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("User deletion failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "User deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "User deleted successfully")
 }
 
 func (h *UserHandler) ListUsers(c *fiber.Ctx) error {
@@ -134,7 +135,7 @@ func (h *UserHandler) ListUsers(c *fiber.Ctx) error {
 
 	users, total, err := h.userService.ListUsers(c.Context(), offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve users", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve users").WithInternal(err))
 	}
 
 	userResponses := make([]dto.UserResponse, len(users))
@@ -151,5 +152,5 @@ func (h *UserHandler) ListUsers(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Users retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Users retrieved successfully")
 }

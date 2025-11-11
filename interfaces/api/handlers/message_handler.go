@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"context"
+		apperrors "gofiber-template/pkg/errors"
+"context"
 	"fmt"
 	"log"
 	"mime/multipart"
@@ -20,13 +21,15 @@ import (
 
 type MessageHandler struct {
 	messageService     services.MessageService
+	mediaService       services.MediaService
 	mediaUploadService *storage.MediaUploadService
 	chatHub            *chatWebsocket.ChatHub
 }
 
-func NewMessageHandler(messageService services.MessageService, mediaUploadService *storage.MediaUploadService, chatHub *chatWebsocket.ChatHub) *MessageHandler {
+func NewMessageHandler(messageService services.MessageService, mediaService services.MediaService, mediaUploadService *storage.MediaUploadService, chatHub *chatWebsocket.ChatHub) *MessageHandler {
 	return &MessageHandler{
 		messageService:     messageService,
+		mediaService:       mediaService,
 		mediaUploadService: mediaUploadService,
 		chatHub:            chatHub,
 	}
@@ -65,6 +68,22 @@ func (h *MessageHandler) sendTextMessage(c *fiber.Ctx, userID uuid.UUID, convers
 	// Set conversationId from path parameter
 	req.ConversationID = conversationID
 
+	// Convert empty string content to nil (for proper validation)
+	if req.Content != nil && *req.Content == "" {
+		req.Content = nil
+	}
+
+	// Validate: must have either content OR media
+	if (req.Content == nil || *req.Content == "") && len(req.Media) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Validation failed",
+			"errors": map[string]string{
+				"content": "Either content or media is required",
+			},
+		})
+	}
+
 	if err := utils.ValidateStruct(&req); err != nil {
 		errors := utils.GetValidationErrors(err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -76,13 +95,13 @@ func (h *MessageHandler) sendTextMessage(c *fiber.Ctx, userID uuid.UUID, convers
 
 	message, err := h.messageService.SendMessage(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to send message", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to send message").WithInternal(err))
 	}
 
 	// Send WebSocket notification to receiver
 	h.sendWebSocketNotification(message)
 
-	return utils.SuccessResponse(c, "Message sent successfully", message)
+	return utils.SuccessResponse(c, message, "Message sent successfully")
 }
 
 // sendMediaMessage handles multipart/form-data media messages
@@ -115,10 +134,10 @@ func (h *MessageHandler) sendMediaMessage(c *fiber.Ctx, userID uuid.UUID, conver
 
 		message, err := h.messageService.SendMessage(c.Context(), userID, req)
 		if err != nil {
-			return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to send message", err)
+			return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to send message").WithInternal(err))
 		}
 
-		return utils.SuccessResponse(c, "Message sent successfully", message)
+		return utils.SuccessResponse(c, message, "Message sent successfully")
 	}
 
 	// 3. Validate message type (for media messages)
@@ -140,7 +159,7 @@ func (h *MessageHandler) sendMediaMessage(c *fiber.Ctx, userID uuid.UUID, conver
 		// Open file
 		file, err := fileHeader.Open()
 		if err != nil {
-			return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to open file", err)
+			return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to open file").WithInternal(err))
 		}
 		defer file.Close()
 
@@ -153,9 +172,9 @@ func (h *MessageHandler) sendMediaMessage(c *fiber.Ctx, userID uuid.UUID, conver
 		file.Seek(0, 0)
 
 		// Upload to Bunny Storage
-		mediaItem, err := h.uploadFile(c.Context(), file, fileHeader, messageType)
+		mediaItem, err := h.uploadFile(c.Context(), userID, file, fileHeader, messageType)
 		if err != nil {
-			return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to upload file", err)
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to upload file").WithInternal(err))
 		}
 
 		mediaItems = append(mediaItems, mediaItem)
@@ -176,13 +195,24 @@ func (h *MessageHandler) sendMediaMessage(c *fiber.Ctx, userID uuid.UUID, conver
 
 	message, err := h.messageService.SendMessage(c.Context(), userID, req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to send message", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to send message").WithInternal(err))
+	}
+
+	// Update media sourceID for all video media items
+	for _, mediaItem := range mediaItems {
+		if mediaItem.Type == "video" && mediaItem.MediaID != nil {
+			mediaID, err := uuid.Parse(*mediaItem.MediaID)
+			if err == nil {
+				// Update media.SourceID to point to this message
+				h.mediaService.UpdateSourceID(c.Context(), mediaID, message.ID)
+			}
+		}
 	}
 
 	// Send WebSocket notification to receiver
 	h.sendWebSocketNotification(message)
 
-	return utils.SuccessResponse(c, "Message sent successfully", message)
+	return utils.SuccessResponse(c, message, "Message sent successfully")
 }
 
 // ListMessages retrieves messages in a conversation
@@ -215,10 +245,10 @@ func (h *MessageHandler) ListMessages(c *fiber.Ctx) error {
 
 	messages, err := h.messageService.ListMessages(c.Context(), conversationID, userID, cursorPtr, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve messages", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve messages").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Messages retrieved successfully", messages)
+	return utils.SuccessResponse(c, messages, "Messages retrieved successfully")
 }
 
 // GetMessage retrieves a single message by ID
@@ -233,10 +263,10 @@ func (h *MessageHandler) GetMessage(c *fiber.Ctx) error {
 
 	message, err := h.messageService.GetMessage(c.Context(), messageID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve message", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve message").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Message retrieved successfully", message)
+	return utils.SuccessResponse(c, message, "Message retrieved successfully")
 }
 
 // GetMessageContext retrieves a message with surrounding context
@@ -251,10 +281,10 @@ func (h *MessageHandler) GetMessageContext(c *fiber.Ctx) error {
 
 	context, err := h.messageService.GetMessageContext(c.Context(), messageID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve message context", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve message context").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Message context retrieved successfully", context)
+	return utils.SuccessResponse(c, context, "Message context retrieved successfully")
 }
 
 // Note: MarkAsRead is handled by ConversationHandler
@@ -297,10 +327,10 @@ func (h *MessageHandler) GetConversationMedia(c *fiber.Ctx) error {
 
 	messages, err := h.messageService.ListMediaMessages(c.Context(), conversationID, userID, mediaTypePtr, cursorPtr, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve media messages", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve media messages").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Media messages retrieved successfully", messages)
+	return utils.SuccessResponse(c, messages, "Media messages retrieved successfully")
 }
 
 // GetConversationLinks retrieves messages containing links in a conversation
@@ -333,10 +363,10 @@ func (h *MessageHandler) GetConversationLinks(c *fiber.Ctx) error {
 
 	messages, err := h.messageService.ListMessagesWithLinks(c.Context(), conversationID, userID, cursorPtr, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve messages with links", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve messages with links").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Messages with links retrieved successfully", messages)
+	return utils.SuccessResponse(c, messages, "Messages with links retrieved successfully")
 }
 
 // GetConversationFiles retrieves file messages in a conversation
@@ -369,19 +399,19 @@ func (h *MessageHandler) GetConversationFiles(c *fiber.Ctx) error {
 
 	messages, err := h.messageService.ListFileMessages(c.Context(), conversationID, userID, cursorPtr, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve file messages", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve file messages").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "File messages retrieved successfully", messages)
+	return utils.SuccessResponse(c, messages, "File messages retrieved successfully")
 }
 
 // validateFile validates file size and MIME type
 func (h *MessageHandler) validateFile(file multipart.File, fileHeader *multipart.FileHeader, messageType string) error {
 	// Check file size
 	maxSizes := map[string]int64{
-		"image": 10 * 1024 * 1024,  // 10MB
-		"video": 100 * 1024 * 1024, // 100MB
-		"file":  50 * 1024 * 1024,  // 50MB
+		"image": 20 * 1024 * 1024,  // 20MB
+		"video": 500 * 1024 * 1024, // 500MB
+		"file":  100 * 1024 * 1024,  // 100MB
 	}
 
 	if fileHeader.Size > maxSizes[messageType] {
@@ -429,7 +459,7 @@ func (h *MessageHandler) validateFile(file multipart.File, fileHeader *multipart
 }
 
 // uploadFile uploads file to Bunny Storage and returns MessageMedia
-func (h *MessageHandler) uploadFile(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader, messageType string) (dto.MessageMedia, error) {
+func (h *MessageHandler) uploadFile(ctx context.Context, userID uuid.UUID, file multipart.File, fileHeader *multipart.FileHeader, messageType string) (dto.MessageMedia, error) {
 	switch messageType {
 	case "image":
 		result, err := h.mediaUploadService.UploadImage(ctx, file, fileHeader.Filename)
@@ -449,37 +479,47 @@ func (h *MessageHandler) uploadFile(ctx context.Context, file multipart.File, fi
 		}, nil
 
 	case "video":
-		result, err := h.mediaUploadService.UploadVideo(ctx, file, fileHeader.Filename)
+		// Use MediaService.CreateVideo for centralized video tracking
+		// Note: We don't have messageID yet, so sourceID will be nil initially
+		// We'll update it after message is created
+		media, err := h.mediaService.CreateVideo(
+			ctx,
+			userID,
+			"message", // sourceType
+			nil,       // sourceID - will be updated after message creation
+			file,
+			fileHeader.Filename,
+		)
 		if err != nil {
 			return dto.MessageMedia{}, err
 		}
 
+		// Convert to MessageMedia
+		mediaIDStr := media.ID.String()
 		item := dto.MessageMedia{
-			URL:      result.URL,
+			URL:      media.URL,
 			Type:     "video",
-			Filename: &fileHeader.Filename,
-			MimeType: &result.MimeType,
-			Size:     &result.Size,
+			Filename: &media.FileName,
+			MimeType: &media.MimeType,
+			Size:     &media.Size,
+			MediaID:  &mediaIDStr, // ← Media ID for tracking
 		}
 
-		if result.Thumbnail != "" {
-			item.Thumbnail = &result.Thumbnail
+		if media.Thumbnail != "" {
+			item.Thumbnail = &media.Thumbnail
 		}
-		if result.Width > 0 {
-			item.Width = &result.Width
-			item.Height = &result.Height
+		if media.Width > 0 {
+			item.Width = &media.Width
+			item.Height = &media.Height
 		}
-		if result.Duration > 0 {
-			item.Duration = &result.Duration
+		if media.Duration > 0 {
+			durationInt := int(media.Duration)
+			item.Duration = &durationInt
 		}
 
-		// Add Bunny Stream HLS fields
-		if result.VideoID != "" {
-			item.VideoID = &result.VideoID
-			item.HLSURL = &result.HLSURL
-			item.EncodingStatus = &result.EncodingStatus
-			item.EncodingProgress = &result.EncodingProgress
-		}
+		// NOTE: Removed VideoID, HLSURL, EncodingStatus, EncodingProgress fields
+		// as we migrated from Bunny Stream to R2
+		// Videos are now served directly from R2 without encoding
 
 		return item, nil
 

@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"fmt"
+		apperrors "gofiber-template/pkg/errors"
+"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"gofiber-template/domain/dto"
@@ -47,9 +48,9 @@ func (h *OAuthHandler) GetGoogleAuthURL(c *fiber.Ctx) error {
 
 	url := h.oauthService.GetGoogleAuthURL(state)
 
-	return utils.SuccessResponse(c, "Google OAuth URL generated", dto.OAuthURLResponse{
+	return utils.SuccessResponse(c, dto.OAuthURLResponse{
 		URL: url,
-	})
+	}, "Google OAuth URL generated")
 }
 
 // GoogleCallback handles Google OAuth callback
@@ -81,7 +82,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		if redirectURL != "" {
 			return c.Redirect(redirectURL + "?error=missing_code")
 		}
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Authorization code is required", nil)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Authorization code is required"))
 	}
 
 	// Validate state parameter for CSRF protection
@@ -103,7 +104,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		if redirectURL != "" {
 			return c.Redirect(redirectURL + "?error=invalid_state")
 		}
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid state parameter", nil)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Invalid state parameter"))
 	} else {
 		// Clear state cookie only if validation passed
 		c.ClearCookie("oauth_state")
@@ -118,7 +119,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		if redirectURL != "" {
 			return c.Redirect(redirectURL + "?error=oauth_failed")
 		}
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "OAuth authentication failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("OAuth authentication failed").WithInternal(err))
 	}
 
 	// Generate authorization code
@@ -129,7 +130,7 @@ func (h *OAuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		if redirectURL != "" {
 			return c.Redirect(redirectURL + "?error=code_generation_failed")
 		}
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to generate authorization code", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to generate authorization code").WithInternal(err))
 	}
 
 	// Get redirect URL from query or use default frontend URL
@@ -172,15 +173,15 @@ func (h *OAuthHandler) ExchangeCodeForToken(c *fiber.Ctx) error {
 	store := auth_code_store.GetInstance()
 	data, ok := store.ExchangeCode(req.Code, req.State)
 	if !ok {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid or expired authorization code", nil)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Invalid or expired authorization code"))
 	}
 
 	// Return token and user info
-	return utils.SuccessResponse(c, "Token exchanged successfully", dto.ExchangeCodeResponse{
+	return utils.SuccessResponse(c, dto.ExchangeCodeResponse{
 		Token:     data.Token,
 		IsNewUser: data.IsNewUser,
 		User:      data.User,
-	})
+	}, "Token exchanged successfully")
 }
 
 func boolToString(b bool) string {

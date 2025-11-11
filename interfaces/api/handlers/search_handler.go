@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -53,10 +54,10 @@ func (h *SearchHandler) Search(c *fiber.Ctx) error {
 
 	results, err := h.searchService.Search(c.Context(), userIDPtr, req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Search failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Search failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Search completed successfully", results)
+	return utils.SuccessResponse(c, results, "Search completed successfully")
 }
 
 // GetSearchHistory retrieves user's search history
@@ -68,10 +69,10 @@ func (h *SearchHandler) GetSearchHistory(c *fiber.Ctx) error {
 
 	history, err := h.searchService.GetSearchHistory(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve search history", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve search history").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Search history retrieved successfully", history)
+	return utils.SuccessResponse(c, history, "Search history retrieved successfully")
 }
 
 // GetPopularSearches retrieves popular searches
@@ -80,10 +81,10 @@ func (h *SearchHandler) GetPopularSearches(c *fiber.Ctx) error {
 
 	searches, err := h.searchService.GetPopularSearches(c.Context(), limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve popular searches", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve popular searches").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Popular searches retrieved successfully", searches)
+	return utils.SuccessResponse(c, searches, "Popular searches retrieved successfully")
 }
 
 // ClearSearchHistory clears user's search history
@@ -92,10 +93,10 @@ func (h *SearchHandler) ClearSearchHistory(c *fiber.Ctx) error {
 
 	err := h.searchService.ClearSearchHistory(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to clear search history", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to clear search history").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Search history cleared successfully", nil)
+	return utils.SuccessResponse(c, nil, "Search history cleared successfully")
 }
 
 // DeleteSearchHistoryItem deletes a search history item
@@ -109,8 +110,8 @@ func (h *SearchHandler) DeleteSearchHistoryItem(c *fiber.Ctx) error {
 
 	err = h.searchService.DeleteSearchHistoryItem(c.Context(), userID, historyID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to delete search history item", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to delete search history item").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Search history item deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Search history item deleted successfully")
 }

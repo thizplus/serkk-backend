@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
@@ -75,7 +76,7 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 
 	fileModel, err := h.fileService.UploadFile(c.Context(), user.ID, file, options)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "File upload failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("File upload failed").WithInternal(err))
 	}
 
 	// Determine path type for response
@@ -94,7 +95,7 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 		PathType: pathType,
 	}
 
-	return utils.SuccessResponse(c, "File uploaded successfully", uploadResponse)
+	return utils.SuccessResponse(c, uploadResponse, "File uploaded successfully")
 }
 
 func (h *FileHandler) GetFile(c *fiber.Ctx) error {
@@ -110,7 +111,7 @@ func (h *FileHandler) GetFile(c *fiber.Ctx) error {
 	}
 
 	fileResponse := dto.FileToFileResponse(file)
-	return utils.SuccessResponse(c, "File retrieved successfully", fileResponse)
+	return utils.SuccessResponse(c, fileResponse, "File retrieved successfully")
 }
 
 func (h *FileHandler) DeleteFile(c *fiber.Ctx) error {
@@ -122,10 +123,10 @@ func (h *FileHandler) DeleteFile(c *fiber.Ctx) error {
 
 	err = h.fileService.DeleteFile(c.Context(), fileID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "File deletion failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("File deletion failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "File deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "File deleted successfully")
 }
 
 func (h *FileHandler) GetUserFiles(c *fiber.Ctx) error {
@@ -149,7 +150,7 @@ func (h *FileHandler) GetUserFiles(c *fiber.Ctx) error {
 
 	files, total, err := h.fileService.GetUserFiles(c.Context(), user.ID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve files", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve files").WithInternal(err))
 	}
 
 	fileResponses := make([]dto.FileResponse, len(files))
@@ -166,7 +167,7 @@ func (h *FileHandler) GetUserFiles(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Files retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Files retrieved successfully")
 }
 
 func (h *FileHandler) ListFiles(c *fiber.Ctx) error {
@@ -185,7 +186,7 @@ func (h *FileHandler) ListFiles(c *fiber.Ctx) error {
 
 	files, total, err := h.fileService.ListFiles(c.Context(), offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve files", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve files").WithInternal(err))
 	}
 
 	fileResponses := make([]dto.FileResponse, len(files))
@@ -202,5 +203,5 @@ func (h *FileHandler) ListFiles(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Files retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Files retrieved successfully")
 }

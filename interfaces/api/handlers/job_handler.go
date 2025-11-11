@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
@@ -36,11 +37,11 @@ func (h *JobHandler) CreateJob(c *fiber.Ctx) error {
 
 	job, err := h.jobService.CreateJob(c.Context(), &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Job creation failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Job creation failed").WithInternal(err))
 	}
 
 	jobResponse := dto.JobToJobResponse(job)
-	return utils.SuccessResponse(c, "Job created successfully", jobResponse)
+	return utils.SuccessResponse(c, jobResponse, "Job created successfully")
 }
 
 func (h *JobHandler) GetJob(c *fiber.Ctx) error {
@@ -56,7 +57,7 @@ func (h *JobHandler) GetJob(c *fiber.Ctx) error {
 	}
 
 	jobResponse := dto.JobToJobResponse(job)
-	return utils.SuccessResponse(c, "Job retrieved successfully", jobResponse)
+	return utils.SuccessResponse(c, jobResponse, "Job retrieved successfully")
 }
 
 func (h *JobHandler) UpdateJob(c *fiber.Ctx) error {
@@ -73,11 +74,11 @@ func (h *JobHandler) UpdateJob(c *fiber.Ctx) error {
 
 	job, err := h.jobService.UpdateJob(c.Context(), jobID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Job update failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Job update failed").WithInternal(err))
 	}
 
 	jobResponse := dto.JobToJobResponse(job)
-	return utils.SuccessResponse(c, "Job updated successfully", jobResponse)
+	return utils.SuccessResponse(c, jobResponse, "Job updated successfully")
 }
 
 func (h *JobHandler) DeleteJob(c *fiber.Ctx) error {
@@ -89,10 +90,10 @@ func (h *JobHandler) DeleteJob(c *fiber.Ctx) error {
 
 	err = h.jobService.DeleteJob(c.Context(), jobID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Job deletion failed", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Job deletion failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Job deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Job deleted successfully")
 }
 
 func (h *JobHandler) StartJob(c *fiber.Ctx) error {
@@ -104,10 +105,10 @@ func (h *JobHandler) StartJob(c *fiber.Ctx) error {
 
 	err = h.jobService.StartJob(c.Context(), jobID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to start job", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to start job").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Job started successfully", nil)
+	return utils.SuccessResponse(c, nil, "Job started successfully")
 }
 
 func (h *JobHandler) StopJob(c *fiber.Ctx) error {
@@ -119,10 +120,10 @@ func (h *JobHandler) StopJob(c *fiber.Ctx) error {
 
 	err = h.jobService.StopJob(c.Context(), jobID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to stop job", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to stop job").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Job stopped successfully", nil)
+	return utils.SuccessResponse(c, nil, "Job stopped successfully")
 }
 
 func (h *JobHandler) ListJobs(c *fiber.Ctx) error {
@@ -141,7 +142,7 @@ func (h *JobHandler) ListJobs(c *fiber.Ctx) error {
 
 	jobs, total, err := h.jobService.ListJobs(c.Context(), offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve jobs", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve jobs").WithInternal(err))
 	}
 
 	jobResponses := make([]dto.JobResponse, len(jobs))
@@ -158,5 +159,5 @@ func (h *JobHandler) ListJobs(c *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(c, "Jobs retrieved successfully", response)
+	return utils.SuccessResponse(c, response, "Jobs retrieved successfully")
 }

@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"log"
+		apperrors "gofiber-template/pkg/errors"
+"log"
 	"strconv"
 	"time"
 
@@ -40,10 +41,10 @@ func (h *ConversationHandler) GetOrCreateConversation(c *fiber.Ctx) error {
 
 	conversation, err := h.conversationService.GetOrCreateConversation(c.Context(), userID, username)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to create conversation", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to create conversation").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Conversation retrieved successfully", conversation)
+	return utils.SuccessResponse(c, conversation, "Conversation retrieved successfully")
 }
 
 // ListConversations retrieves all conversations for the current user
@@ -70,10 +71,10 @@ func (h *ConversationHandler) ListConversations(c *fiber.Ctx) error {
 
 	conversations, err := h.conversationService.ListConversations(c.Context(), userID, cursorPtr, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve conversations", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve conversations").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Conversations retrieved successfully", conversations)
+	return utils.SuccessResponse(c, conversations, "Conversations retrieved successfully")
 }
 
 // GetUnreadCount retrieves total unread message count
@@ -83,10 +84,10 @@ func (h *ConversationHandler) GetUnreadCount(c *fiber.Ctx) error {
 
 	unreadCount, err := h.conversationService.GetUnreadCount(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve unread count", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve unread count").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Unread count retrieved successfully", unreadCount)
+	return utils.SuccessResponse(c, unreadCount, "Unread count retrieved successfully")
 }
 
 // MarkAsRead marks all messages in a conversation as read
@@ -101,13 +102,13 @@ func (h *ConversationHandler) MarkAsRead(c *fiber.Ctx) error {
 
 	// Mark as read in database
 	if err := h.conversationService.MarkAsRead(c.Context(), conversationID, userID); err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to mark as read", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to mark as read").WithInternal(err))
 	}
 
 	// Send WebSocket notification to the other user (sender)
 	h.sendReadNotification(c, conversationID, userID)
 
-	return utils.SuccessResponse(c, "Conversation marked as read", nil)
+	return utils.SuccessResponse(c, nil, "Conversation marked as read")
 }
 
 // sendReadNotification sends WebSocket notification to sender when receiver reads messages
@@ -164,8 +165,8 @@ func (h *ConversationHandler) SearchUsersForChat(c *fiber.Ctx) error {
 	// Search users
 	results, err := h.conversationService.SearchUsersForChat(c.Context(), userID, query, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to search users", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to search users").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Users retrieved successfully", results)
+	return utils.SuccessResponse(c, results, "Users retrieved successfully")
 }

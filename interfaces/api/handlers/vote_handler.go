@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 
@@ -40,10 +41,10 @@ func (h *VoteHandler) Vote(c *fiber.Ctx) error {
 
 	vote, err := h.voteService.Vote(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to vote", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to vote").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Voted successfully", vote)
+	return utils.SuccessResponse(c, vote, "Voted successfully")
 }
 
 // Unvote removes a vote
@@ -69,10 +70,10 @@ func (h *VoteHandler) Unvote(c *fiber.Ctx) error {
 
 	err = h.voteService.Unvote(c.Context(), userID, req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to unvote", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to unvote").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Unvoted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Unvoted successfully")
 }
 
 // GetVote retrieves user's vote on a target
@@ -91,14 +92,14 @@ func (h *VoteHandler) GetVote(c *fiber.Ctx) error {
 
 	vote, err := h.voteService.GetVote(c.Context(), userID, targetID, targetType)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Vote not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrNotFound.WithMessage("Vote not found").WithInternal(err))
 	}
 
 	if vote == nil {
-		return utils.SuccessResponse(c, "No vote found", nil)
+		return utils.SuccessResponse(c, nil, "No vote found")
 	}
 
-	return utils.SuccessResponse(c, "Vote retrieved successfully", vote)
+	return utils.SuccessResponse(c, vote, "Vote retrieved successfully")
 }
 
 // GetVoteCount retrieves vote counts for a target
@@ -115,10 +116,10 @@ func (h *VoteHandler) GetVoteCount(c *fiber.Ctx) error {
 
 	voteCount, err := h.voteService.GetVoteCount(c.Context(), targetID, targetType)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve vote count", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve vote count").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Vote count retrieved successfully", voteCount)
+	return utils.SuccessResponse(c, voteCount, "Vote count retrieved successfully")
 }
 
 // GetUserVotes retrieves user's votes
@@ -131,8 +132,8 @@ func (h *VoteHandler) GetUserVotes(c *fiber.Ctx) error {
 
 	votes, err := h.voteService.GetUserVotes(c.Context(), userID, targetType, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve votes", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve votes").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Votes retrieved successfully", votes)
+	return utils.SuccessResponse(c, votes, "Votes retrieved successfully")
 }

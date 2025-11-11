@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -40,10 +41,10 @@ func (h *BlockHandler) BlockUser(c *fiber.Ctx) error {
 	}
 
 	if err := h.blockService.BlockUser(c.Context(), userID, req.Username); err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to block user", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to block user").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "User blocked successfully", nil)
+	return utils.SuccessResponse(c, nil, "User blocked successfully")
 }
 
 // UnblockUser unblocks a user
@@ -57,10 +58,10 @@ func (h *BlockHandler) UnblockUser(c *fiber.Ctx) error {
 	}
 
 	if err := h.blockService.UnblockUser(c.Context(), userID, username); err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to unblock user", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to unblock user").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "User unblocked successfully", nil)
+	return utils.SuccessResponse(c, nil, "User unblocked successfully")
 }
 
 // GetBlockStatus checks block status with another user
@@ -75,10 +76,10 @@ func (h *BlockHandler) GetBlockStatus(c *fiber.Ctx) error {
 
 	status, err := h.blockService.GetBlockStatus(c.Context(), userID, username)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve block status", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to retrieve block status").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Block status retrieved successfully", status)
+	return utils.SuccessResponse(c, status, "Block status retrieved successfully")
 }
 
 // ListBlockedUsers retrieves all blocked users
@@ -106,8 +107,8 @@ func (h *BlockHandler) ListBlockedUsers(c *fiber.Ctx) error {
 
 	blockedUsers, err := h.blockService.ListBlockedUsers(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve blocked users", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve blocked users").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Blocked users retrieved successfully", blockedUsers)
+	return utils.SuccessResponse(c, blockedUsers, "Blocked users retrieved successfully")
 }

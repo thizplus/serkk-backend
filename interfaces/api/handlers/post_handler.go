@@ -9,6 +9,7 @@ import (
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 
@@ -42,10 +43,10 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 
 	post, err := h.postService.CreatePost(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to create post", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to create post").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post created successfully", post)
+	return utils.SuccessResponse(c, post, "Post created successfully")
 }
 
 // GetPost retrieves a single post by ID
@@ -63,10 +64,10 @@ func (h *PostHandler) GetPost(c *fiber.Ctx) error {
 
 	post, err := h.postService.GetPost(c.Context(), postID, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Post not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrPostNotFound.WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post retrieved successfully", post)
+	return utils.SuccessResponse(c, post, "Post retrieved successfully")
 }
 
 // UpdatePost updates an existing post
@@ -94,10 +95,10 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 
 	post, err := h.postService.UpdatePost(c.Context(), postID, userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to update post", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to update post").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post updated successfully", post)
+	return utils.SuccessResponse(c, post, "Post updated successfully")
 }
 
 // DeletePost deletes a post
@@ -111,10 +112,10 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 
 	err = h.postService.DeletePost(c.Context(), postID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to delete post", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to delete post").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Post deleted successfully")
 }
 
 // ListPosts retrieves a list of posts with pagination and sorting
@@ -153,10 +154,10 @@ func (h *PostHandler) ListPosts(c *fiber.Ctx) error {
 
 	posts, err := h.postService.ListPosts(c.Context(), offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // Helper function to handle tag filtering via query param
@@ -181,10 +182,10 @@ func (h *PostHandler) listPostsByTagQuery(c *fiber.Ctx, tagName string, offset, 
 
 	posts, err := h.postService.ListPostsByTag(c.Context(), tagName, offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // ListPostsByAuthor retrieves posts by a specific author
@@ -205,10 +206,10 @@ func (h *PostHandler) ListPostsByAuthor(c *fiber.Ctx) error {
 
 	posts, err := h.postService.ListPostsByAuthor(c.Context(), authorID, offset, limit, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // ListPostsByTag retrieves posts by tag
@@ -246,10 +247,10 @@ func (h *PostHandler) ListPostsByTag(c *fiber.Ctx) error {
 
 	posts, err := h.postService.ListPostsByTag(c.Context(), tagName, offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // ListPostsByTagID retrieves posts by tag ID
@@ -283,10 +284,10 @@ func (h *PostHandler) ListPostsByTagID(c *fiber.Ctx) error {
 
 	posts, err := h.postService.ListPostsByTagID(c.Context(), tagID, offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // SearchPosts searches for posts
@@ -307,10 +308,10 @@ func (h *PostHandler) SearchPosts(c *fiber.Ctx) error {
 
 	posts, err := h.postService.SearchPosts(c.Context(), query, offset, limit, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to search posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to search posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Posts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
 }
 
 // CreateCrosspost creates a crosspost
@@ -338,10 +339,10 @@ func (h *PostHandler) CreateCrosspost(c *fiber.Ctx) error {
 
 	post, err := h.postService.CreateCrosspost(c.Context(), userID, sourcePostID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to create crosspost", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to create crosspost").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Crosspost created successfully", post)
+	return utils.SuccessResponse(c, post, "Crosspost created successfully")
 }
 
 // GetCrossposts retrieves crossposts of a post
@@ -362,10 +363,10 @@ func (h *PostHandler) GetCrossposts(c *fiber.Ctx) error {
 
 	posts, err := h.postService.GetCrossposts(c.Context(), postID, offset, limit, userIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve crossposts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve crossposts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Crossposts retrieved successfully", posts)
+	return utils.SuccessResponse(c, posts, "Crossposts retrieved successfully")
 }
 
 // GetFeed retrieves personalized feed for authenticated user
@@ -390,8 +391,8 @@ func (h *PostHandler) GetFeed(c *fiber.Ctx) error {
 
 	feed, err := h.postService.GetFeed(c.Context(), userID, offset, limit, sortByEnum)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve feed", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve feed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Feed retrieved successfully", feed)
+	return utils.SuccessResponse(c, feed, "Feed retrieved successfully")
 }

@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -29,10 +30,10 @@ func (h *NotificationHandler) GetNotifications(c *fiber.Ctx) error {
 
 	notifications, err := h.notificationService.GetNotifications(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve notifications", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve notifications").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notifications retrieved successfully", notifications)
+	return utils.SuccessResponse(c, notifications, "Notifications retrieved successfully")
 }
 
 // GetUnreadNotifications retrieves unread notifications
@@ -44,10 +45,10 @@ func (h *NotificationHandler) GetUnreadNotifications(c *fiber.Ctx) error {
 
 	notifications, err := h.notificationService.GetUnreadNotifications(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve unread notifications", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve unread notifications").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Unread notifications retrieved successfully", notifications)
+	return utils.SuccessResponse(c, notifications, "Unread notifications retrieved successfully")
 }
 
 // GetNotification retrieves a single notification
@@ -61,10 +62,10 @@ func (h *NotificationHandler) GetNotification(c *fiber.Ctx) error {
 
 	notification, err := h.notificationService.GetNotification(c.Context(), notificationID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Notification not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrNotFound.WithMessage("Notification not found").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notification retrieved successfully", notification)
+	return utils.SuccessResponse(c, notification, "Notification retrieved successfully")
 }
 
 // MarkAsRead marks a notification as read
@@ -78,10 +79,10 @@ func (h *NotificationHandler) MarkAsRead(c *fiber.Ctx) error {
 
 	err = h.notificationService.MarkAsRead(c.Context(), notificationID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to mark notification as read", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to mark notification as read").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notification marked as read", nil)
+	return utils.SuccessResponse(c, nil, "Notification marked as read")
 }
 
 // MarkAllAsRead marks all notifications as read
@@ -90,10 +91,10 @@ func (h *NotificationHandler) MarkAllAsRead(c *fiber.Ctx) error {
 
 	err := h.notificationService.MarkAllAsRead(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to mark all notifications as read", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to mark all notifications as read").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "All notifications marked as read", nil)
+	return utils.SuccessResponse(c, nil, "All notifications marked as read")
 }
 
 // DeleteNotification deletes a notification
@@ -107,10 +108,10 @@ func (h *NotificationHandler) DeleteNotification(c *fiber.Ctx) error {
 
 	err = h.notificationService.DeleteNotification(c.Context(), notificationID, userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to delete notification", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to delete notification").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notification deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "Notification deleted successfully")
 }
 
 // DeleteAllNotifications deletes all notifications
@@ -119,10 +120,10 @@ func (h *NotificationHandler) DeleteAllNotifications(c *fiber.Ctx) error {
 
 	err := h.notificationService.DeleteAllNotifications(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to delete all notifications", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to delete all notifications").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "All notifications deleted successfully", nil)
+	return utils.SuccessResponse(c, nil, "All notifications deleted successfully")
 }
 
 // GetUnreadCount retrieves unread notification count
@@ -131,12 +132,12 @@ func (h *NotificationHandler) GetUnreadCount(c *fiber.Ctx) error {
 
 	count, err := h.notificationService.GetUnreadCount(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve unread count", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve unread count").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Unread count retrieved successfully", fiber.Map{
+	return utils.SuccessResponse(c, fiber.Map{
 		"count": count,
-	})
+	}, "Unread count retrieved successfully")
 }
 
 // GetSettings retrieves notification settings
@@ -145,10 +146,10 @@ func (h *NotificationHandler) GetSettings(c *fiber.Ctx) error {
 
 	settings, err := h.notificationService.GetSettings(c.Context(), userID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve notification settings", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve notification settings").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notification settings retrieved successfully", settings)
+	return utils.SuccessResponse(c, settings, "Notification settings retrieved successfully")
 }
 
 // UpdateSettings updates notification settings
@@ -171,8 +172,8 @@ func (h *NotificationHandler) UpdateSettings(c *fiber.Ctx) error {
 
 	settings, err := h.notificationService.UpdateSettings(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to update notification settings", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to update notification settings").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Notification settings updated successfully", settings)
+	return utils.SuccessResponse(c, settings, "Notification settings updated successfully")
 }

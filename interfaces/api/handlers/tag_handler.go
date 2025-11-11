@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"strconv"
+		apperrors "gofiber-template/pkg/errors"
+"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -28,10 +29,10 @@ func (h *TagHandler) GetTag(c *fiber.Ctx) error {
 
 	tag, err := h.tagService.GetTag(c.Context(), tagID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Tag not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrNotFound.WithMessage("Tag not found").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Tag retrieved successfully", tag)
+	return utils.SuccessResponse(c, tag, "Tag retrieved successfully")
 }
 
 // GetTagByName retrieves a tag by name
@@ -43,10 +44,10 @@ func (h *TagHandler) GetTagByName(c *fiber.Ctx) error {
 
 	tag, err := h.tagService.GetTagByName(c.Context(), tagName)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Tag not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrNotFound.WithMessage("Tag not found").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Tag retrieved successfully", tag)
+	return utils.SuccessResponse(c, tag, "Tag retrieved successfully")
 }
 
 // ListTags retrieves all tags with pagination
@@ -56,10 +57,10 @@ func (h *TagHandler) ListTags(c *fiber.Ctx) error {
 
 	tags, err := h.tagService.ListTags(c.Context(), offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve tags", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve tags").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Tags retrieved successfully", tags)
+	return utils.SuccessResponse(c, tags, "Tags retrieved successfully")
 }
 
 // GetPopularTags retrieves popular tags
@@ -68,10 +69,10 @@ func (h *TagHandler) GetPopularTags(c *fiber.Ctx) error {
 
 	tags, err := h.tagService.GetPopularTags(c.Context(), limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve popular tags", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve popular tags").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Popular tags retrieved successfully", tags)
+	return utils.SuccessResponse(c, tags, "Popular tags retrieved successfully")
 }
 
 // SearchTags searches for tags
@@ -85,8 +86,8 @@ func (h *TagHandler) SearchTags(c *fiber.Ctx) error {
 
 	tags, err := h.tagService.SearchTags(c.Context(), query, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to search tags", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to search tags").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Tags search results retrieved successfully", tags)
+	return utils.SuccessResponse(c, tags, "Tags search results retrieved successfully")
 }

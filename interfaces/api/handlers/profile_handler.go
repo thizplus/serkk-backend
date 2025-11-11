@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+		apperrors "gofiber-template/pkg/errors"
+"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/services"
 	"gofiber-template/pkg/utils"
@@ -32,8 +33,8 @@ func (h *ProfileHandler) GetPublicProfile(c *fiber.Ctx) error {
 
 	profile, err := h.userService.GetPublicProfile(c.Context(), username, currentUserIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "User not found", err)
+		return utils.ErrorResponse(c, apperrors.ErrNotFound.WithMessage("User not found").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Profile retrieved successfully", profile)
+	return utils.SuccessResponse(c, profile, "Profile retrieved successfully")
 }

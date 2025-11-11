@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 
@@ -30,10 +31,10 @@ func (h *SavedPostHandler) SavePost(c *fiber.Ctx) error {
 
 	savedPost, err := h.savedPostService.SavePost(c.Context(), userID, postID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to save post", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to save post").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post saved successfully", savedPost)
+	return utils.SuccessResponse(c, savedPost, "Post saved successfully")
 }
 
 // UnsavePost unsaves a post
@@ -47,10 +48,10 @@ func (h *SavedPostHandler) UnsavePost(c *fiber.Ctx) error {
 
 	err = h.savedPostService.UnsavePost(c.Context(), userID, postID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to unsave post", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to unsave post").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Post unsaved successfully", nil)
+	return utils.SuccessResponse(c, nil, "Post unsaved successfully")
 }
 
 // IsSaved checks if a post is saved
@@ -64,10 +65,10 @@ func (h *SavedPostHandler) IsSaved(c *fiber.Ctx) error {
 
 	status, err := h.savedPostService.IsSaved(c.Context(), userID, postID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to check saved status", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to check saved status").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Saved status retrieved successfully", status)
+	return utils.SuccessResponse(c, status, "Saved status retrieved successfully")
 }
 
 // GetSavedPosts retrieves all saved posts
@@ -79,8 +80,8 @@ func (h *SavedPostHandler) GetSavedPosts(c *fiber.Ctx) error {
 
 	savedPosts, err := h.savedPostService.GetSavedPosts(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve saved posts", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve saved posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Saved posts retrieved successfully", savedPosts)
+	return utils.SuccessResponse(c, savedPosts, "Saved posts retrieved successfully")
 }

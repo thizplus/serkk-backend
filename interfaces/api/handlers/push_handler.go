@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+		apperrors "gofiber-template/pkg/errors"
+"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/services"
@@ -38,10 +39,10 @@ func (h *PushHandler) Subscribe(c *fiber.Ctx) error {
 
 	subscription, err := h.pushService.Subscribe(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save subscription", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to save subscription").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Subscription saved successfully", subscription)
+	return utils.SuccessResponse(c, subscription, "Subscription saved successfully")
 }
 
 // Unsubscribe handles push notification unsubscription
@@ -55,10 +56,10 @@ func (h *PushHandler) Unsubscribe(c *fiber.Ctx) error {
 
 	err := h.pushService.Unsubscribe(c.Context(), userID, &req)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to remove subscription", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to remove subscription").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Subscription removed successfully", nil)
+	return utils.SuccessResponse(c, nil, "Subscription removed successfully")
 }
 
 // GetPublicKey returns the VAPID public key for frontend

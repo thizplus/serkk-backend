@@ -3,6 +3,7 @@ package handlers
 import (
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/infrastructure/redis"
 	"gofiber-template/infrastructure/storage"
 	chatWebsocket "gofiber-template/infrastructure/websocket"
 	websocketHandler "gofiber-template/interfaces/api/websocket"
@@ -52,36 +53,47 @@ type Handlers struct {
 	SEOHandler          *SEOHandler
 	PushHandler         *PushHandler
 	ConversationHandler *ConversationHandler
-	MessageHandler      *MessageHandler
-	BlockHandler        *BlockHandler
-	ChatWSHandler       *websocketHandler.ChatWebSocketHandler
-	FileUploadHandler   *FileUploadHandler
+	MessageHandler        *MessageHandler
+	BlockHandler          *BlockHandler
+	ChatWSHandler         *websocketHandler.ChatWebSocketHandler
+	NotificationWSHandler *websocketHandler.NotificationWebSocketHandler
+	FileUploadHandler     *FileUploadHandler
+	PresignedUploadHandler *PresignedUploadHandler
+	WebhookHandler        *WebhookHandler
 }
 
 // NewHandlers creates a new instance of Handlers with all dependencies
-func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, chatHub *chatWebsocket.ChatHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService) *Handlers {
+func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, notificationWSHandler *websocketHandler.NotificationWebSocketHandler, chatHub *chatWebsocket.ChatHub, notificationHub *chatWebsocket.NotificationHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService, r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository, redisService interface{}) *Handlers {
 	return &Handlers{
-		UserHandler:         NewUserHandler(services.UserService),
-		ProfileHandler:      NewProfileHandler(services.UserService),
-		TaskHandler:         NewTaskHandler(services.TaskService),
-		FileHandler:         NewFileHandler(services.FileService),
-		JobHandler:          NewJobHandler(services.JobService),
-		PostHandler:         NewPostHandler(services.PostService),
-		CommentHandler:      NewCommentHandler(services.CommentService),
-		VoteHandler:         NewVoteHandler(services.VoteService),
-		FollowHandler:       NewFollowHandler(services.FollowService),
-		SavedPostHandler:    NewSavedPostHandler(services.SavedPostService),
-		NotificationHandler: NewNotificationHandler(services.NotificationService),
-		TagHandler:          NewTagHandler(services.TagService),
-		SearchHandler:       NewSearchHandler(services.SearchService),
-		MediaHandler:        NewMediaHandler(services.MediaService),
-		OAuthHandler:        NewOAuthHandler(services.OAuthService, cfg),
-		SEOHandler:          NewSEOHandler(services.PostService, cfg),
-		PushHandler:         NewPushHandler(services.PushService),
-		ConversationHandler: NewConversationHandler(services.ConversationService, conversationRepo, chatHub),
-		MessageHandler:      NewMessageHandler(services.MessageService, mediaUploadService, chatHub),
-		BlockHandler:        NewBlockHandler(services.BlockService),
-		ChatWSHandler:       chatWSHandler,
-		FileUploadHandler:   NewFileUploadHandler(services.FileUploadService),
+		UserHandler:           NewUserHandler(services.UserService),
+		ProfileHandler:        NewProfileHandler(services.UserService),
+		TaskHandler:           NewTaskHandler(services.TaskService),
+		FileHandler:           NewFileHandler(services.FileService),
+		JobHandler:            NewJobHandler(services.JobService),
+		PostHandler:           NewPostHandler(services.PostService),
+		CommentHandler:        NewCommentHandler(services.CommentService),
+		VoteHandler:           NewVoteHandler(services.VoteService),
+		FollowHandler:         NewFollowHandler(services.FollowService),
+		SavedPostHandler:      NewSavedPostHandler(services.SavedPostService),
+		NotificationHandler:   NewNotificationHandler(services.NotificationService),
+		TagHandler:            NewTagHandler(services.TagService),
+		SearchHandler:         NewSearchHandler(services.SearchService),
+		MediaHandler:          NewMediaHandler(services.MediaService),
+		OAuthHandler:          NewOAuthHandler(services.OAuthService, cfg),
+		SEOHandler:            NewSEOHandler(services.PostService, cfg),
+		PushHandler:           NewPushHandler(services.PushService),
+		ConversationHandler:   NewConversationHandler(services.ConversationService, conversationRepo, chatHub),
+		MessageHandler:        NewMessageHandler(services.MessageService, services.MediaService, mediaUploadService, chatHub),
+		BlockHandler:          NewBlockHandler(services.BlockService),
+		ChatWSHandler:         chatWSHandler,
+		NotificationWSHandler: notificationWSHandler,
+		FileUploadHandler:     NewFileUploadHandler(services.FileUploadService),
+		PresignedUploadHandler: func() *PresignedUploadHandler {
+			if r2Storage != nil {
+				return NewPresignedUploadHandler(r2Storage, mediaRepo)
+			}
+			return nil
+		}(),
+		WebhookHandler:        NewWebhookHandler(services.MediaService, services.PostService, services.MessageService, redisService.(*redis.RedisService), notificationHub),
 	}
 }

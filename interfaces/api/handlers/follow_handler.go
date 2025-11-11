@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gofiber-template/domain/services"
+	apperrors "gofiber-template/pkg/errors"
 	"gofiber-template/pkg/utils"
 )
 
@@ -30,10 +31,10 @@ func (h *FollowHandler) Follow(c *fiber.Ctx) error {
 
 	follow, err := h.followService.Follow(c.Context(), followerID, followingID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to follow user", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to follow user").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Followed successfully", follow)
+	return utils.SuccessResponse(c, follow, "Followed successfully")
 }
 
 // Unfollow unfollows a user
@@ -47,10 +48,10 @@ func (h *FollowHandler) Unfollow(c *fiber.Ctx) error {
 
 	err = h.followService.Unfollow(c.Context(), followerID, followingID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to unfollow user", err)
+		return utils.ErrorResponse(c, apperrors.ErrBadRequest.WithMessage("Failed to unfollow user").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Unfollowed successfully", nil)
+	return utils.SuccessResponse(c, nil, "Unfollowed successfully")
 }
 
 // IsFollowing checks if current user is following another user
@@ -64,10 +65,10 @@ func (h *FollowHandler) IsFollowing(c *fiber.Ctx) error {
 
 	status, err := h.followService.IsFollowing(c.Context(), followerID, followingID)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to check follow status", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to check follow status").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Follow status retrieved successfully", status)
+	return utils.SuccessResponse(c, status, "Follow status retrieved successfully")
 }
 
 // GetFollowers retrieves followers of a user
@@ -88,10 +89,10 @@ func (h *FollowHandler) GetFollowers(c *fiber.Ctx) error {
 
 	followers, err := h.followService.GetFollowers(c.Context(), userID, offset, limit, currentUserIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve followers", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve followers").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Followers retrieved successfully", followers)
+	return utils.SuccessResponse(c, followers, "Followers retrieved successfully")
 }
 
 // GetFollowing retrieves users that a user is following
@@ -112,10 +113,10 @@ func (h *FollowHandler) GetFollowing(c *fiber.Ctx) error {
 
 	following, err := h.followService.GetFollowing(c.Context(), userID, offset, limit, currentUserIDPtr)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve following", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve following").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Following retrieved successfully", following)
+	return utils.SuccessResponse(c, following, "Following retrieved successfully")
 }
 
 // GetMutualFollows retrieves mutual follows (friends)
@@ -127,8 +128,8 @@ func (h *FollowHandler) GetMutualFollows(c *fiber.Ctx) error {
 
 	mutuals, err := h.followService.GetMutualFollows(c.Context(), userID, offset, limit)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve mutual follows", err)
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve mutual follows").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, "Mutual follows retrieved successfully", mutuals)
+	return utils.SuccessResponse(c, mutuals, "Mutual follows retrieved successfully")
 }
