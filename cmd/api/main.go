@@ -5,14 +5,37 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"gofiber-template/interfaces/api/handlers"
 	"gofiber-template/interfaces/api/middleware"
 	"gofiber-template/interfaces/api/routes"
 	websocketHandler "gofiber-template/interfaces/api/websocket"
 	"gofiber-template/pkg/di"
 	pkgMiddleware "gofiber-template/pkg/middleware"
+
+	_ "gofiber-template/docs" // Import generated docs
 )
+
+// @title GoFiber Social Media API
+// @version 1.0
+// @description Social media platform backend API with real-time chat, posts, comments, and notifications
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:3000
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
 
 func main() {
 	// Initialize DI container
@@ -63,6 +86,9 @@ func main() {
 	app.Get("/health/live", healthHandler.Live)
 	app.Get("/health/ready", healthHandler.Ready)
 	app.Get("/metrics", metricsHandler.GetMetrics)
+
+	// Swagger documentation
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Setup routes
 	routes.SetupRoutes(app, h)

@@ -17,7 +17,14 @@ func NewHealthHandler(checker *health.HealthChecker) *HealthHandler {
 	}
 }
 
-// Check handles GET /health
+// Check godoc
+// @Summary Health check
+// @Description Check overall system health
+// @Tags Health
+// @Produce json
+// @Success 200 {object} health.HealthCheck "System is healthy"
+// @Failure 503 {object} health.HealthCheck "System is unhealthy"
+// @Router /health [get]
 func (h *HealthHandler) Check(c *fiber.Ctx) error {
 	ctx := c.Context()
 
@@ -35,7 +42,13 @@ func (h *HealthHandler) Check(c *fiber.Ctx) error {
 	return c.Status(statusCode).JSON(result)
 }
 
-// Live handles GET /health/live (liveness probe)
+// Live godoc
+// @Summary Liveness probe
+// @Description Check if application is alive
+// @Tags Health
+// @Produce json
+// @Success 200 {object} map[string]string "Application is alive"
+// @Router /health/live [get]
 func (h *HealthHandler) Live(c *fiber.Ctx) error {
 	// Simple liveness check - just return OK if server is running
 	return c.JSON(fiber.Map{
@@ -43,7 +56,14 @@ func (h *HealthHandler) Live(c *fiber.Ctx) error {
 	})
 }
 
-// Ready handles GET /health/ready (readiness probe)
+// Ready godoc
+// @Summary Readiness probe
+// @Description Check if application is ready to serve traffic
+// @Tags Health
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Application is ready"
+// @Failure 503 {object} map[string]interface{} "Application is not ready"
+// @Router /health/ready [get]
 func (h *HealthHandler) Ready(c *fiber.Ctx) error {
 	ctx := c.Context()
 

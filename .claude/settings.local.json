@@ -52,7 +52,9 @@
       "Bash(then echo \"Missing import in: $file\")",
       "Bash(fi)",
       "Bash(go test:*)",
-      "Bash(make test-unit:*)"
+      "Bash(make test-unit:*)",
+      "Bash(go install:*)",
+      "Bash(swag init:*)"
     ],
     "deny": [],
     "ask": []

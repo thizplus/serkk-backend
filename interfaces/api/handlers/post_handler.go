@@ -23,7 +23,18 @@ func NewPostHandler(postService services.PostService) *PostHandler {
 	}
 }
 
-// CreatePost creates a new post
+// CreatePost godoc
+// @Summary Create a new post
+// @Description Create a new post with title, content, and media
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param post body dto.CreatePostRequest true "Post data"
+// @Success 200 {object} map[string]interface{} "Post created successfully"
+// @Failure 400 {object} map[string]interface{} "Validation failed"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /posts [post]
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 
@@ -49,7 +60,17 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, post, "Post created successfully")
 }
 
-// GetPost retrieves a single post by ID
+// GetPost godoc
+// @Summary Get post by ID
+// @Description Get a single post by ID with author and media information
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param id path string true "Post ID"
+// @Success 200 {object} map[string]interface{} "Post retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid post ID"
+// @Failure 404 {object} map[string]interface{} "Post not found"
+// @Router /posts/{id} [get]
 func (h *PostHandler) GetPost(c *fiber.Ctx) error {
 	postID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -70,7 +91,20 @@ func (h *PostHandler) GetPost(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, post, "Post retrieved successfully")
 }
 
-// UpdatePost updates an existing post
+// UpdatePost godoc
+// @Summary Update post
+// @Description Update an existing post (author only)
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Post ID"
+// @Param post body dto.UpdatePostRequest true "Post update data"
+// @Success 200 {object} map[string]interface{} "Post updated successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Router /posts/{id} [put]
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 

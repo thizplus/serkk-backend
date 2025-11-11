@@ -19,6 +19,16 @@ func NewUserHandler(userService services.UserService) *UserHandler {
 	}
 }
 
+// Register godoc
+// @Summary User registration
+// @Description Register a new user account
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param user body dto.CreateUserRequest true "User registration data"
+// @Success 200 {object} map[string]interface{} "User registered successfully"
+// @Failure 400 {object} map[string]interface{} "Validation failed"
+// @Router /auth/register [post]
 func (h *UserHandler) Register(c *fiber.Ctx) error {
 	var req dto.CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -43,6 +53,16 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, userResponse, "User registered successfully")
 }
 
+// Login godoc
+// @Summary User login
+// @Description Login with email and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param credentials body dto.LoginRequest true "Login credentials"
+// @Success 200 {object} map[string]interface{} "Login successful with token"
+// @Failure 400 {object} map[string]interface{} "Invalid credentials"
+// @Router /auth/login [post]
 func (h *UserHandler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -70,6 +90,16 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, loginResponse, "Login successful")
 }
 
+// GetProfile godoc
+// @Summary Get user profile
+// @Description Get authenticated user's profile
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "Profile retrieved successfully"
+// @Failure 401 {object} map[string]interface{} "User not authenticated"
+// @Router /users/profile [get]
 func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 	user, err := utils.GetUserFromContext(c)
 	if err != nil {
@@ -85,6 +115,18 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, profileResponse, "Profile retrieved successfully")
 }
 
+// UpdateProfile godoc
+// @Summary Update user profile
+// @Description Update authenticated user's profile
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param user body dto.UpdateUserRequest true "Profile update data"
+// @Success 200 {object} map[string]interface{} "Profile updated successfully"
+// @Failure 400 {object} map[string]interface{} "Validation failed"
+// @Failure 401 {object} map[string]interface{} "User not authenticated"
+// @Router /users/profile [put]
 func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 	user, err := utils.GetUserFromContext(c)
 	if err != nil {

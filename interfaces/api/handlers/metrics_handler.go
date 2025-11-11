@@ -17,7 +17,13 @@ func NewMetricsHandler(m *metrics.Metrics) *MetricsHandler {
 	}
 }
 
-// GetMetrics handles GET /metrics
+// GetMetrics godoc
+// @Summary Get application metrics
+// @Description Get current application metrics including requests, response times, and status codes
+// @Tags Metrics
+// @Produce json
+// @Success 200 {object} metrics.MetricsSnapshot "Current metrics"
+// @Router /metrics [get]
 func (h *MetricsHandler) GetMetrics(c *fiber.Ctx) error {
 	snapshot := h.metrics.GetSnapshot()
 	return c.JSON(snapshot)
