@@ -59,6 +59,9 @@ func main() {
 	// Setup middleware
 	app.Use(middleware.LoggerMiddleware())
 
+	// Compression middleware (should be early in chain)
+	app.Use(pkgMiddleware.NewCompression())
+
 	// Monitoring middlewares
 	app.Use(pkgMiddleware.NewRequestLogger(container.GetLogger()))
 	app.Use(pkgMiddleware.NewMetricsMiddleware(container.GetMetrics()))
