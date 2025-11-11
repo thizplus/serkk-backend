@@ -7,6 +7,8 @@ A production-ready social media backend API built with Go Fiber, featuring real-
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-93%20passing-success)](.)
 
+> 🇹🇭 **สำหรับคนไทย:** อ่าน[คู่มือภาษาไทยฉบับสมบูรณ์](GETTING_STARTED_TH.md) ที่อธิบายทุกอย่างอย่างละเอียด พร้อมขั้นตอนการใช้งาน
+
 ## 📋 Table of Contents
 
 - [Features](#-features)
@@ -204,6 +206,7 @@ See [DOCKER.md](DOCKER.md) for detailed deployment instructions.
 
 Comprehensive guides available:
 
+- **[GETTING_STARTED_TH.md](GETTING_STARTED_TH.md)** - 🇹🇭 Thai language guide (คู่มือภาษาไทย)
 - **[ENVIRONMENT.md](ENVIRONMENT.md)** - Environment configuration
 - **[DOCKER.md](DOCKER.md)** - Docker deployment guide
 - **[SHUTDOWN.md](SHUTDOWN.md)** - Graceful shutdown documentation
