@@ -147,7 +147,7 @@ func (s *MediaServiceImpl) GetUserMedia(ctx context.Context, userID uuid.UUID, o
 	return &dto.MediaListResponse{
 		Media: responses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -165,10 +165,11 @@ func (s *MediaServiceImpl) GetUserMediaByType(ctx context.Context, userID uuid.U
 		responses[i] = *dto.MediaToMediaResponse(media)
 	}
 
+	total := int64(len(responses))
 	return &dto.MediaListResponse{
 		Media: responses,
 		Meta: dto.PaginationMeta{
-			Total:  int64(len(responses)),
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

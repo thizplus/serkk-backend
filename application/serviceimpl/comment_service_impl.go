@@ -10,6 +10,7 @@ import (
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/pkg/utils"
 )
 
 type CommentServiceImpl struct {
@@ -365,7 +366,7 @@ func (s *CommentServiceImpl) buildCommentListResponse(ctx context.Context, comme
 	return &dto.CommentListResponse{
 		Comments: responses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -381,3 +382,119 @@ func convertToCommentWithReplies(comments []*dto.CommentWithRepliesResponse) []d
 }
 
 var _ services.CommentService = (*CommentServiceImpl)(nil)
+
+// Cursor-based service methods
+func (s *CommentServiceImpl) ListCommentsByPostWithCursor(ctx context.Context, postID uuid.UUID, cursor string, limit int, sortBy repositories.CommentSortBy, userID *uuid.UUID) (*dto.CommentListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	comments, err := s.commentRepo.ListByPostWithCursor(ctx, postID, decodedCursor, limit+1, sortBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildCommentListCursorResponse(ctx, comments, limit, sortBy, userID)
+}
+
+func (s *CommentServiceImpl) ListCommentsByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor string, limit int, userID *uuid.UUID) (*dto.CommentListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	comments, err := s.commentRepo.ListByAuthorWithCursor(ctx, authorID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildCommentListCursorResponse(ctx, comments, limit, repositories.CommentSortByNew, userID)
+}
+
+func (s *CommentServiceImpl) ListRepliesWithCursor(ctx context.Context, parentID uuid.UUID, cursor string, limit int, sortBy repositories.CommentSortBy, userID *uuid.UUID) (*dto.CommentListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	comments, err := s.commentRepo.ListRepliesWithCursor(ctx, parentID, decodedCursor, limit+1, sortBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildCommentListCursorResponse(ctx, comments, limit, sortBy, userID)
+}
+
+// Helper function to build cursor-based response
+func (s *CommentServiceImpl) buildCommentListCursorResponse(ctx context.Context, comments []*models.Comment, limit int, sortBy repositories.CommentSortBy, userID *uuid.UUID) (*dto.CommentListCursorResponse, error) {
+	// Check if there are more results
+	hasMore := len(comments) > limit
+	if hasMore {
+		comments = comments[:limit]
+	}
+
+	// Collect comment IDs for batch operations
+	commentIDs := make([]uuid.UUID, len(comments))
+	for i, comment := range comments {
+		commentIDs[i] = comment.ID
+	}
+
+	// Batch get user votes if authenticated
+	var voteMap map[uuid.UUID]*models.Vote
+	if userID != nil && len(commentIDs) > 0 {
+		voteMap, _ = s.voteRepo.GetUserVotesForTargets(ctx, *userID, commentIDs, "comment")
+	}
+
+	// Build responses
+	responses := make([]dto.CommentResponse, len(comments))
+	for i, comment := range comments {
+		resp := dto.CommentToCommentResponse(comment)
+
+		// Add user-specific data
+		if userID != nil {
+			if vote, ok := voteMap[comment.ID]; ok {
+				resp.UserVote = &vote.VoteType
+			}
+
+			// Get reply count
+			replyCount, _ := s.commentRepo.CountReplies(ctx, comment.ID)
+			replyCountInt := int(replyCount)
+			resp.ReplyCount = &replyCountInt
+		}
+
+		responses[i] = *resp
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(comments) > 0 {
+		lastComment := comments[len(comments)-1]
+		var sortValue *float64
+		switch sortBy {
+		case repositories.CommentSortByTop:
+			votes := float64(lastComment.Votes)
+			sortValue = &votes
+		}
+		encoded, err := utils.EncodePostCursor(sortValue, lastComment.CreatedAt, lastComment.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.CommentListCursorResponse{
+		Comments: responses,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}

@@ -9,6 +9,7 @@ import (
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/pkg/utils"
 )
 
 type FollowServiceImpl struct {
@@ -140,7 +141,7 @@ func (s *FollowServiceImpl) GetFollowers(ctx context.Context, userID uuid.UUID, 
 	return &dto.FollowerListResponse{
 		Users: userResponses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -174,7 +175,7 @@ func (s *FollowServiceImpl) GetFollowing(ctx context.Context, userID uuid.UUID, 
 	return &dto.FollowingListResponse{
 		Users: userResponses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -195,10 +196,11 @@ func (s *FollowServiceImpl) GetMutualFollows(ctx context.Context, userID uuid.UU
 		userResponses[i] = *resp
 	}
 
+	total := int64(len(users))
 	return &dto.FollowerListResponse{
 		Users: userResponses,
 		Meta: dto.PaginationMeta{
-			Total:  int64(len(users)),
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -206,3 +208,112 @@ func (s *FollowServiceImpl) GetMutualFollows(ctx context.Context, userID uuid.UU
 }
 
 var _ services.FollowService = (*FollowServiceImpl)(nil)
+
+// Cursor-based methods
+func (s *FollowServiceImpl) GetFollowersWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int, currentUserID *uuid.UUID) (*dto.FollowerListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	users, err := s.followRepo.GetFollowersWithCursor(ctx, userID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if there are more results
+	hasMore := len(users) > limit
+	if hasMore {
+		users = users[:limit]
+	}
+
+	// Build user responses
+	userResponses := make([]dto.UserResponse, len(users))
+	for i, user := range users {
+		resp := dto.UserToUserResponse(user)
+
+		// Add isFollowing status if current user is authenticated
+		if currentUserID != nil {
+			isFollowing, _ := s.followRepo.IsFollowing(ctx, *currentUserID, user.ID)
+			resp.IsFollowing = &isFollowing
+		}
+
+		userResponses[i] = *resp
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(users) > 0 {
+		lastUser := users[len(users)-1]
+		encoded, err := utils.EncodePostCursorSimple(lastUser.CreatedAt, lastUser.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.FollowerListCursorResponse{
+		Users: userResponses,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}
+
+func (s *FollowServiceImpl) GetFollowingWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int, currentUserID *uuid.UUID) (*dto.FollowingListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	users, err := s.followRepo.GetFollowingWithCursor(ctx, userID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if there are more results
+	hasMore := len(users) > limit
+	if hasMore {
+		users = users[:limit]
+	}
+
+	// Build user responses
+	userResponses := make([]dto.UserResponse, len(users))
+	for i, user := range users {
+		resp := dto.UserToUserResponse(user)
+
+		// Add isFollowing status if current user is authenticated
+		if currentUserID != nil {
+			isFollowing, _ := s.followRepo.IsFollowing(ctx, *currentUserID, user.ID)
+			resp.IsFollowing = &isFollowing
+		}
+
+		userResponses[i] = *resp
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(users) > 0 {
+		lastUser := users[len(users)-1]
+		encoded, err := utils.EncodePostCursorSimple(lastUser.CreatedAt, lastUser.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.FollowingListCursorResponse{
+		Users: userResponses,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}

@@ -57,6 +57,20 @@ func (r *SearchHistoryRepositoryImpl) GetPopularSearches(ctx context.Context, li
 	return queries, nil
 }
 
+func (r *SearchHistoryRepositoryImpl) GetPopularSearchesWithCount(ctx context.Context, limit int) ([]repositories.PopularSearchResult, error) {
+	var results []repositories.PopularSearchResult
+
+	err := r.db.WithContext(ctx).
+		Model(&models.SearchHistory{}).
+		Select("query, COUNT(*) as count").
+		Group("query").
+		Order("count DESC").
+		Limit(limit).
+		Scan(&results).Error
+
+	return results, err
+}
+
 func (r *SearchHistoryRepositoryImpl) ListByUserAndType(ctx context.Context, userID uuid.UUID, searchType string, limit int) ([]*models.SearchHistory, error) {
 	var history []*models.SearchHistory
 	err := r.db.WithContext(ctx).

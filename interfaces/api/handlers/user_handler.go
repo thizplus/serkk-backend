@@ -188,7 +188,7 @@ func (h *UserHandler) ListUsers(c *fiber.Ctx) error {
 	response := &dto.UserListResponse{
 		Users: userResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

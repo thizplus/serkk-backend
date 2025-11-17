@@ -8,6 +8,7 @@ import (
 
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -29,24 +30,31 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models
 	var post models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			// Order media by display_order from post_media junction table
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Where("post_media.post_id = ?", id).
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			// Order source post media as well
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Where("id = ? AND is_deleted = ?", id, false).
+		First(&post).Error
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
+
+func (r *PostRepositoryImpl) GetByClientPostID(ctx context.Context, clientPostID string) (*models.Post, error) {
+	var post models.Post
+	err := r.db.WithContext(ctx).
+		Preload("Author").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Where("client_post_id = ? AND is_deleted = ?", clientPostID, false).
 		First(&post).Error
 	if err != nil {
 		return nil, err
@@ -73,21 +81,11 @@ func (r *PostRepositoryImpl) List(ctx context.Context, offset, limit int, sortBy
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			// Order media by display_order
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			// Order source post media
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Where("is_deleted = ? AND status = ?", false, "published")
 
@@ -114,19 +112,11 @@ func (r *PostRepositoryImpl) ListByAuthor(ctx context.Context, authorID uuid.UUI
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Where("author_id = ? AND is_deleted = ?", authorID, false).
 		Order("created_at DESC").
@@ -143,19 +133,11 @@ func (r *PostRepositoryImpl) ListByTag(ctx context.Context, tagName string, offs
 
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Joins("JOIN post_tags ON post_tags.post_id = posts.id").
 		Joins("JOIN tags ON tags.id = post_tags.tag_id").
@@ -180,19 +162,11 @@ func (r *PostRepositoryImpl) ListByTagID(ctx context.Context, tagID uuid.UUID, o
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Joins("JOIN post_tags ON post_tags.post_id = posts.id").
 		Where("post_tags.tag_id = ? AND posts.is_deleted = ? AND posts.status = ?", tagID, false, "published")
@@ -218,19 +192,11 @@ func (r *PostRepositoryImpl) Search(ctx context.Context, query string, offset, l
 
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
 		Preload("SourcePost.Author").
-		Preload("SourcePost.Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("SourcePost.Media").
 		Preload("SourcePost.Tags").
 		Where(`is_deleted = ? AND status = ? AND (
 			title ILIKE ? OR
@@ -248,15 +214,47 @@ func (r *PostRepositoryImpl) Search(ctx context.Context, query string, offset, l
 	return posts, err
 }
 
+func (r *PostRepositoryImpl) SearchWithCursor(ctx context.Context, query string, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	var posts []*models.Post
+	searchQuery := "%" + query + "%"
+
+	dbQuery := r.db.WithContext(ctx).
+		Preload("Author").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Where(`is_deleted = ? AND status = ? AND (
+			title ILIKE ? OR
+			content ILIKE ? OR
+			EXISTS (
+				SELECT 1 FROM post_tags
+				JOIN tags ON tags.id = post_tags.tag_id
+				WHERE post_tags.post_id = posts.id
+				AND tags.name ILIKE ?
+			)
+		)`, false, "published", searchQuery, searchQuery, searchQuery)
+
+	// Apply cursor if provided (sort by created_at DESC, like feed)
+	if cursor != nil && !cursor.CreatedAt.IsZero() {
+		dbQuery = dbQuery.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	err := dbQuery.
+		Order("posts.created_at DESC, posts.id DESC").
+		Limit(limit).
+		Find(&posts).Error
+
+	return posts, err
+}
+
 func (r *PostRepositoryImpl) GetCrossposts(ctx context.Context, postID uuid.UUID, offset, limit int) ([]*models.Post, error) {
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
 		Preload("Author").
-		Preload("Media", func(db *gorm.DB) *gorm.DB {
-			return db.
-				Joins("JOIN post_media ON post_media.media_id = media.id").
-				Order("post_media.display_order ASC")
-		}).
+		Preload("Media").
 		Preload("Tags").
 		Where("source_post_id = ? AND is_deleted = ? AND status = ?", postID, false, "published").
 		Order("created_at DESC").
@@ -380,3 +378,25 @@ func (r *PostRepositoryImpl) hotScoreSQL() string {
 
 // Compiler check to ensure PostRepositoryImpl implements PostRepository
 var _ repositories.PostRepository = (*PostRepositoryImpl)(nil)
+
+// Cursor-based pagination methods (stub implementations)
+func (r *PostRepositoryImpl) ListWithCursor(ctx context.Context, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
+	// TODO: Implement cursor-based pagination
+	return r.List(ctx, 0, limit, sortBy)
+}
+
+func (r *PostRepositoryImpl) ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	// TODO: Implement cursor-based pagination
+	return r.ListByAuthor(ctx, authorID, 0, limit)
+}
+
+func (r *PostRepositoryImpl) ListByTagWithCursor(ctx context.Context, tagName string, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
+	// TODO: Implement cursor-based pagination
+	return r.ListByTag(ctx, tagName, 0, limit, sortBy)
+}
+
+func (r *PostRepositoryImpl) ListFollowingFeedWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	// TODO: Implement cursor-based pagination following feed
+	var posts []*models.Post
+	return posts, nil
+}

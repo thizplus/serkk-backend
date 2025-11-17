@@ -153,7 +153,7 @@ func (h *JobHandler) ListJobs(c *fiber.Ctx) error {
 	response := &dto.JobListResponse{
 		Jobs: jobResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

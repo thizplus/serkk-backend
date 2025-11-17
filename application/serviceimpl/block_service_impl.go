@@ -133,7 +133,7 @@ func (s *BlockServiceImpl) ListBlockedUsers(ctx context.Context, userID uuid.UUI
 	return &dto.BlockedUsersResponse{
 		BlockedUsers: blockedUsers,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

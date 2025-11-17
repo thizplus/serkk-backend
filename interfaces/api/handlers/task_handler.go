@@ -133,7 +133,7 @@ func (h *TaskHandler) GetUserTasks(c *fiber.Ctx) error {
 	response := &dto.TaskListResponse{
 		Tasks: taskResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -169,7 +169,7 @@ func (h *TaskHandler) ListTasks(c *fiber.Ctx) error {
 	response := &dto.TaskListResponse{
 		Tasks: taskResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

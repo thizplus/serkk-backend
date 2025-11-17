@@ -12,6 +12,7 @@ import (
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
 	"gofiber-template/infrastructure/websocket"
+	"gofiber-template/pkg/utils"
 )
 
 type NotificationServiceImpl struct {
@@ -64,7 +65,7 @@ func (s *NotificationServiceImpl) GetNotifications(ctx context.Context, userID u
 		Notifications: responses,
 		UnreadCount:   unreadCount,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -91,7 +92,7 @@ func (s *NotificationServiceImpl) GetUnreadNotifications(ctx context.Context, us
 		Notifications: responses,
 		UnreadCount:   unreadCount,
 		Meta: dto.PaginationMeta{
-			Total:  unreadCount,
+			Total:  &unreadCount,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -324,3 +325,110 @@ func (s *NotificationServiceImpl) buildNotificationURL(postID, commentID *uuid.U
 }
 
 var _ services.NotificationService = (*NotificationServiceImpl)(nil)
+
+// Cursor-based methods
+func (s *NotificationServiceImpl) GetNotificationsWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int) (*dto.NotificationListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	notifications, err := s.notifRepo.ListByUserWithCursor(ctx, userID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if there are more results
+	hasMore := len(notifications) > limit
+	if hasMore {
+		notifications = notifications[:limit]
+	}
+
+	// Get unread count
+	unreadCount, err := s.notifRepo.CountUnreadByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build responses
+	responses := make([]dto.NotificationResponse, len(notifications))
+	for i, notif := range notifications {
+		responses[i] = *dto.NotificationToNotificationResponse(notif)
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(notifications) > 0 {
+		lastNotif := notifications[len(notifications)-1]
+		encoded, err := utils.EncodePostCursorSimple(lastNotif.CreatedAt, lastNotif.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.NotificationListCursorResponse{
+		Notifications: responses,
+		UnreadCount:   unreadCount,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}
+
+func (s *NotificationServiceImpl) GetUnreadNotificationsWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int) (*dto.NotificationListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	notifications, err := s.notifRepo.ListUnreadByUserWithCursor(ctx, userID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if there are more results
+	hasMore := len(notifications) > limit
+	if hasMore {
+		notifications = notifications[:limit]
+	}
+
+	// Get unread count
+	unreadCount, err := s.notifRepo.CountUnreadByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build responses
+	responses := make([]dto.NotificationResponse, len(notifications))
+	for i, notif := range notifications {
+		responses[i] = *dto.NotificationToNotificationResponse(notif)
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(notifications) > 0 {
+		lastNotif := notifications[len(notifications)-1]
+		encoded, err := utils.EncodePostCursorSimple(lastNotif.CreatedAt, lastNotif.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.NotificationListCursorResponse{
+		Notifications: responses,
+		UnreadCount:   unreadCount,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}

@@ -8,8 +8,10 @@ import (
 
 	"github.com/google/uuid"
 	"gofiber-template/domain/dto"
+	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/pkg/utils"
 )
 
 type SavedPostServiceImpl struct {
@@ -121,7 +123,7 @@ func (s *SavedPostServiceImpl) GetSavedPosts(ctx context.Context, userID uuid.UU
 	return &dto.SavedPostListResponse{
 		Posts: postResponses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -129,3 +131,77 @@ func (s *SavedPostServiceImpl) GetSavedPosts(ctx context.Context, userID uuid.UU
 }
 
 var _ services.SavedPostService = (*SavedPostServiceImpl)(nil)
+
+// Cursor-based method
+func (s *SavedPostServiceImpl) GetSavedPostsWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int) (*dto.SavedPostListCursorResponse, error) {
+	// Decode cursor
+	decodedCursor, err := utils.DecodePostCursor(cursor)
+	if err != nil && cursor != "" {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Fetch limit+1 to check if there are more
+	posts, err := s.savedPostRepo.GetSavedPostsWithCursor(ctx, userID, decodedCursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if there are more results
+	hasMore := len(posts) > limit
+	if hasMore {
+		posts = posts[:limit]
+	}
+
+	// Build post responses with user-specific data
+	postResponses := make([]dto.PostResponse, len(posts))
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.ID
+	}
+
+	// Batch get user votes
+	var voteMap map[uuid.UUID]*models.Vote
+	if len(postIDs) > 0 {
+		voteMap, _ = s.voteRepo.GetUserVotesForTargets(ctx, userID, postIDs, "post")
+	}
+
+	for i, post := range posts {
+		resp := dto.PostToPostResponse(post)
+
+		// Calculate hot score
+		hoursSinceCreation := time.Since(post.CreatedAt).Hours()
+		hotScore := float64(post.Votes) / math.Pow(hoursSinceCreation+2, 1.5)
+		resp.HotScore = &hotScore
+
+		// Add user vote
+		if vote, ok := voteMap[post.ID]; ok {
+			resp.UserVote = &vote.VoteType
+		}
+
+		// All posts in saved list are saved
+		isSaved := true
+		resp.IsSaved = &isSaved
+
+		postResponses[i] = *resp
+	}
+
+	// Build next cursor
+	var nextCursor *string
+	if hasMore && len(posts) > 0 {
+		lastPost := posts[len(posts)-1]
+		encoded, err := utils.EncodePostCursorSimple(lastPost.CreatedAt, lastPost.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	return &dto.SavedPostListCursorResponse{
+		Posts: postResponses,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}

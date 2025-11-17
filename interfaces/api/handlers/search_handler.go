@@ -21,30 +21,16 @@ func NewSearchHandler(searchService services.SearchService) *SearchHandler {
 	}
 }
 
-// Search performs a search across posts, users, and tags
+// Search performs a search for posts (posts only, with cursor pagination)
+// Supports both cursor-based (recommended) and offset-based (deprecated) pagination
 func (h *SearchHandler) Search(c *fiber.Ctx) error {
 	query := c.Query("q")
 	if query == "" {
 		return utils.ValidationErrorResponse(c, "Search query is required")
 	}
 
-	searchType := c.Query("type", "all") // all, post, user, tag
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
-
-	req := &dto.SearchRequest{
-		Query: query,
-		Type:  searchType,
-		Limit: limit,
-	}
-
-	if err := utils.ValidateStruct(req); err != nil {
-		errors := utils.GetValidationErrors(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Validation failed",
-			"errors":  errors,
-		})
-	}
+	cursor := c.Query("cursor", "")
+	limit := normalizeLimit(c.Query("limit", "20"))
 
 	// Get userID if authenticated (optional)
 	var userIDPtr *uuid.UUID
@@ -52,12 +38,30 @@ func (h *SearchHandler) Search(c *fiber.Ctx) error {
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination (recommended)
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination (new way) - Posts only
+		results, err := h.searchService.SearchWithCursor(c.Context(), userIDPtr, query, cursor, limit)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Search failed").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, results, "Search completed successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	searchType := c.Query("type", "post") // Default to "post" only
+	req := &dto.SearchRequest{
+		Query: query,
+		Type:  searchType,
+		Limit: limit,
+	}
+
 	results, err := h.searchService.Search(c.Context(), userIDPtr, req)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Search failed").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, results, "Search completed successfully")
+	return utils.SuccessResponse(c, results, "Search completed successfully (offset-based deprecated)")
 }
 
 // GetSearchHistory retrieves user's search history

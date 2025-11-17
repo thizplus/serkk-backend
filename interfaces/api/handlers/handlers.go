@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
 	"gofiber-template/infrastructure/redis"
@@ -60,10 +62,11 @@ type Handlers struct {
 	FileUploadHandler      *FileUploadHandler
 	PresignedUploadHandler *PresignedUploadHandler
 	WebhookHandler         *WebhookHandler
+	CacheHandler           *CacheHandler
 }
 
 // NewHandlers creates a new instance of Handlers with all dependencies
-func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, notificationWSHandler *websocketHandler.NotificationWebSocketHandler, chatHub *chatWebsocket.ChatHub, notificationHub *chatWebsocket.NotificationHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService, r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository, redisService interface{}) *Handlers {
+func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, notificationWSHandler *websocketHandler.NotificationWebSocketHandler, chatHub *chatWebsocket.ChatHub, notificationHub *chatWebsocket.NotificationHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService, r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository, redisService interface{}, feedCacheService *redis.FeedCacheService) *Handlers {
 	return &Handlers{
 		UserHandler:           NewUserHandler(services.UserService),
 		ProfileHandler:        NewProfileHandler(services.UserService),
@@ -95,5 +98,24 @@ func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocke
 			return nil
 		}(),
 		WebhookHandler: NewWebhookHandler(services.MediaService, services.PostService, services.MessageService, redisService.(*redis.RedisService), notificationHub),
+		CacheHandler:   NewCacheHandler(feedCacheService),
 	}
+}
+
+// normalizeLimit validates and caps the limit parameter
+// Default: 20, Min: 1, Max: 100 (hard cap to prevent abuse)
+func normalizeLimit(limitStr string) int {
+	limit, _ := strconv.Atoi(limitStr)
+
+	// Set default if invalid or zero
+	if limit <= 0 {
+		return 20
+	}
+
+	// Hard cap at 100 to prevent abuse/performance issues
+	if limit > 100 {
+		return 100
+	}
+
+	return limit
 }

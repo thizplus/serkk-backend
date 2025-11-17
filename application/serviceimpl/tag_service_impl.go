@@ -56,7 +56,7 @@ func (s *TagServiceImpl) ListTags(ctx context.Context, offset, limit int) (*dto.
 	return &dto.TagListResponse{
 		Tags: responses,
 		Meta: dto.PaginationMeta{
-			Total:  count,
+			Total:  &count,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -90,10 +90,11 @@ func (s *TagServiceImpl) SearchTags(ctx context.Context, query string, limit int
 		responses[i] = *dto.TagToTagResponse(tag)
 	}
 
+	total := int64(len(responses))
 	return &dto.TagListResponse{
 		Tags: responses,
 		Meta: dto.PaginationMeta{
-			Total:  int64(len(responses)),
+			Total:  &total,
 			Offset: 0,
 			Limit:  limit,
 		},

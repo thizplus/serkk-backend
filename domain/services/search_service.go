@@ -7,8 +7,10 @@ import (
 )
 
 type SearchService interface {
-	// Search
+	// Search (offset-based, deprecated)
 	Search(ctx context.Context, userID *uuid.UUID, req *dto.SearchRequest) (*dto.SearchResponse, error)
+	// Search with cursor (recommended) - Posts only
+	SearchWithCursor(ctx context.Context, userID *uuid.UUID, query string, cursor string, limit int) (*dto.SearchCursorResponse, error)
 
 	// Search history
 	GetSearchHistory(ctx context.Context, userID uuid.UUID, offset, limit int) (*dto.SearchHistoryListResponse, error)

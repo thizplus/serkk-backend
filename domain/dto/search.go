@@ -13,7 +13,7 @@ type SearchRequest struct {
 	Limit int    `json:"limit" validate:"omitempty,min=1,max=100"`
 }
 
-// SearchResponse - Response for search results
+// SearchResponse - Response for search results (offset-based, deprecated)
 type SearchResponse struct {
 	Query string         `json:"query"`
 	Type  string         `json:"type"`
@@ -21,6 +21,13 @@ type SearchResponse struct {
 	Users []UserResponse `json:"users,omitempty"`
 	Tags  []TagResponse  `json:"tags,omitempty"`
 	Meta  PaginationMeta `json:"meta"`
+}
+
+// SearchCursorResponse - Response for search with cursor pagination (posts only)
+type SearchCursorResponse struct {
+	Query string                `json:"query"`
+	Posts []PostResponse        `json:"posts"`
+	Meta  CursorPaginationMeta  `json:"meta"`
 }
 
 // SearchHistoryResponse - Response for search history
@@ -37,7 +44,13 @@ type SearchHistoryListResponse struct {
 	Meta    PaginationMeta          `json:"meta"`
 }
 
+// PopularSearch - Single popular search item with count
+type PopularSearch struct {
+	Query string `json:"query"`
+	Count int64  `json:"count"`
+}
+
 // PopularSearchesResponse - Response for popular searches
 type PopularSearchesResponse struct {
-	Queries []string `json:"queries"`
+	Searches []PopularSearch `json:"searches"`
 }

@@ -11,6 +11,7 @@ import (
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/pkg/utils"
 )
 
 type SearchServiceImpl struct {
@@ -106,7 +107,8 @@ func (s *SearchServiceImpl) Search(ctx context.Context, userID *uuid.UUID, req *
 				postResponses[i] = *resp
 			}
 			response.Posts = postResponses
-			response.Meta.Total = int64(len(postResponses))
+			total := int64(len(postResponses))
+			response.Meta.Total = &total
 		}
 	}
 
@@ -147,6 +149,98 @@ func (s *SearchServiceImpl) Search(ctx context.Context, userID *uuid.UUID, req *
 	return response, nil
 }
 
+// SearchWithCursor searches posts with cursor-based pagination
+func (s *SearchServiceImpl) SearchWithCursor(ctx context.Context, userID *uuid.UUID, query string, cursorStr string, limit int) (*dto.SearchCursorResponse, error) {
+	if query == "" {
+		return nil, errors.New("search query is required")
+	}
+
+	if limit == 0 {
+		limit = 20
+	}
+
+	// Decode cursor
+	cursor, err := utils.DecodePostCursor(cursorStr)
+	if err != nil {
+		return nil, errors.New("invalid cursor")
+	}
+
+	// Search posts with cursor (limit+1 pattern)
+	posts, err := s.postRepo.SearchWithCursor(ctx, query, cursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine hasMore
+	hasMore := len(posts) > limit
+	if hasMore {
+		posts = posts[:limit]
+	}
+
+	// Build post responses
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.ID
+	}
+
+	// Get user-specific data if authenticated
+	var voteMap map[uuid.UUID]*models.Vote
+	var savedMap map[uuid.UUID]bool
+	if userID != nil {
+		voteMap, _ = s.voteRepo.GetUserVotesForTargets(ctx, *userID, postIDs, "post")
+		savedMap, _ = s.savedPostRepo.GetSavedStatus(ctx, *userID, postIDs)
+	}
+
+	postResponses := make([]dto.PostResponse, len(posts))
+	for i, post := range posts {
+		resp := dto.PostToPostResponse(post)
+
+		// Calculate hot score
+		hoursSinceCreation := time.Since(post.CreatedAt).Hours()
+		hotScore := float64(post.Votes) / math.Pow(hoursSinceCreation+2, 1.5)
+		resp.HotScore = &hotScore
+
+		// Add user-specific data
+		if userID != nil {
+			if vote, ok := voteMap[post.ID]; ok {
+				resp.UserVote = &vote.VoteType
+			}
+			isSaved := false
+			if saved, ok := savedMap[post.ID]; ok {
+				isSaved = saved
+			}
+			resp.IsSaved = &isSaved
+		}
+
+		postResponses[i] = *resp
+	}
+
+	// Generate next cursor
+	var nextCursor *string
+	if hasMore && len(posts) > 0 {
+		lastPost := posts[len(posts)-1]
+		encoded, err := utils.EncodePostCursor(nil, lastPost.CreatedAt, lastPost.ID)
+		if err == nil {
+			nextCursor = &encoded
+		}
+	}
+
+	// Save search history if user is authenticated
+	if userID != nil {
+		_ = s.SaveSearchHistory(ctx, *userID, query, "post")
+	}
+
+	return &dto.SearchCursorResponse{
+		Query: query,
+		Posts: postResponses,
+		Meta: dto.CursorPaginationMeta{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+			Limit:      limit,
+		},
+	}, nil
+}
+
 func (s *SearchServiceImpl) GetSearchHistory(ctx context.Context, userID uuid.UUID, offset, limit int) (*dto.SearchHistoryListResponse, error) {
 	history, err := s.searchHistoryRepo.ListByUser(ctx, userID, offset, limit)
 	if err != nil {
@@ -158,10 +252,11 @@ func (s *SearchServiceImpl) GetSearchHistory(ctx context.Context, userID uuid.UU
 		responses[i] = *dto.SearchHistoryToResponse(h)
 	}
 
+	total := int64(len(responses))
 	return &dto.SearchHistoryListResponse{
 		History: responses,
 		Meta: dto.PaginationMeta{
-			Total:  int64(len(responses)),
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -169,13 +264,21 @@ func (s *SearchServiceImpl) GetSearchHistory(ctx context.Context, userID uuid.UU
 }
 
 func (s *SearchServiceImpl) GetPopularSearches(ctx context.Context, limit int) (*dto.PopularSearchesResponse, error) {
-	queries, err := s.searchHistoryRepo.GetPopularSearches(ctx, limit)
+	results, err := s.searchHistoryRepo.GetPopularSearchesWithCount(ctx, limit)
 	if err != nil {
 		return nil, err
 	}
 
+	searches := make([]dto.PopularSearch, len(results))
+	for i, result := range results {
+		searches[i] = dto.PopularSearch{
+			Query: result.Query,
+			Count: result.Count,
+		}
+	}
+
 	return &dto.PopularSearchesResponse{
-		Queries: queries,
+		Searches: searches,
 	}, nil
 }
 

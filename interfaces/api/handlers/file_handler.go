@@ -161,7 +161,7 @@ func (h *FileHandler) GetUserFiles(c *fiber.Ctx) error {
 	response := &dto.FileListResponse{
 		Files: fileResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -197,7 +197,7 @@ func (h *FileHandler) ListFiles(c *fiber.Ctx) error {
 	response := &dto.FileListResponse{
 		Files: fileResponses,
 		Meta: dto.PaginationMeta{
-			Total:  total,
+			Total:  &total,
 			Offset: offset,
 			Limit:  limit,
 		},

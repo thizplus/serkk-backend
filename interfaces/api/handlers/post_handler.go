@@ -153,16 +153,17 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 }
 
 // ListPosts retrieves a list of posts with pagination and sorting
+// Supports both cursor-based (recommended) and offset-based (deprecated) pagination
 func (h *PostHandler) ListPosts(c *fiber.Ctx) error {
-	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	cursor := c.Query("cursor", "")
+	limit := normalizeLimit(c.Query("limit", "20"))
 	sortBy := c.Query("sort", "hot") // hot, new, top, controversial
 
 	// Check if filtering by tag (query param) - รองรับภาษาไทย
 	tagQuery := c.Query("tag")
 	if tagQuery != "" {
 		log.Printf("🏷️  Searching posts by tag (query param): '%s'", tagQuery)
-		return h.listPostsByTagQuery(c, tagQuery, offset, limit, sortBy)
+		return h.listPostsByTagQuery(c, tagQuery, cursor, limit, sortBy)
 	}
 
 	// Validate and convert sortBy
@@ -186,16 +187,29 @@ func (h *PostHandler) ListPosts(c *fiber.Ctx) error {
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination (recommended)
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination (new way)
+		posts, err := h.postService.ListPostsWithCursor(c.Context(), cursor, limit, sortByEnum, userIDPtr)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	log.Printf("⚠️  Using deprecated offset-based pagination. Please migrate to cursor-based pagination.")
 	posts, err := h.postService.ListPosts(c.Context(), offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully (offset-based deprecated)")
 }
 
 // Helper function to handle tag filtering via query param
-func (h *PostHandler) listPostsByTagQuery(c *fiber.Ctx, tagName string, offset, limit int, sortBy string) error {
+func (h *PostHandler) listPostsByTagQuery(c *fiber.Ctx, tagName string, cursor string, limit int, sortBy string) error {
 	var sortByEnum repositories.PostSortBy
 	switch sortBy {
 	case "hot":
@@ -214,6 +228,19 @@ func (h *PostHandler) listPostsByTagQuery(c *fiber.Ctx, tagName string, offset, 
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination
+		posts, err := h.postService.ListPostsByTagWithCursor(c.Context(), tagName, cursor, limit, sortByEnum, userIDPtr)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	log.Printf("⚠️  Using deprecated offset-based pagination for tag query. Please migrate to cursor-based pagination.")
 	posts, err := h.postService.ListPostsByTag(c.Context(), tagName, offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
@@ -223,14 +250,15 @@ func (h *PostHandler) listPostsByTagQuery(c *fiber.Ctx, tagName string, offset, 
 }
 
 // ListPostsByAuthor retrieves posts by a specific author
+// Supports both cursor-based (recommended) and offset-based (deprecated) pagination
 func (h *PostHandler) ListPostsByAuthor(c *fiber.Ctx) error {
 	authorID, err := uuid.Parse(c.Params("authorId"))
 	if err != nil {
 		return utils.ValidationErrorResponse(c, "Invalid author ID")
 	}
 
-	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	cursor := c.Query("cursor", "")
+	limit := normalizeLimit(c.Query("limit", "20"))
 
 	// Get userID if authenticated (optional)
 	var userIDPtr *uuid.UUID
@@ -238,6 +266,19 @@ func (h *PostHandler) ListPostsByAuthor(c *fiber.Ctx) error {
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination
+		posts, err := h.postService.ListPostsByAuthorWithCursor(c.Context(), authorID, cursor, limit, userIDPtr)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	log.Printf("⚠️  Using deprecated offset-based pagination for author posts. Please migrate to cursor-based pagination.")
 	posts, err := h.postService.ListPostsByAuthor(c.Context(), authorID, offset, limit, userIDPtr)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
@@ -247,6 +288,7 @@ func (h *PostHandler) ListPostsByAuthor(c *fiber.Ctx) error {
 }
 
 // ListPostsByTag retrieves posts by tag
+// Supports both cursor-based (recommended) and offset-based (deprecated) pagination
 func (h *PostHandler) ListPostsByTag(c *fiber.Ctx) error {
 	tagName := c.Params("tagName")
 	if tagName == "" {
@@ -257,8 +299,8 @@ func (h *PostHandler) ListPostsByTag(c *fiber.Ctx) error {
 	// Log for debugging
 	log.Printf("🏷️  Searching for tag: '%s' (len: %d)", tagName, len(tagName))
 
-	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	cursor := c.Query("cursor", "")
+	limit := normalizeLimit(c.Query("limit", "20"))
 	sortBy := c.Query("sort", "hot")
 
 	var sortByEnum repositories.PostSortBy
@@ -279,6 +321,19 @@ func (h *PostHandler) ListPostsByTag(c *fiber.Ctx) error {
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination
+		posts, err := h.postService.ListPostsByTagWithCursor(c.Context(), tagName, cursor, limit, sortByEnum, userIDPtr)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	log.Printf("⚠️  Using deprecated offset-based pagination for tag posts. Please migrate to cursor-based pagination.")
 	posts, err := h.postService.ListPostsByTag(c.Context(), tagName, offset, limit, sortByEnum, userIDPtr)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to retrieve posts").WithInternal(err))
@@ -295,7 +350,7 @@ func (h *PostHandler) ListPostsByTagID(c *fiber.Ctx) error {
 	}
 
 	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	limit := normalizeLimit(c.Query("limit", "20"))
 	sortBy := c.Query("sort", "hot")
 
 	var sortByEnum repositories.PostSortBy
@@ -325,14 +380,15 @@ func (h *PostHandler) ListPostsByTagID(c *fiber.Ctx) error {
 }
 
 // SearchPosts searches for posts
+// Supports both cursor-based (recommended) and offset-based (deprecated) pagination
 func (h *PostHandler) SearchPosts(c *fiber.Ctx) error {
 	query := c.Query("q")
 	if query == "" {
 		return utils.ValidationErrorResponse(c, "Search query is required")
 	}
 
-	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	cursor := c.Query("cursor", "")
+	limit := normalizeLimit(c.Query("limit", "20"))
 
 	// Get userID if authenticated (optional)
 	var userIDPtr *uuid.UUID
@@ -340,12 +396,25 @@ func (h *PostHandler) SearchPosts(c *fiber.Ctx) error {
 		userIDPtr = &userID
 	}
 
+	// Check if using cursor-based pagination (recommended)
+	if cursor != "" || c.Query("offset") == "" {
+		// Use cursor-based pagination (new way)
+		posts, err := h.postService.SearchPostsWithCursor(c.Context(), query, cursor, limit, userIDPtr)
+		if err != nil {
+			return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to search posts").WithInternal(err))
+		}
+		return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	}
+
+	// Fallback to offset-based pagination (deprecated)
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	log.Printf("⚠️  Using deprecated offset-based pagination for search. Please migrate to cursor-based pagination.")
 	posts, err := h.postService.SearchPosts(c.Context(), query, offset, limit, userIDPtr)
 	if err != nil {
 		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to search posts").WithInternal(err))
 	}
 
-	return utils.SuccessResponse(c, posts, "Posts retrieved successfully")
+	return utils.SuccessResponse(c, posts, "Posts retrieved successfully (offset-based deprecated)")
 }
 
 // CreateCrosspost creates a crosspost
@@ -387,7 +456,7 @@ func (h *PostHandler) GetCrossposts(c *fiber.Ctx) error {
 	}
 
 	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	limit := normalizeLimit(c.Query("limit", "20"))
 
 	// Get userID if authenticated (optional)
 	var userIDPtr *uuid.UUID
@@ -408,7 +477,7 @@ func (h *PostHandler) GetFeed(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 
 	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-	limit, _ := strconv.Atoi(c.Query("limit", "20"))
+	limit := normalizeLimit(c.Query("limit", "20"))
 	sortBy := c.Query("sort", "hot")
 
 	var sortByEnum repositories.PostSortBy

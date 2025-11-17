@@ -15,7 +15,7 @@ func SetupPostRoutes(api fiber.Router, h *handlers.Handlers) {
 	posts.Get("/author/:authorId", middleware.Optional(), h.PostHandler.ListPostsByAuthor)
 	posts.Get("/tag/:tagName", middleware.Optional(), h.PostHandler.ListPostsByTag)
 	posts.Get("/tag-id/:tagId", middleware.Optional(), h.PostHandler.ListPostsByTagID)
-	posts.Get("/search", middleware.Optional(), h.PostHandler.SearchPosts)
+	// Search moved to /search (unified search with history & popular)
 	posts.Get("/:id/crossposts", middleware.Optional(), h.PostHandler.GetCrossposts)
 
 	// Protected routes (require authentication)
