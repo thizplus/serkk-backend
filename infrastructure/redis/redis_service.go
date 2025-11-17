@@ -300,3 +300,36 @@ func (r *RedisService) SubscribeToUser(ctx context.Context, userID uuid.UUID) *r
 func (r *RedisService) UnsubscribeUser(ctx context.Context, pubsub *redis.PubSub) error {
 	return pubsub.Close()
 }
+
+// ========== Idempotency Cache ==========
+
+// SetIdempotencyCache caches a response for an idempotency key with TTL (default: 24 hours)
+func (r *RedisService) SetIdempotencyCache(ctx context.Context, idempotencyKey string, response interface{}, ttl time.Duration) error {
+	key := fmt.Sprintf("idempotency:%s", idempotencyKey)
+
+	// Marshal response to JSON
+	data, err := json.Marshal(response)
+	if err != nil {
+		return fmt.Errorf("failed to marshal response: %w", err)
+	}
+
+	// Set with TTL (default 24 hours)
+	if ttl == 0 {
+		ttl = 24 * time.Hour
+	}
+
+	return r.client.Set(ctx, key, data, ttl).Err()
+}
+
+// GetIdempotencyCache retrieves a cached response for an idempotency key
+// Returns redis.Nil if not found
+func (r *RedisService) GetIdempotencyCache(ctx context.Context, idempotencyKey string) ([]byte, error) {
+	key := fmt.Sprintf("idempotency:%s", idempotencyKey)
+
+	data, err := r.client.Get(ctx, key).Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}

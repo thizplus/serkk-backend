@@ -45,18 +45,40 @@ func RunSQLMigrations(db *gorm.DB) error {
 		return fmt.Errorf("failed to get database connection: %v", err)
 	}
 
-	// Read and execute 001_initial_schema.sql
-	migrationSQL, err := os.ReadFile("migrations/001_initial_schema.sql")
-	if err != nil {
-		// If migration file doesn't exist, file might not be found in some deployments
-		// In that case, we can fallback to embedded migrations or skip
-		return fmt.Errorf("failed to read migration file: %v", err)
+	// List of migration files to run in order
+	migrationFiles := []string{
+		"migrations/001_initial_schema.sql",
+		"migrations/008_create_chat_tables.sql",
+		"migrations/009_add_media_file_fields.sql",
+		"migrations/010_add_video_streaming_fields.sql",
+		"migrations/011_make_message_content_nullable.sql",
+		"migrations/012_add_post_status_column.sql",
+		"migrations/013_add_post_media_display_order.sql",
+		"migrations/014_add_performance_indexes.sql",
+		"migrations/015_add_post_type_column.sql",
+		"migrations/016_add_client_post_id.sql",
+		"migrations/017_add_post_media_limit_trigger.sql",
+		"migrations/add_push_subscriptions_unique_constraint.sql",
 	}
 
-	// Execute the migration
-	_, err = sqlDB.Exec(string(migrationSQL))
-	if err != nil {
-		return fmt.Errorf("failed to execute migration: %v", err)
+	// Execute each migration file
+	for _, migrationFile := range migrationFiles {
+		migrationSQL, err := os.ReadFile(migrationFile)
+		if err != nil {
+			// Skip if migration file doesn't exist (optional migrations)
+			fmt.Printf("Warning: Could not read %s: %v\n", migrationFile, err)
+			continue
+		}
+
+		// Execute the migration
+		_, err = sqlDB.Exec(string(migrationSQL))
+		if err != nil {
+			// Log but continue (in case migration already applied)
+			fmt.Printf("Warning: Failed to execute %s: %v\n", migrationFile, err)
+			continue
+		}
+
+		fmt.Printf("✓ Applied migration: %s\n", migrationFile)
 	}
 
 	return nil

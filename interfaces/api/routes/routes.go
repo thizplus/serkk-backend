@@ -32,6 +32,7 @@ func SetupRoutes(app *fiber.App, h *handlers.Handlers, cfg ...*config.Config) {
 	SetupSearchRoutes(api, h)
 	SetupMediaRoutes(api, h)
 	SetupPushRoutes(api, h)
+	SetupCacheRoutes(api, h)
 
 	// Setup chat routes
 	SetupChatRoutes(api, h)

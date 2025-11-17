@@ -34,6 +34,7 @@ type Container struct {
 	DB                 *gorm.DB
 	RedisClient        *redis.RedisClient
 	RedisService       *redis.RedisService
+	FeedCacheService   *redis.FeedCacheService
 	BunnyStorage       storage.BunnyStorage
 	BunnyStreamService *storage.BunnyStreamService
 	R2Storage          storage.R2Storage
@@ -236,6 +237,10 @@ func (c *Container) initInfrastructure() error {
 	c.RedisService = redis.NewRedisService(c.RedisClient)
 	log.Println("✓ RedisService initialized")
 
+	// Initialize FeedCacheService
+	c.FeedCacheService = redis.NewFeedCacheService(c.RedisClient)
+	log.Println("✓ FeedCacheService initialized")
+
 	// Initialize Bunny Storage
 	bunnyConfig := storage.BunnyConfig{
 		StorageZone: c.Config.Bunny.StorageZone,
@@ -340,6 +345,8 @@ func (c *Container) initServices() error {
 		c.TagService,
 		c.MediaRepository,
 		c.NotificationHub,
+		c.RedisService,
+		c.FeedCacheService,
 	)
 
 	// 3. Depends on NotificationService
