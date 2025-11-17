@@ -154,6 +154,7 @@ func PostToPostResponse(post *models.Post) *PostResponse {
 		Author:       *UserToUserResponse(&post.Author),
 		Votes:        post.Votes,
 		CommentCount: post.CommentCount,
+		Type:         post.Type,
 		Status:       post.Status,
 		CreatedAt:    post.CreatedAt,
 		UpdatedAt:    post.UpdatedAt,

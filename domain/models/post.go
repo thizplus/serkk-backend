@@ -19,6 +19,9 @@ type Post struct {
 	Votes        int `gorm:"default:0;index"`
 	CommentCount int `gorm:"default:0"`
 
+	// Post Type (determined by media content)
+	Type string `gorm:"type:varchar(20);default:'text';index"` // text, image, gallery, video
+
 	// Crosspost (optional)
 	SourcePostID *uuid.UUID `gorm:"index"`
 	SourcePost   *Post      `gorm:"foreignKey:SourcePostID"`
@@ -26,6 +29,9 @@ type Post struct {
 	// Media & Tags (relationships)
 	Media []Media `gorm:"many2many:post_media;"`
 	Tags  []Tag   `gorm:"many2many:post_tags;"`
+
+	// Idempotency (for preventing duplicate posts)
+	ClientPostID *string `gorm:"type:varchar(255);uniqueIndex:idx_posts_client_post_id"` // client-generated unique ID
 
 	// Status
 	Status    string `gorm:"type:varchar(20);default:'published';index"` // draft, published
