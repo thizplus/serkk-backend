@@ -22,10 +22,16 @@ type SavedPostResponse struct {
 	SavedAt time.Time `json:"savedAt"`
 }
 
-// SavedPostListResponse - Response for saved posts list
+// SavedPostListResponse - Response for saved posts list (offset-based)
 type SavedPostListResponse struct {
 	Posts []PostResponse `json:"posts"`
 	Meta  PaginationMeta `json:"meta"`
+}
+
+// SavedPostListCursorResponse - Response for saved posts list (cursor-based)
+type SavedPostListCursorResponse struct {
+	Posts []PostResponse       `json:"posts"`
+	Meta  CursorPaginationMeta `json:"meta"`
 }
 
 // SaveStatusResponse - Response for checking if post is saved

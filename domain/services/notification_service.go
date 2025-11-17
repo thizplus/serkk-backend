@@ -7,10 +7,14 @@ import (
 )
 
 type NotificationService interface {
-	// Get notifications
+	// Get notifications (offset-based, deprecated)
 	GetNotifications(ctx context.Context, userID uuid.UUID, offset, limit int) (*dto.NotificationListResponse, error)
 	GetUnreadNotifications(ctx context.Context, userID uuid.UUID, offset, limit int) (*dto.NotificationListResponse, error)
 	GetNotification(ctx context.Context, notificationID uuid.UUID, userID uuid.UUID) (*dto.NotificationResponse, error)
+
+	// Get notifications with cursor (cursor-based pagination)
+	GetNotificationsWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int) (*dto.NotificationListCursorResponse, error)
+	GetUnreadNotificationsWithCursor(ctx context.Context, userID uuid.UUID, cursor string, limit int) (*dto.NotificationListCursorResponse, error)
 
 	// Mark as read
 	MarkAsRead(ctx context.Context, notificationID uuid.UUID, userID uuid.UUID) error

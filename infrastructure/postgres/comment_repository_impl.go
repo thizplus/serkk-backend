@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -194,6 +195,99 @@ func (r *CommentRepositoryImpl) UpdateVoteCount(ctx context.Context, commentID u
 }
 
 // hotScoreSQL generates SQL for hot score calculation: votes / (hours + 2)^1.5
+// Cursor-based pagination methods
+func (r *CommentRepositoryImpl) ListByPostWithCursor(ctx context.Context, postID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
+	var comments []*models.Comment
+	query := r.db.WithContext(ctx).
+		Preload("Author").
+		Where("post_id = ? AND parent_id IS NULL AND is_deleted = ?", postID, false)
+
+	if cursor != nil {
+		switch sortBy {
+		case repositories.CommentSortByHot:
+			query = query.Where("("+r.hotScoreSQL()+", created_at, id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByTop:
+			query = query.Where("(votes, created_at, id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByNew:
+			query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByOld:
+			query = query.Where("(created_at, id) > (?, ?)", cursor.CreatedAt, cursor.ID)
+		default:
+			query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		}
+	}
+
+	switch sortBy {
+	case repositories.CommentSortByHot:
+		query = query.Order(r.hotScoreSQL() + " DESC, created_at DESC, id DESC")
+	case repositories.CommentSortByNew:
+		query = query.Order("created_at DESC, id DESC")
+	case repositories.CommentSortByTop:
+		query = query.Order("votes DESC, created_at DESC, id DESC")
+	case repositories.CommentSortByOld:
+		query = query.Order("created_at ASC, id ASC")
+	default:
+		query = query.Order("created_at DESC, id DESC")
+	}
+
+	err := query.Limit(limit).Find(&comments).Error
+	return comments, err
+}
+
+func (r *CommentRepositoryImpl) ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Comment, error) {
+	var comments []*models.Comment
+	query := r.db.WithContext(ctx).
+		Preload("Author").
+		Preload("Post").
+		Preload("Post.Author").
+		Where("author_id = ? AND is_deleted = ?", authorID, false)
+
+	if cursor != nil {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	err := query.Order("created_at DESC, id DESC").Limit(limit).Find(&comments).Error
+	return comments, err
+}
+
+func (r *CommentRepositoryImpl) ListRepliesWithCursor(ctx context.Context, parentID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
+	var comments []*models.Comment
+	query := r.db.WithContext(ctx).
+		Preload("Author").
+		Where("parent_id = ? AND is_deleted = ?", parentID, false)
+
+	if cursor != nil {
+		switch sortBy {
+		case repositories.CommentSortByHot:
+			query = query.Where("("+r.hotScoreSQL()+", created_at, id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByTop:
+			query = query.Where("(votes, created_at, id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByNew:
+			query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		case repositories.CommentSortByOld:
+			query = query.Where("(created_at, id) > (?, ?)", cursor.CreatedAt, cursor.ID)
+		default:
+			query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		}
+	}
+
+	switch sortBy {
+	case repositories.CommentSortByHot:
+		query = query.Order(r.hotScoreSQL() + " DESC, created_at DESC, id DESC")
+	case repositories.CommentSortByNew:
+		query = query.Order("created_at DESC, id DESC")
+	case repositories.CommentSortByTop:
+		query = query.Order("votes DESC, created_at DESC, id DESC")
+	case repositories.CommentSortByOld:
+		query = query.Order("created_at ASC, id ASC")
+	default:
+		query = query.Order("created_at DESC, id DESC")
+	}
+
+	err := query.Limit(limit).Find(&comments).Error
+	return comments, err
+}
+
 func (r *CommentRepositoryImpl) hotScoreSQL() string {
 	return fmt.Sprintf(
 		"votes / POWER((EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600.0) + 2, %.1f)",

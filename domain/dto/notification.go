@@ -19,11 +19,18 @@ type NotificationResponse struct {
 	CreatedAt time.Time    `json:"createdAt"`
 }
 
-// NotificationListResponse - Response for listing notifications
+// NotificationListResponse - Response for listing notifications (offset-based)
 type NotificationListResponse struct {
 	Notifications []NotificationResponse `json:"notifications"`
 	UnreadCount   int64                  `json:"unreadCount"`
 	Meta          PaginationMeta         `json:"meta"`
+}
+
+// NotificationListCursorResponse - Response for listing notifications (cursor-based)
+type NotificationListCursorResponse struct {
+	Notifications []NotificationResponse `json:"notifications"`
+	UnreadCount   int64                  `json:"unreadCount"`
+	Meta          CursorPaginationMeta   `json:"meta"`
 }
 
 // MarkAsReadRequest - Request for marking notification as read

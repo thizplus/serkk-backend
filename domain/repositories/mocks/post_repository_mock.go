@@ -9,6 +9,7 @@ import (
 	"gofiber-template/domain/dto"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 )
 
 // MockPostRepository is a mock implementation of PostRepository
@@ -23,6 +24,14 @@ func (m *MockPostRepository) Create(ctx context.Context, post *models.Post) erro
 
 func (m *MockPostRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Post, error) {
 	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) GetByClientPostID(ctx context.Context, clientPostID string) (*models.Post, error) {
+	args := m.Called(ctx, clientPostID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -204,4 +213,37 @@ func (m *MockPostRepository) GetPostsByMediaID(ctx context.Context, mediaID uuid
 func (m *MockPostRepository) SyncTags(ctx context.Context, postID uuid.UUID, tagIDs []uuid.UUID) error {
 	args := m.Called(ctx, postID, tagIDs)
 	return args.Error(0)
+}
+
+// Cursor-based pagination methods
+func (m *MockPostRepository) ListWithCursor(ctx context.Context, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
+	args := m.Called(ctx, cursor, limit, sortBy)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	args := m.Called(ctx, authorID, cursor, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) ListByTagWithCursor(ctx context.Context, tagName string, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
+	args := m.Called(ctx, tagName, cursor, limit, sortBy)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) ListFollowingFeedWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	args := m.Called(ctx, userID, cursor, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Post), args.Error(1)
 }

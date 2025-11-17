@@ -23,16 +23,28 @@ type FollowResponse struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
-// FollowerListResponse - Response for followers list
+// FollowerListResponse - Response for followers list (offset-based)
 type FollowerListResponse struct {
 	Users []UserResponse `json:"users"`
 	Meta  PaginationMeta `json:"meta"`
 }
 
-// FollowingListResponse - Response for following list
+// FollowingListResponse - Response for following list (offset-based)
 type FollowingListResponse struct {
 	Users []UserResponse `json:"users"`
 	Meta  PaginationMeta `json:"meta"`
+}
+
+// FollowerListCursorResponse - Response for followers list (cursor-based)
+type FollowerListCursorResponse struct {
+	Users []UserResponse       `json:"users"`
+	Meta  CursorPaginationMeta `json:"meta"`
+}
+
+// FollowingListCursorResponse - Response for following list (cursor-based)
+type FollowingListCursorResponse struct {
+	Users []UserResponse       `json:"users"`
+	Meta  CursorPaginationMeta `json:"meta"`
 }
 
 // FollowStatusResponse - Response for checking follow status

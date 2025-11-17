@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -126,3 +127,42 @@ func (r *FollowRepositoryImpl) UpdateFollowingCount(ctx context.Context, userID 
 }
 
 var _ repositories.FollowRepository = (*FollowRepositoryImpl)(nil)
+
+// Cursor-based methods
+func (r *FollowRepositoryImpl) GetFollowersWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.User, error) {
+	var users []*models.User
+	query := r.db.WithContext(ctx).
+		Joins("JOIN follows ON follows.follower_id = users.id").
+		Where("follows.following_id = ?", userID)
+
+	// Apply cursor filter using follows.created_at
+	if cursor != nil {
+		query = query.Where("(follows.created_at, follows.follower_id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order by follow creation time (most recent followers first)
+	err := query.Order("follows.created_at DESC, follows.follower_id DESC").
+		Limit(limit).
+		Find(&users).Error
+
+	return users, err
+}
+
+func (r *FollowRepositoryImpl) GetFollowingWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.User, error) {
+	var users []*models.User
+	query := r.db.WithContext(ctx).
+		Joins("JOIN follows ON follows.following_id = users.id").
+		Where("follows.follower_id = ?", userID)
+
+	// Apply cursor filter using follows.created_at
+	if cursor != nil {
+		query = query.Where("(follows.created_at, follows.following_id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order by follow creation time (most recent following first)
+	err := query.Order("follows.created_at DESC, follows.following_id DESC").
+		Limit(limit).
+		Find(&users).Error
+
+	return users, err
+}

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -92,3 +93,30 @@ func (r *SavedPostRepositoryImpl) GetSavedStatus(ctx context.Context, userID uui
 }
 
 var _ repositories.SavedPostRepository = (*SavedPostRepositoryImpl)(nil)
+
+// Cursor-based methods
+func (r *SavedPostRepositoryImpl) GetSavedPostsWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	var posts []*models.Post
+	query := r.db.WithContext(ctx).
+		Joins("JOIN saved_posts ON saved_posts.post_id = posts.id").
+		Preload("Author").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Where("saved_posts.user_id = ? AND posts.is_deleted = ?", userID, false)
+
+	// Apply cursor filter using saved_posts.saved_at
+	if cursor != nil {
+		query = query.Where("(saved_posts.saved_at, saved_posts.post_id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order by saved time (most recently saved first)
+	err := query.Order("saved_posts.saved_at DESC, saved_posts.post_id DESC").
+		Limit(limit).
+		Find(&posts).Error
+
+	return posts, err
+}

@@ -43,10 +43,16 @@ type CommentWithRepliesResponse struct {
 	Replies []CommentWithRepliesResponse `json:"replies"`
 }
 
-// CommentListResponse - Response for listing comments
+// CommentListResponse - Response for listing comments (offset-based, deprecated)
 type CommentListResponse struct {
 	Comments []CommentResponse `json:"comments"`
 	Meta     PaginationMeta    `json:"meta"`
+}
+
+// CommentListCursorResponse - Response for listing comments with cursor pagination
+type CommentListCursorResponse struct {
+	Comments []CommentResponse    `json:"comments"`
+	Meta     CursorPaginationMeta `json:"meta"`
 }
 
 // CommentTreeResponse - Response for comment tree (nested structure)

@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
+	"gofiber-template/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -109,3 +110,48 @@ func (r *NotificationRepositoryImpl) CountUnreadByUser(ctx context.Context, user
 }
 
 var _ repositories.NotificationRepository = (*NotificationRepositoryImpl)(nil)
+
+// Cursor-based methods
+func (r *NotificationRepositoryImpl) ListByUserWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Notification, error) {
+	var notifications []*models.Notification
+	query := r.db.WithContext(ctx).
+		Preload("User").
+		Preload("Sender").
+		Preload("Post").
+		Preload("Comment").
+		Where("user_id = ?", userID)
+
+	// Apply cursor filter
+	if cursor != nil {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order and limit
+	err := query.Order("created_at DESC, id DESC").
+		Limit(limit).
+		Find(&notifications).Error
+
+	return notifications, err
+}
+
+func (r *NotificationRepositoryImpl) ListUnreadByUserWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Notification, error) {
+	var notifications []*models.Notification
+	query := r.db.WithContext(ctx).
+		Preload("User").
+		Preload("Sender").
+		Preload("Post").
+		Preload("Comment").
+		Where("user_id = ? AND is_read = ?", userID, false)
+
+	// Apply cursor filter
+	if cursor != nil {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order and limit
+	err := query.Order("created_at DESC, id DESC").
+		Limit(limit).
+		Find(&notifications).Error
+
+	return notifications, err
+}

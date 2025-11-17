@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"gofiber-template/domain/models"
+	"gofiber-template/pkg/utils"
 )
 
 // MockSavedPostRepository is a mock implementation of SavedPostRepository
@@ -47,4 +48,12 @@ func (m *MockSavedPostRepository) GetSavedStatus(ctx context.Context, userID uui
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(map[uuid.UUID]bool), args.Error(1)
+}
+
+func (m *MockSavedPostRepository) GetSavedPostsWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
+	args := m.Called(ctx, userID, cursor, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Post), args.Error(1)
 }

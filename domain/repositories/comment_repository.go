@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"gofiber-template/domain/models"
+	"gofiber-template/pkg/utils"
 )
 
 type CommentSortBy string
@@ -22,10 +23,15 @@ type CommentRepository interface {
 	Update(ctx context.Context, id uuid.UUID, comment *models.Comment) error
 	Delete(ctx context.Context, id uuid.UUID) error // Soft delete
 
-	// List & Filter
+	// List & Filter (offset-based, deprecated)
 	ListByPost(ctx context.Context, postID uuid.UUID, offset, limit int, sortBy CommentSortBy) ([]*models.Comment, error)
 	ListByAuthor(ctx context.Context, authorID uuid.UUID, offset, limit int) ([]*models.Comment, error)
 	ListReplies(ctx context.Context, parentID uuid.UUID, offset, limit int, sortBy CommentSortBy) ([]*models.Comment, error)
+
+	// List with Cursor (cursor-based pagination)
+	ListByPostWithCursor(ctx context.Context, postID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy CommentSortBy) ([]*models.Comment, error)
+	ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Comment, error)
+	ListRepliesWithCursor(ctx context.Context, parentID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy CommentSortBy) ([]*models.Comment, error)
 
 	// Tree structure
 	GetCommentTree(ctx context.Context, postID uuid.UUID, maxDepth int) ([]*models.Comment, error)
