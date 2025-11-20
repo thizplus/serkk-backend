@@ -1,0 +1,62 @@
+2025/11/16 23:02:17 ✓ Configuration loaded
+2025/11/16 23:02:17 ✓ Logger initialized
+2025/11/16 23:02:17 ✓ Metrics initialized
+2025/11/16 23:02:17 ✓ Database connected
+2025/11/16 23:02:17 ✓ Database connection pool configured
+✓ Applied migration: migrations/001_initial_schema.sql
+Warning: Failed to execute migrations/008_create_chat_tables.sql: ERROR: constraint "fk_conversations_last_message" for relation "conversations" already exists (SQLSTATE 42710)
+✓ Applied migration: migrations/009_add_media_file_fields.sql
+✓ Applied migration: migrations/010_add_video_streaming_fields.sql
+✓ Applied migration: migrations/011_make_message_content_nullable.sql
+✓ Applied migration: migrations/012_add_post_status_column.sql
+✓ Applied migration: migrations/013_add_post_media_display_order.sql
+Warning: Failed to execute migrations/014_add_performance_indexes.sql: ERROR: functions in index expression must be marked IMMUTABLE (SQLSTATE 42P17)
+✓ Applied migration: migrations/015_add_post_type_column.sql
+✓ Applied migration: migrations/016_add_client_post_id.sql
+✓ Applied migration: migrations/017_add_post_media_limit_trigger.sql
+Warning: Failed to execute migrations/add_push_subscriptions_unique_constraint.sql: ERROR: relation "idx_user_endpoint" already exists (SQLSTATE 42P07)
+2025/11/16 23:02:17 ✓ Database migrated
+2025/11/16 23:02:17 ✓ Health checker initialized
+2025/11/16 23:02:17 ✓ Redis connected
+2025/11/16 23:02:17 ✓ RedisService initialized
+2025/11/16 23:02:17 ✓ FeedCacheService initialized
+2025/11/16 23:02:17 ✓ Bunny Storage initialized
+2025/11/16 23:02:17 ✓ Bunny Stream initialized
+2025/11/16 23:02:17 ✓ R2 Storage initialized
+2025/11/16 23:02:17 ✓ MediaUploadService initialized
+2025/11/16 23:02:17 ✓ Repositories initialized (18 repositories)
+2025/11/16 23:02:17 ✓ NotificationHub started
+2025/11/16 23:02:17 ✓ Services initialized (19 services)
+2025/11/16 23:02:17 ✓ ChatHub injected to MessageService
+2025/11/16 23:02:17 ✓ ChatHub started
+2025/11/16 23:02:17 🚀 NotificationHub started
+2025/11/16 23:02:17 🚀 ChatHub started
+2025/11/16 23:02:17 🔴 Redis Pub/Sub listener started
+2025/11/16 23:02:17 Event scheduler started
+2025/11/16 23:02:17 ✓ Event scheduler started
+
+2025/11/16 23:02:17 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/job_repository_impl.go:58
+[0m[33m[2.623ms] [34;1m[rows:0][0m SELECT * FROM "jobs" LIMIT 1000
+
+2025/11/16 23:02:17 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/job_repository_impl.go:64
+[0m[33m[0.000ms] [34;1m[rows:1][0m SELECT count(*) FROM "jobs"
+2025/11/16 23:02:17 🎬 VideoEncoderWorker started
+2025/11/16 23:02:17 ✓ VideoEncoderWorker started
+2025/11/16 23:02:17 🚀 Server starting on port 8080
+2025/11/16 23:02:17 🌍 Environment: development
+2025/11/16 23:02:17 📚 Health check: http://localhost:8080/health
+2025/11/16 23:02:17 📖 API docs: http://localhost:8080/swagger/index.html
+2025/11/16 23:02:17 📊 Metrics: http://localhost:8080/metrics
+2025/11/16 23:02:17 💬 WebSocket Chat: ws://localhost:8080/ws/chat
+2025/11/16 23:02:17 🔔 WebSocket Notifications: ws://localhost:8080/ws/notifications
+
+ ┌───────────────────────────────────────────────────┐ 
+ │                     API SUEKK                     │ 
+ │                   Fiber v2.52.9                   │ 
+ │               http://127.0.0.1:8080               │ 
+ │       (bound on host 0.0.0.0 and port 8080)       │ 
+ │                                                   │ 
+ │ Handlers ........... 278  Processes ........... 1 │ 
+ │ Prefork ....... Disabled  PID ............. 17476 │ 
+ └───────────────────────────────────────────────────┘ 
+

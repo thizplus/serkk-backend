@@ -58,6 +58,9 @@ func RunSQLMigrations(db *gorm.DB) error {
 		"migrations/015_add_post_type_column.sql",
 		"migrations/016_add_client_post_id.sql",
 		"migrations/017_add_post_media_limit_trigger.sql",
+		"migrations/018_create_auto_post_tables.sql",
+		"migrations/019_update_auto_post_tables_v2.sql",
+		"migrations/020_create_simple_auto_post_queue.sql",
 		"migrations/add_push_subscriptions_unique_constraint.sql",
 	}
 

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(chmod:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(go build:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

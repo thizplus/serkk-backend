@@ -1,0 +1,60 @@
+# gofiber-template/scripts
+scripts\check_messages_schema.go:12:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\drop_old_table.go:12:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\drop_search_table.go:12:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\drop_tables.go:13:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\list_tables.go:12:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\seed_5000_posts_with_media.go:343:6: main redeclared in this block
+	scripts\check_conversation.go:13:6: other declaration of main
+scripts\seed_posts.go:15:2: API_URL redeclared in this block
+	scripts\seed_5000_posts_with_media.go:22:2: other declaration of API_URL
+scripts\seed_posts.go:16:2: TOKEN redeclared in this block
+	scripts\seed_5000_posts_with_media.go:23:2: other declaration of TOKEN
+scripts\seed_posts.go:19:6: CreatePostRequest redeclared in this block
+	scripts\seed_5000_posts_with_media.go:30:6: other declaration of CreatePostRequest
+scripts\seed_posts.go:30:2: titles redeclared in this block
+	scripts\seed_5000_posts_with_media.go:44:2: other declaration of titles
+scripts\seed_posts.go:30:2: too many errors
+# gofiber-template/application/serviceimpl [gofiber-template/application/serviceimpl.test]
+application\serviceimpl\post_service_impl_test.go:38:20: cannot use mockSavedPostRepo (variable of type *"gofiber-template/domain/repositories/mocks".MockSavedPostRepository) as repositories.SavedPostRepository value in struct literal: *"gofiber-template/domain/repositories/mocks".MockSavedPostRepository does not implement repositories.SavedPostRepository (missing method GetSavedPostsWithCursor)
+application\serviceimpl\user_service_impl_test.go:27:15: cannot use mockFollowRepo (variable of type *"gofiber-template/domain/repositories/mocks".MockFollowRepository) as repositories.FollowRepository value in struct literal: *"gofiber-template/domain/repositories/mocks".MockFollowRepository does not implement repositories.FollowRepository (missing method GetFollowersWithCursor)
+FAIL	gofiber-template/application/serviceimpl [build failed]
+?   	gofiber-template/cmd/api	[no test files]
+?   	gofiber-template/docs	[no test files]
+?   	gofiber-template/domain/dto	[no test files]
+?   	gofiber-template/domain/models	[no test files]
+?   	gofiber-template/domain/repositories	[no test files]
+?   	gofiber-template/domain/repositories/mocks	[no test files]
+?   	gofiber-template/domain/services	[no test files]
+?   	gofiber-template/domain/services/mocks	[no test files]
+?   	gofiber-template/infrastructure/postgres	[no test files]
+?   	gofiber-template/infrastructure/postgres/migrations	[no test files]
+?   	gofiber-template/infrastructure/redis	[no test files]
+?   	gofiber-template/infrastructure/storage	[no test files]
+?   	gofiber-template/infrastructure/websocket	[no test files]
+?   	gofiber-template/infrastructure/workers	[no test files]
+ok  	gofiber-template/interfaces/api/handlers	0.112s
+?   	gofiber-template/interfaces/api/middleware	[no test files]
+?   	gofiber-template/interfaces/api/routes	[no test files]
+?   	gofiber-template/interfaces/api/websocket	[no test files]
+?   	gofiber-template/pkg/auth_code_store	[no test files]
+ok  	gofiber-template/pkg/cache	(cached)
+?   	gofiber-template/pkg/config	[no test files]
+?   	gofiber-template/pkg/database	[no test files]
+?   	gofiber-template/pkg/di	[no test files]
+?   	gofiber-template/pkg/errors	[no test files]
+?   	gofiber-template/pkg/health	[no test files]
+?   	gofiber-template/pkg/logger	[no test files]
+?   	gofiber-template/pkg/metrics	[no test files]
+ok  	gofiber-template/pkg/middleware	(cached)
+?   	gofiber-template/pkg/scheduler	[no test files]
+ok  	gofiber-template/pkg/testutil	0.483s
+ok  	gofiber-template/pkg/utils	(cached)
+ok  	gofiber-template/pkg/validator	(cached)
+FAIL	gofiber-template/scripts [build failed]
+FAIL

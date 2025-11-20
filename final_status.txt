@@ -1,0 +1,134 @@
+2025/11/16 22:53:59 ✓ Configuration loaded
+2025/11/16 22:53:59 ✓ Logger initialized
+2025/11/16 22:53:59 ✓ Metrics initialized
+2025/11/16 22:53:59 ✓ Database connected
+2025/11/16 22:53:59 ✓ Database connection pool configured
+✓ Applied migration: migrations/001_initial_schema.sql
+Warning: Failed to execute migrations/008_create_chat_tables.sql: ERROR: constraint "fk_conversations_last_message" for relation "conversations" already exists (SQLSTATE 42710)
+✓ Applied migration: migrations/009_add_media_file_fields.sql
+✓ Applied migration: migrations/010_add_video_streaming_fields.sql
+✓ Applied migration: migrations/011_make_message_content_nullable.sql
+✓ Applied migration: migrations/012_add_post_status_column.sql
+✓ Applied migration: migrations/013_add_post_media_display_order.sql
+Warning: Failed to execute migrations/014_add_performance_indexes.sql: ERROR: functions in index expression must be marked IMMUTABLE (SQLSTATE 42P17)
+✓ Applied migration: migrations/015_add_post_type_column.sql
+✓ Applied migration: migrations/016_add_client_post_id.sql
+✓ Applied migration: migrations/017_add_post_media_limit_trigger.sql
+Warning: Failed to execute migrations/add_push_subscriptions_unique_constraint.sql: ERROR: relation "idx_user_endpoint" already exists (SQLSTATE 42P07)
+2025/11/16 22:53:59 ✓ Database migrated
+2025/11/16 22:53:59 ✓ Health checker initialized
+2025/11/16 22:54:00 ✓ Redis connected
+2025/11/16 22:54:00 ✓ RedisService initialized
+2025/11/16 22:54:00 ✓ FeedCacheService initialized
+2025/11/16 22:54:00 ✓ Bunny Storage initialized
+2025/11/16 22:54:00 ✓ Bunny Stream initialized
+2025/11/16 22:54:00 ✓ R2 Storage initialized
+2025/11/16 22:54:00 ✓ MediaUploadService initialized
+2025/11/16 22:54:00 ✓ Repositories initialized (18 repositories)
+2025/11/16 22:54:00 ✓ NotificationHub started
+2025/11/16 22:54:00 ✓ Services initialized (19 services)
+2025/11/16 22:54:00 ✓ ChatHub injected to MessageService
+2025/11/16 22:54:00 ✓ ChatHub started
+2025/11/16 22:54:00 🚀 NotificationHub started
+2025/11/16 22:54:00 🚀 ChatHub started
+2025/11/16 22:54:00 🔴 Redis Pub/Sub listener started
+2025/11/16 22:54:00 Event scheduler started
+2025/11/16 22:54:00 ✓ Event scheduler started
+
+2025/11/16 22:54:00 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/job_repository_impl.go:58
+[0m[33m[2.648ms] [34;1m[rows:0][0m SELECT * FROM "jobs" LIMIT 1000
+
+2025/11/16 22:54:00 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/job_repository_impl.go:64
+[0m[33m[0.000ms] [34;1m[rows:1][0m SELECT count(*) FROM "jobs"
+2025/11/16 22:54:00 🎬 VideoEncoderWorker started
+2025/11/16 22:54:00 ✓ VideoEncoderWorker started
+2025/11/16 22:54:00 🚀 Server starting on port 8080
+2025/11/16 22:54:00 🌍 Environment: development
+2025/11/16 22:54:00 📚 Health check: http://localhost:8080/health
+2025/11/16 22:54:00 📖 API docs: http://localhost:8080/swagger/index.html
+2025/11/16 22:54:00 📊 Metrics: http://localhost:8080/metrics
+2025/11/16 22:54:00 💬 WebSocket Chat: ws://localhost:8080/ws/chat
+2025/11/16 22:54:00 🔔 WebSocket Notifications: ws://localhost:8080/ws/notifications
+
+ ┌───────────────────────────────────────────────────┐ 
+ │                     API SUEKK                     │ 
+ │                   Fiber v2.52.9                   │ 
+ │               http://127.0.0.1:8080               │ 
+ │       (bound on host 0.0.0.0 and port 8080)       │ 
+ │                                                   │ 
+ │ Handlers ........... 278  Processes ........... 1 │ 
+ │ Prefork ....... Disabled  PID ............. 27064 │ 
+ └───────────────────────────────────────────────────┘ 
+
+[90m2025-11-16T22:56:23+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+[90m2025-11-16T22:56:24+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m99 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:56:23] 200 - GET /api/v1/cache/stats -      99.657ms
+[90m2025-11-16T22:56:34+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[4.326ms] [34;1m[rows:2][0m SELECT * FROM "users" WHERE "users"."id" IN ('4aa10e1b-06c4-4b09-8bd9-5cea94cd3723','8e080dfb-79a8-487a-ab52-2b0779fbe827')
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[1.179ms] [34;1m[rows:9][0m SELECT * FROM "post_media" WHERE "post_media"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:9][0m SELECT * FROM "media" WHERE "media"."id" IN ('42a712e4-b5bd-440e-af42-49c5a1857f59','8b5e08c7-b83b-46a3-bb38-a193e7477658','d2dccadb-3d57-4366-a0c3-9129375f2024','19bad594-dba9-4fba-a007-092087493e77','fc957405-df68-41be-84a2-70dba39ceeb9','c00aa867-1254-470a-8cba-3f72dfeed072','7f74b1ab-5437-4822-a5be-f78060d1864d','48a42c8d-3dd9-4886-91c5-33ec9c0e2aba','e7374b32-403a-4a9b-8192-fe2388a69196')
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[1.594ms] [34;1m[rows:6][0m SELECT * FROM "post_tags" WHERE "post_tags"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[1.846ms] [34;1m[rows:6][0m SELECT * FROM "tags" WHERE "tags"."id" IN ('434c8c5e-14be-4223-a6a9-767919342d90','7a7729f7-8a7b-4ce9-aeeb-edf3f0a3ff55','99287b06-52cc-4b4a-9d69-edad7441643c','03b8f5b5-64bd-42cc-a021-86f415627245','2967889b-1768-4a32-aced-ca670b50a59a','b9e37281-6739-4e81-94d7-e4a58e71a28d')
+
+2025/11/16 22:56:34 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[50.178ms] [34;1m[rows:6][0m SELECT * FROM "posts" WHERE is_deleted = false AND status = 'published' ORDER BY posts.votes / POWER((EXTRACT(EPOCH FROM (NOW() - posts.created_at)) / 3600.0) + 2, 1.5) DESC LIMIT 6
+[90m2025-11-16T22:56:34+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m50 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:56:34] 200 - GET /api/v1/posts -     50.1784ms
+[90m2025-11-16T22:56:40+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+[90m2025-11-16T22:56:40+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m355 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:56:39] 200 - GET /api/v1/cache/stats -     355.906ms
+[90m2025-11-16T22:57:07+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.524ms] [34;1m[rows:2][0m SELECT * FROM "users" WHERE "users"."id" IN ('4aa10e1b-06c4-4b09-8bd9-5cea94cd3723','8e080dfb-79a8-487a-ab52-2b0779fbe827')
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:9][0m SELECT * FROM "post_media" WHERE "post_media"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.543ms] [34;1m[rows:9][0m SELECT * FROM "media" WHERE "media"."id" IN ('42a712e4-b5bd-440e-af42-49c5a1857f59','8b5e08c7-b83b-46a3-bb38-a193e7477658','d2dccadb-3d57-4366-a0c3-9129375f2024','19bad594-dba9-4fba-a007-092087493e77','fc957405-df68-41be-84a2-70dba39ceeb9','c00aa867-1254-470a-8cba-3f72dfeed072','7f74b1ab-5437-4822-a5be-f78060d1864d','48a42c8d-3dd9-4886-91c5-33ec9c0e2aba','e7374b32-403a-4a9b-8192-fe2388a69196')
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:6][0m SELECT * FROM "post_tags" WHERE "post_tags"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:6][0m SELECT * FROM "tags" WHERE "tags"."id" IN ('434c8c5e-14be-4223-a6a9-767919342d90','7a7729f7-8a7b-4ce9-aeeb-edf3f0a3ff55','99287b06-52cc-4b4a-9d69-edad7441643c','03b8f5b5-64bd-42cc-a021-86f415627245','2967889b-1768-4a32-aced-ca670b50a59a','b9e37281-6739-4e81-94d7-e4a58e71a28d')
+
+2025/11/16 22:57:08 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[39.132ms] [34;1m[rows:6][0m SELECT * FROM "posts" WHERE is_deleted = false AND status = 'published' ORDER BY posts.votes / POWER((EXTRACT(EPOCH FROM (NOW() - posts.created_at)) / 3600.0) + 2, 1.5) DESC LIMIT 6
+[90m2025-11-16T22:57:08+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m39 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:57:07] 200 - GET /api/v1/posts -     39.6598ms
+[90m2025-11-16T22:57:10+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:2][0m SELECT * FROM "users" WHERE "users"."id" IN ('4aa10e1b-06c4-4b09-8bd9-5cea94cd3723','8e080dfb-79a8-487a-ab52-2b0779fbe827')
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.022ms] [34;1m[rows:9][0m SELECT * FROM "post_media" WHERE "post_media"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.527ms] [34;1m[rows:9][0m SELECT * FROM "media" WHERE "media"."id" IN ('42a712e4-b5bd-440e-af42-49c5a1857f59','8b5e08c7-b83b-46a3-bb38-a193e7477658','d2dccadb-3d57-4366-a0c3-9129375f2024','19bad594-dba9-4fba-a007-092087493e77','fc957405-df68-41be-84a2-70dba39ceeb9','c00aa867-1254-470a-8cba-3f72dfeed072','7f74b1ab-5437-4822-a5be-f78060d1864d','48a42c8d-3dd9-4886-91c5-33ec9c0e2aba','e7374b32-403a-4a9b-8192-fe2388a69196')
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:6][0m SELECT * FROM "post_tags" WHERE "post_tags"."post_id" IN ('ef87118d-9971-4f17-8577-0f3e29664b29','3ef3060d-632f-4110-9414-467dce0406d3','35c99531-d279-4156-a731-ebc042328d5e','a0738996-fe03-4d95-9a54-c46f6065f09d','1af3e38f-4e07-4ec5-bf35-43264e56a731','5431711e-0eea-4f58-9411-f4768485c1f4')
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[0.000ms] [34;1m[rows:6][0m SELECT * FROM "tags" WHERE "tags"."id" IN ('434c8c5e-14be-4223-a6a9-767919342d90','7a7729f7-8a7b-4ce9-aeeb-edf3f0a3ff55','99287b06-52cc-4b4a-9d69-edad7441643c','03b8f5b5-64bd-42cc-a021-86f415627245','2967889b-1768-4a32-aced-ca670b50a59a','b9e37281-6739-4e81-94d7-e4a58e71a28d')
+
+2025/11/16 22:57:10 [32mD:/Admin/Desktop/MY PROJECT/__serkk/gofiber-backend/infrastructure/postgres/post_repository_impl.go:107
+[0m[33m[39.373ms] [34;1m[rows:6][0m SELECT * FROM "posts" WHERE is_deleted = false AND status = 'published' ORDER BY posts.votes / POWER((EXTRACT(EPOCH FROM (NOW() - posts.created_at)) / 3600.0) + 2, 1.5) DESC LIMIT 6
+[90m2025-11-16T22:57:10+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m39 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/posts [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:57:09] 200 - GET /api/v1/posts -     39.9511ms
+[90m2025-11-16T22:57:15+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mIncoming request[0m [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36muser_agent=[0mcurl/8.1.2
+[90m2025-11-16T22:57:15+07:00[0m [32mINF[0m [1mpkg\logger\logger.go:120[0m[36m >[0m [1mRequest completed successfully[0m [36mduration=[0m116 [36mip=[0m127.0.0.1 [36mmethod=[0mGET [36mpath=[0m/api/v1/cache/stats [36mrequest_id=[0m [36mstatus=[0m200 [36muser_agent=[0mcurl/8.1.2
+[2025/11/16 22:57:15] 200 - GET /api/v1/cache/stats -    116.0443ms

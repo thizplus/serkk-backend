@@ -78,7 +78,7 @@ func main() {
 	chatWSHandler := websocketHandler.NewChatWebSocketHandler(container.ChatHub)
 	notificationWSHandler := websocketHandler.NewNotificationWebSocketHandler(container.NotificationHub)
 
-	h := handlers.NewHandlers(services, container.GetConfig(), chatWSHandler, notificationWSHandler, container.ChatHub, container.NotificationHub, container.ConversationRepository, container.MediaUploadService, container.R2Storage, container.MediaRepository, container.RedisService, container.FeedCacheService)
+	h := handlers.NewHandlers(services, container.GetConfig(), chatWSHandler, notificationWSHandler, container.ChatHub, container.NotificationHub, container.ConversationRepository, container.MediaUploadService, container.R2Storage, container.MediaRepository, container.RedisService, container.FeedCacheService, container.DB)
 
 	// Create monitoring handlers
 	healthHandler := handlers.NewHealthHandler(container.GetHealthChecker())

@@ -11,6 +11,7 @@ import (
 	"gofiber-template/infrastructure/websocket"
 	"gofiber-template/infrastructure/workers"
 	"gofiber-template/interfaces/api/handlers"
+	"gofiber-template/pkg/ai"
 	"gofiber-template/pkg/config"
 	"gofiber-template/pkg/database"
 	"gofiber-template/pkg/health"
@@ -68,6 +69,10 @@ type Container struct {
 	MessageRepository      repositories.MessageRepository
 	BlockRepository        repositories.BlockRepository
 
+	// Repositories - Auto-Post
+	AutoPostSettingRepository repositories.AutoPostSettingRepository
+	AutoPostLogRepository     repositories.AutoPostLogRepository
+
 	// Services - Legacy
 	UserService services.UserService
 	TaskService services.TaskService
@@ -94,6 +99,10 @@ type Container struct {
 
 	// Services - Upload
 	FileUploadService services.FileUploadService
+
+	// Services - Auto-Post
+	AutoPostService       services.AutoPostService
+	SimpleAutoPostService services.SimpleAutoPostService
 }
 
 func NewContainer() *Container {
@@ -310,7 +319,11 @@ func (c *Container) initRepositories() error {
 	c.MessageRepository = postgres.NewMessageRepository(c.DB)
 	c.BlockRepository = postgres.NewBlockRepository(c.DB)
 
-	log.Println("✓ Repositories initialized (18 repositories)")
+	// Auto-Post repositories
+	c.AutoPostSettingRepository = postgres.NewAutoPostSettingRepository(c.DB)
+	c.AutoPostLogRepository = postgres.NewAutoPostLogRepository(c.DB)
+
+	log.Println("✓ Repositories initialized (20 repositories)")
 	return nil
 }
 
@@ -417,12 +430,29 @@ func (c *Container) initServices() error {
 		c.MediaUploadService,
 	)
 
+	// 7. Auto-Post services
+	openAIService := ai.NewOpenAIService(c.Config.OpenAI.APIKey, c.Config.OpenAI.Model)
+	c.AutoPostService = serviceimpl.NewAutoPostService(
+		c.AutoPostSettingRepository,
+		c.AutoPostLogRepository,
+		c.PostService,
+		openAIService,
+		c.Logger.GetZerolog(),
+	)
+
+	// Simple Auto-Post service (topic queue)
+	c.SimpleAutoPostService = serviceimpl.NewSimpleAutoPostService(
+		c.DB,
+		openAIService,
+		c.PostService,
+	)
+
 	// Set push service for notification service (to avoid circular dependency)
 	if notifService, ok := c.NotificationService.(*serviceimpl.NotificationServiceImpl); ok {
 		notifService.SetPushService(c.PushService)
 	}
 
-	log.Println("✓ Services initialized (19 services)")
+	log.Println("✓ Services initialized (20 services)")
 	return nil
 }
 
@@ -458,6 +488,36 @@ func (c *Container) initScheduler() error {
 
 	if activeJobCount > 0 {
 		log.Printf("✓ Scheduled %d active jobs", activeJobCount)
+	}
+
+	// Schedule auto-post processing (runs every hour)
+	err = c.EventScheduler.AddJob("auto-post-processor", "0 * * * *", func() {
+		log.Println("🤖 Running auto-post processor...")
+		if err := c.AutoPostService.ProcessAllEnabledSettings(ctx); err != nil {
+			log.Printf("❌ Auto-post processor error: %v", err)
+		} else {
+			log.Println("✓ Auto-post processor completed")
+		}
+	})
+	if err != nil {
+		log.Printf("Warning: Failed to schedule auto-post processor: %v", err)
+	} else {
+		log.Println("✓ Auto-post processor scheduled (every hour)")
+	}
+
+	// Schedule simple auto-post from queue (runs every hour)
+	err = c.EventScheduler.AddJob("simple-auto-post-processor", "0 * * * *", func() {
+		log.Println("📝 Running simple auto-post processor...")
+		if err := c.SimpleAutoPostService.ProcessNextTopic(ctx); err != nil {
+			log.Printf("❌ Simple auto-post processor error: %v", err)
+		} else {
+			log.Println("✅ Simple auto-post processor completed")
+		}
+	})
+	if err != nil {
+		log.Printf("Warning: Failed to schedule simple auto-post processor: %v", err)
+	} else {
+		log.Println("✓ Simple auto-post processor scheduled (every hour)")
 	}
 
 	return nil
@@ -600,6 +660,9 @@ func (c *Container) GetHandlerServices() *handlers.Services {
 
 		// Upload services
 		FileUploadService: c.FileUploadService,
+
+		// Auto-Post services
+		AutoPostService: c.AutoPostService,
 	}
 }
 

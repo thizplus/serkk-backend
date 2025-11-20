@@ -43,6 +43,10 @@ func SetupRoutes(app *fiber.App, h *handlers.Handlers, cfg ...*config.Config) {
 	// Setup webhook routes (for external services like Bunny Stream)
 	SetupWebhookRoutes(api, h)
 
+	// Setup auto-post routes
+	SetupAutoPostRoutes(api, h)
+	SetupSimpleAutoPostRoutes(api, h)
+
 	// Setup legacy routes (can be removed if not needed)
 	SetupTaskRoutes(api, h)
 	SetupFileRoutes(api, h)

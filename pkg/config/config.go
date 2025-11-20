@@ -15,6 +15,7 @@ type Config struct {
 	R2       R2Config
 	OAuth    OAuthConfig
 	VAPID    VAPIDConfig
+	OpenAI   OpenAIConfig
 }
 
 type AppConfig struct {
@@ -82,6 +83,12 @@ type VAPIDConfig struct {
 	Subject    string
 }
 
+type OpenAIConfig struct {
+	APIKey    string
+	Model     string
+	BotUserID string
+}
+
 func LoadConfig() (*Config, error) {
 	// Load .env file if it exists (for local development)
 	// In production/Docker, environment variables are set by the container
@@ -144,6 +151,11 @@ func LoadConfig() (*Config, error) {
 			PublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
 			PrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
 			Subject:    getEnv("VAPID_SUBJECT", "mailto:admin@voobize.com"),
+		},
+		OpenAI: OpenAIConfig{
+			APIKey:    getEnv("OPENAI_API_KEY", ""),
+			Model:     getEnv("OPENAI_MODEL", "gpt-4o-mini"),
+			BotUserID: getEnv("AUTO_POST_BOT_USER_ID", ""),
 		},
 	}
 
