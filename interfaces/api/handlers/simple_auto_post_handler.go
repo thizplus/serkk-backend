@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -23,11 +24,17 @@ func NewSimpleAutoPostHandler(db *gorm.DB) *SimpleAutoPostHandler {
 }
 
 type QueueItem struct {
-	ID         uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	BotUserID  uuid.UUID `gorm:"type:uuid;not null"`
-	Topic      string    `gorm:"type:text;not null"`
-	Tone       string    `gorm:"type:varchar(50);default:'neutral'"`
-	Status     string    `gorm:"type:varchar(20);default:'pending'"`
+	ID             uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	BotUserID      uuid.UUID  `gorm:"type:uuid;not null" json:"botUserId"`
+	Topic          string     `gorm:"type:text;not null" json:"topic"`
+	Tone           string     `gorm:"type:varchar(50);default:'neutral'" json:"tone"`
+	Status         string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	PostID         *uuid.UUID `gorm:"type:uuid" json:"postId,omitempty"`
+	GeneratedTitle *string    `gorm:"type:text" json:"generatedTitle,omitempty"`
+	ErrorMessage   *string    `gorm:"type:text" json:"errorMessage,omitempty"`
+	TokensUsed     *int       `gorm:"type:integer" json:"tokensUsed,omitempty"`
+	CreatedAt      time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"createdAt"`
+	CompletedAt    *time.Time `gorm:"type:timestamp" json:"completedAt,omitempty"`
 }
 
 func (QueueItem) TableName() string {
