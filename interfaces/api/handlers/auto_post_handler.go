@@ -30,9 +30,9 @@ func NewAutoPostHandler(service services.AutoPostService) *AutoPostHandler {
 // @Produce json
 // @Param request body dto.CreateAutoPostSettingRequest true "Create auto-post setting request"
 // @Success 201 {object} dto.AutoPostSettingResponse
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 401 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 401 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings [post]
 func (h *AutoPostHandler) CreateSetting(c *fiber.Ctx) error {
@@ -61,9 +61,9 @@ func (h *AutoPostHandler) CreateSetting(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Setting ID"
 // @Success 200 {object} dto.AutoPostSettingResponse
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id} [get]
 func (h *AutoPostHandler) GetSetting(c *fiber.Ctx) error {
@@ -89,9 +89,9 @@ func (h *AutoPostHandler) GetSetting(c *fiber.Ctx) error {
 // @Param id path string true "Setting ID"
 // @Param request body dto.UpdateAutoPostSettingRequest true "Update auto-post setting request"
 // @Success 200 {object} dto.AutoPostSettingResponse
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id} [put]
 func (h *AutoPostHandler) UpdateSetting(c *fiber.Ctx) error {
@@ -125,9 +125,9 @@ func (h *AutoPostHandler) UpdateSetting(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Setting ID"
 // @Success 204
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id} [delete]
 func (h *AutoPostHandler) DeleteSetting(c *fiber.Ctx) error {
@@ -152,7 +152,7 @@ func (h *AutoPostHandler) DeleteSetting(c *fiber.Ctx) error {
 // @Param offset query int false "Offset"
 // @Param limit query int false "Limit"
 // @Success 200 {object} map[string]interface{}
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings [get]
 func (h *AutoPostHandler) ListSettings(c *fiber.Ctx) error {
@@ -182,9 +182,9 @@ func (h *AutoPostHandler) ListSettings(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Setting ID"
 // @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id}/enable [post]
 func (h *AutoPostHandler) EnableSetting(c *fiber.Ctx) error {
@@ -208,9 +208,9 @@ func (h *AutoPostHandler) EnableSetting(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Setting ID"
 // @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id}/disable [post]
 func (h *AutoPostHandler) DisableSetting(c *fiber.Ctx) error {
@@ -235,9 +235,9 @@ func (h *AutoPostHandler) DisableSetting(c *fiber.Ctx) error {
 // @Param id path string true "Setting ID"
 // @Param request body dto.TriggerAutoPostRequest false "Trigger auto-post request"
 // @Success 200 {object} dto.TriggerAutoPostResponse
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/settings/{id}/trigger [post]
 func (h *AutoPostHandler) TriggerAutoPost(c *fiber.Ctx) error {
@@ -271,7 +271,7 @@ func (h *AutoPostHandler) TriggerAutoPost(c *fiber.Ctx) error {
 // @Param offset query int false "Offset"
 // @Param limit query int false "Limit"
 // @Success 200 {object} dto.AutoPostLogListResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/logs [get]
 func (h *AutoPostHandler) ListLogs(c *fiber.Ctx) error {
@@ -308,9 +308,9 @@ func (h *AutoPostHandler) ListLogs(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Log ID"
 // @Success 200 {object} dto.AutoPostLogResponse
-// @Failure 400 {object} middleware.ErrorResponse
-// @Failure 404 {object} middleware.ErrorResponse
-// @Failure 500 {object} middleware.ErrorResponse
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Security BearerAuth
 // @Router /auto-post/logs/{id} [get]
 func (h *AutoPostHandler) GetLog(c *fiber.Ctx) error {
