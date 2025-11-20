@@ -147,6 +147,11 @@ func (h *SimpleAutoPostHandler) UploadCSV(c *fiber.Ctx) error {
 		}
 
 		if err := h.db.Create(item).Error; err != nil {
+			// Log error for debugging
+			if failCount == 0 {
+				// Log only first error to avoid spam
+				c.Context().Logger().Printf("Failed to insert topic: %v", err)
+			}
 			failCount++
 		} else {
 			successCount++
@@ -238,5 +243,35 @@ func (h *SimpleAutoPostHandler) ListQueue(c *fiber.Ctx) error {
 			"limit":  limit,
 			"offset": offset,
 		},
+	})
+}
+
+// SetupTable godoc
+// @Summary Setup auto-post queue table
+// @Description Create the auto_post_queue table if it doesn't exist
+// @Tags simple-auto-post
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} utils.Response
+// @Security BearerAuth
+// @Router /simple-auto-post/setup [post]
+func (h *SimpleAutoPostHandler) SetupTable(c *fiber.Ctx) error {
+	// Check if table exists
+	if h.db.Migrator().HasTable(&QueueItem{}) {
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Table already exists",
+		})
+	}
+
+	// Create table
+	if err := h.db.AutoMigrate(&QueueItem{}); err != nil {
+		return utils.ErrorResponse(c, apperrors.ErrInternal.WithMessage("Failed to create table: "+err.Error()))
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Table created successfully",
 	})
 }

@@ -9,6 +9,9 @@ import (
 func SetupSimpleAutoPostRoutes(api fiber.Router, h *handlers.Handlers) {
 	simpleAutoPost := api.Group("/simple-auto-post")
 
+	// Setup (require authentication)
+	simpleAutoPost.Post("/setup", middleware.Protected(), h.SimpleAutoPostHandler.SetupTable)
+
 	// CSV Upload (require authentication)
 	simpleAutoPost.Post("/upload", middleware.Protected(), h.SimpleAutoPostHandler.UploadCSV)
 
