@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -38,10 +39,9 @@ type GeneratedContent struct {
 }
 
 type openAIRequest struct {
-	Model       string          `json:"model"`
-	Messages    []openAIMessage `json:"messages"`
-	MaxTokens   int             `json:"max_tokens,omitempty"`
-	Temperature float64         `json:"temperature,omitempty"`
+	Model              string          `json:"model"`
+	Messages           []openAIMessage `json:"messages"`
+	MaxCompletionTokens int            `json:"max_completion_tokens,omitempty"`
 }
 
 type openAIMessage struct {
@@ -113,8 +113,7 @@ func (c *openAIClient) GenerateContent(ctx context.Context, prompt string, maxTo
 				Content: prompt,
 			},
 		},
-		MaxTokens:   maxTokens,
-		Temperature: 0.8,
+		MaxCompletionTokens: maxTokens,
 	}
 
 	response, err := c.makeRequest(ctx, reqBody)
@@ -191,52 +190,98 @@ func (c *openAIClient) makeRequest(ctx context.Context, reqBody openAIRequest) (
 // parseGeneratedContent parses the AI response into structured content
 func (c *openAIClient) parseGeneratedContent(response string) (*GeneratedContent, error) {
 	var result struct {
-		Title   string   `json:"title"`
-		Content string   `json:"content"`
-		Tags    []string `json:"tags"`
+		Title      string   `json:"title"`
+		Content    string   `json:"content"`     // Old format (backward compatible)
+		Paragraphs []string `json:"paragraphs"` // New format
+		Tags       []string `json:"tags"`
 	}
 
-	// Try to parse as JSON first
-	if err := json.Unmarshal([]byte(response), &result); err == nil {
+	// Clean response (trim whitespace)
+	cleanedResponse := strings.TrimSpace(response)
+
+	// Try 1: Parse as JSON directly
+	if err := json.Unmarshal([]byte(cleanedResponse), &result); err == nil {
+		content := result.Content
+		// If paragraphs provided, join with double newlines
+		if len(result.Paragraphs) > 0 {
+			content = strings.Join(result.Paragraphs, "\n\n")
+		}
 		return &GeneratedContent{
 			Title:   result.Title,
-			Content: result.Content,
+			Content: content,
 			Tags:    result.Tags,
 		}, nil
 	}
 
-	// If not JSON, try to extract from markdown code blocks
-	content := response
-	if start := bytes.Index([]byte(content), []byte("```json")); start != -1 {
+	// Try 2: Extract from ```json code block
+	if start := bytes.Index([]byte(cleanedResponse), []byte("```json")); start != -1 {
 		start += 7
-		if end := bytes.Index([]byte(content[start:]), []byte("```")); end != -1 {
-			jsonContent := content[start : start+end]
-			if err := json.Unmarshal([]byte(jsonContent), &result); err == nil {
+		if end := bytes.Index([]byte(cleanedResponse[start:]), []byte("```")); end != -1 {
+			jsonContent := bytes.TrimSpace([]byte(cleanedResponse[start : start+end]))
+			if err := json.Unmarshal(jsonContent, &result); err == nil {
+				content := result.Content
+				if len(result.Paragraphs) > 0 {
+					content = strings.Join(result.Paragraphs, "\n\n")
+				}
 				return &GeneratedContent{
 					Title:   result.Title,
-					Content: result.Content,
+					Content: content,
 					Tags:    result.Tags,
 				}, nil
 			}
 		}
 	}
 
-	// Fallback: return raw content
-	return &GeneratedContent{
-		Title:   "AI Generated Post",
-		Content: response,
-		Tags:    []string{"ai-generated"},
-	}, nil
+	// Try 3: Extract from ``` code block (without json marker)
+	if start := bytes.Index([]byte(cleanedResponse), []byte("```")); start != -1 {
+		start += 3
+		if end := bytes.Index([]byte(cleanedResponse[start:]), []byte("```")); end != -1 {
+			jsonContent := bytes.TrimSpace([]byte(cleanedResponse[start : start+end]))
+			if err := json.Unmarshal(jsonContent, &result); err == nil {
+				content := result.Content
+				if len(result.Paragraphs) > 0 {
+					content = strings.Join(result.Paragraphs, "\n\n")
+				}
+				return &GeneratedContent{
+					Title:   result.Title,
+					Content: content,
+					Tags:    result.Tags,
+				}, nil
+			}
+		}
+	}
+
+	// Try 4: Find JSON object with regex pattern
+	startIdx := bytes.Index([]byte(cleanedResponse), []byte("{"))
+	endIdx := bytes.LastIndex([]byte(cleanedResponse), []byte("}"))
+	if startIdx != -1 && endIdx != -1 && endIdx > startIdx {
+		jsonContent := bytes.TrimSpace([]byte(cleanedResponse[startIdx : endIdx+1]))
+		if err := json.Unmarshal(jsonContent, &result); err == nil {
+			content := result.Content
+			if len(result.Paragraphs) > 0 {
+				content = strings.Join(result.Paragraphs, "\n\n")
+			}
+			return &GeneratedContent{
+				Title:   result.Title,
+				Content: content,
+				Tags:    result.Tags,
+			}, nil
+		}
+	}
+
+	// If all parsing failed, return error instead of raw content
+	return nil, fmt.Errorf("failed to parse AI response as JSON. Response: %s", cleanedResponse)
 }
 
 // GeneratePostContentWithStyle generates content with specific tone and variations
 func (c *openAIClient) GeneratePostContentWithStyle(ctx context.Context, topic string, tone string, enableVariations bool) (*GeneratedContent, error) {
+	// Tone descriptions for human-like writing
 	toneInstructions := map[string]string{
-		"neutral":       "in a balanced, informative tone",
-		"casual":        "in a friendly, conversational tone with casual language",
-		"professional":  "in a professional, business-appropriate tone",
-		"humorous":      "in a humorous, entertaining tone with wit and humor",
-		"controversial": "in a provocative, thought-provoking tone that challenges assumptions",
+		"neutral":       "balanced, informative",
+		"casual":        "friendly, conversational",
+		"professional":  "professional, business-appropriate",
+		"humorous":      "humorous, entertaining with wit",
+		"controversial": "provocative, thought-provoking",
 	}
 
 	toneInstruction := toneInstructions[tone]
@@ -244,31 +289,63 @@ func (c *openAIClient) GeneratePostContentWithStyle(ctx context.Context, topic s
 		toneInstruction = toneInstructions["neutral"]
 	}
 
-	variationRequest := ""
-	if enableVariations {
-		variationRequest = `  "titleVariations": ["variation 1", "variation 2", "variation 3", "variation 4", "variation 5"],`
+	// Persona based on tone
+	personaMap := map[string]string{
+		"neutral":       "Thai observer with balanced perspective",
+		"casual":        "Thai friend sharing thoughts over coffee",
+		"professional":  "Thai business columnist",
+		"humorous":      "Thai comedian with social commentary",
+		"controversial": "Thai columnist satirical - sharp, surgical, witty",
 	}
 
-	prompt := fmt.Sprintf(`Create an engaging social media post %s about: "%s"
+	persona := personaMap[tone]
+	if persona == "" {
+		persona = personaMap["neutral"]
+	}
 
-Please provide the response in the following JSON format:
+	prompt := fmt.Sprintf(`%s
+
+Persona: %s
+Tone: %s
+Topic: "%s"
+
+Write a social media post using HUMAN cadence.
+
+Return JSON:
 {
-  "title": "Main title (catchy, max 300 characters)",
-%s
-  "content": "Post content (engaging and informative, 200-500 words)",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+  "title": "...",
+  "paragraphs": ["paragraph 1", "paragraph 2", "paragraph 3"],
+  "tags": ["...", "...", "..."]
 }
 
-Guidelines:
-- Make the title attention-grabbing and unique
-- Use emojis sparingly but effectively
-- Include relevant statistics or numbers if appropriate
-- Make content scannable with short paragraphs
-- Use power words and emotional triggers
-- Include 3-5 relevant hashtags as tags
-%s`, toneInstruction, topic, variationRequest, getStyleGuidelines(tone))
+CONTENT RULES:
+- Must feel like written by a human with emotion + opinion
+- No repeated sentence patterns
+- No generic AI phrases
+- Use rhetorical hooks, tension, punchlines
+- Use Thai linguistic flow, natural spacing, and character
+- Include sharp insight that reflects human lived experience
+- Use pattern-breaking phrasing
+- Write in Thai language
+- Title: catchy, max 200 characters
+- Paragraphs: 4-8 paragraphs, vary length (some short punch lines, some longer)
+- Tags: 3-5 keywords in Thai (NO # symbols, just plain words)
 
-	return c.GenerateContent(ctx, prompt, 1800)
+FORMAT EXAMPLE:
+{
+  "title": "ทำไมค่าทิปถึงทำให้คนทำงานรู้สึกเหมือนโดนฟาดแต่ต้องยิ้มรับ?",
+  "paragraphs": [
+    "ประเทศไทยนี่แปลกอย่าง—อะไรที่ควรเป็น \"ระบบ\" ดันถูกโยนให้เป็น \"น้ำใจ\" ของลูกค้าแทนซะงั้น",
+    "ค่าทิปก็เหมือนกัน พูดตรงๆ มันดูดีเฉพาะบนกระดาษ",
+    "คนเสิร์ฟต้องลุ้นทุกโต๊ะ จะได้ไหม? วันนี้จะมีดวงพอให้ค่าไฟไหม?",
+    "ถึงเวลาพูดกันตรงๆ ว่า คนทำงานควรได้ \"ค่าจ้าง\" ไม่ใช่ \"ค่าลุ้น\""
+  ],
+  "tags": ["ค่าทิป", "ระบบแรงงาน", "เศรษฐกิจไทย"]
+}
+
+Start writing now.`, HumanWriterBlueprint, persona, toneInstruction, topic)
+
+	return c.GenerateContent(ctx, prompt, 2000)
 }
 
 // GenerateTitleVariations generates multiple title options for a topic
@@ -316,8 +393,7 @@ Return ONLY a JSON array of strings:
 				Content: prompt,
 			},
 		},
-		MaxTokens:   500,
-		Temperature: 0.9, // Higher temperature for more variety
+		MaxCompletionTokens: 500,
 	}
 
 	response, err := c.makeRequest(ctx, reqBody)
@@ -407,8 +483,7 @@ Make each post unique and avoid repetitive patterns.`, len(topics), toneDesc, to
 				Content: prompt,
 			},
 		},
-		MaxTokens:   len(topics) * 600, // Allocate tokens per post
-		Temperature: 0.8,
+		MaxCompletionTokens: len(topics) * 600, // Allocate tokens per post
 	}
 
 	response, err := c.makeRequest(ctx, reqBody)

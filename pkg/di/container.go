@@ -505,8 +505,8 @@ func (c *Container) initScheduler() error {
 		log.Println("✓ Auto-post processor scheduled (every hour)")
 	}
 
-	// Schedule simple auto-post from queue (runs every hour)
-	err = c.EventScheduler.AddJob("simple-auto-post-processor", "0 * * * *", func() {
+	// Schedule simple auto-post from queue (runs every minute for testing)
+	err = c.EventScheduler.AddJob("simple-auto-post-processor", "* * * * *", func() {
 		log.Println("📝 Running simple auto-post processor...")
 		if err := c.SimpleAutoPostService.ProcessNextTopic(ctx); err != nil {
 			log.Printf("❌ Simple auto-post processor error: %v", err)
@@ -517,7 +517,7 @@ func (c *Container) initScheduler() error {
 	if err != nil {
 		log.Printf("Warning: Failed to schedule simple auto-post processor: %v", err)
 	} else {
-		log.Println("✓ Simple auto-post processor scheduled (every hour)")
+		log.Println("✓ Simple auto-post processor scheduled (every minute)")
 	}
 
 	return nil
