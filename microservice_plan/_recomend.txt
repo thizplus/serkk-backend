@@ -1,0 +1,73 @@
+🔹 สรุปกลยุทธ์หลัก (สำหรับ Monolith Team)
+
+1. Dual-mode Operation (Webhook + Event)
+
+เริ่มจากให้ Auth Service ส่งทั้ง Webhook และ Event.
+
+Monolith ค่อย ๆ subscribe Event และ validate ก่อนปิด Webhook.
+
+ลดความเสี่ยง downtime ใน production.
+
+2. Abstraction Layer สำหรับ Event Bus
+
+ใช้ interface EventPublisher / EventSubscriber ตาม Clean Architecture.
+
+เปลี่ยน NATS → Kafka ได้ง่ายโดยไม่กระทบ business logic.
+
+ทำให้ testing ง่ายเพราะสามารถ mock interface ได้.
+
+3. Event Schema Versioning
+
+ทุก event มี EventVersion → รองรับ schema change ในอนาคต.
+
+ง่ายต่อการ replay และ upgrade consumer.
+
+4. Retry & DLQ
+
+NATS JetStream: MaxDeliver + manual ack/nack.
+
+Kafka: commit-based → fail ไม่ commit → retry.
+
+5. Incremental Migration
+
+Phase 1: Dual-mode, validate events.
+
+Phase 2: Events only, remove Webhook.
+
+Phase 3: ถ้า throughput สูง → migrate NATS → Kafka.
+
+6. Testing
+
+Unit: mock EventBus, ตรวจ handler logic.
+
+Integration: ใช้ NATS test server, verify end-to-end.
+
+Load: ตรวจ latency, retry, scalability.
+
+🔹 ข้อสังเกต / Recommendations
+หัวข้อ	คำแนะนำ
+Event ID Generation	Auth Service generate UUID → idempotency
+Event Ordering	NATS: ordering per subject + consumer group; Kafka: per partition
+Event Replay	NATS: js.GetMsg + DeliverAllAvailable; Kafka: offsets
+Schema Evolution	ใช้ EventVersion + nullable fields
+Monitoring	เปิด NATS (8222) / Kafka metrics, retry counters, lag metrics
+Consumer Scaling	NATS: queue group; Kafka: consumer group + partitions
+Data Migration	สำหรับ existing users → bulk replay / sync script
+Logging	log metadata (EventID, timestamp) เพื่อ debug/trace
+🔹 Suggested Next Actions
+
+ทำ PoC NATS Event สำหรับ user.created → verify Monolith subscriber.
+
+Implement dual-mode publishing (Webhook + Event) → run in staging.
+
+เพิ่ม integration tests + load test with NATS.
+
+Audit all Webhook consumers → ensure covered by events.
+
+เตรียม bulk migration tool → sync existing users cache.
+
+Monitor metrics → decide when ready to remove Webhook.
+
+หาก throughput สูง → deploy Kafka + switch via factory layer.
+
+💡 Tip: เก็บ Event log persistently อย่างน้อย 7–30 วัน (แม้ใช้ NATS) → ช่วย debug, replay, และรองรับ downstream services ใหม่ ๆ.

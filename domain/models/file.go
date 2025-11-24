@@ -14,8 +14,8 @@ type File struct {
 	MimeType  string
 	URL       string `gorm:"not null"`
 	CDNPath   string
-	UserID    uuid.UUID `gorm:"not null"`
-	User      User      `gorm:"foreignKey:UserID"`
+	UserID    uuid.UUID      `gorm:"not null"`
+	User      UsersIdentity `gorm:"foreignKey:UserID"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

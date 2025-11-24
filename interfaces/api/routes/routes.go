@@ -16,10 +16,9 @@ func SetupRoutes(app *fiber.App, h *handlers.Handlers, cfg ...*config.Config) {
 	// API version group
 	api := app.Group("/api/v1")
 
-	// Setup authentication routes
-	SetupAuthRoutes(api, h)
-	SetupUserRoutes(api, h)
-	SetupProfileRoutes(api, h)
+	// Auth routes REMOVED - belong to Auth Service (port 8088)
+	// User Profile routes (Backend combines users_cache + user_profiles)
+	SetupUserProfileRoutes(api, h)
 
 	// Setup social media routes
 	SetupPostRoutes(api, h)

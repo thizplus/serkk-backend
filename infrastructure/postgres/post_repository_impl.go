@@ -29,7 +29,7 @@ func (r *PostRepositoryImpl) Create(ctx context.Context, post *models.Post) erro
 func (r *PostRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Post, error) {
 	var post models.Post
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -47,7 +47,7 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models
 func (r *PostRepositoryImpl) GetByClientPostID(ctx context.Context, clientPostID string) (*models.Post, error) {
 	var post models.Post
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -80,7 +80,7 @@ func (r *PostRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 func (r *PostRepositoryImpl) List(ctx context.Context, offset, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -111,7 +111,7 @@ func (r *PostRepositoryImpl) List(ctx context.Context, offset, limit int, sortBy
 func (r *PostRepositoryImpl) ListByAuthor(ctx context.Context, authorID uuid.UUID, offset, limit int) ([]*models.Post, error) {
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -132,7 +132,7 @@ func (r *PostRepositoryImpl) ListByTag(ctx context.Context, tagName string, offs
 	log.Printf("🔍 Repository searching for tag: '%s'", tagName)
 
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -161,7 +161,7 @@ func (r *PostRepositoryImpl) ListByTag(ctx context.Context, tagName string, offs
 func (r *PostRepositoryImpl) ListByTagID(ctx context.Context, tagID uuid.UUID, offset, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -191,7 +191,7 @@ func (r *PostRepositoryImpl) Search(ctx context.Context, query string, offset, l
 	searchQuery := "%" + query + "%"
 
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -219,7 +219,7 @@ func (r *PostRepositoryImpl) SearchWithCursor(ctx context.Context, query string,
 	searchQuery := "%" + query + "%"
 
 	dbQuery := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -253,7 +253,7 @@ func (r *PostRepositoryImpl) SearchWithCursor(ctx context.Context, query string,
 func (r *PostRepositoryImpl) GetCrossposts(ctx context.Context, postID uuid.UUID, offset, limit int) ([]*models.Post, error) {
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Where("source_post_id = ? AND is_deleted = ? AND status = ?", postID, false, "published").
@@ -330,7 +330,7 @@ func (r *PostRepositoryImpl) DetachMedia(ctx context.Context, postID uuid.UUID, 
 func (r *PostRepositoryImpl) GetPostsByMediaID(ctx context.Context, mediaID uuid.UUID) ([]*models.Post, error) {
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Joins("JOIN post_media ON posts.id = post_media.post_id").
@@ -379,24 +379,148 @@ func (r *PostRepositoryImpl) hotScoreSQL() string {
 // Compiler check to ensure PostRepositoryImpl implements PostRepository
 var _ repositories.PostRepository = (*PostRepositoryImpl)(nil)
 
-// Cursor-based pagination methods (stub implementations)
+// Cursor-based pagination methods
 func (r *PostRepositoryImpl) ListWithCursor(ctx context.Context, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
-	// TODO: Implement cursor-based pagination
-	return r.List(ctx, 0, limit, sortBy)
+	var posts []*models.Post
+	query := r.db.WithContext(ctx).
+		Preload("Author.Profile").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Where("is_deleted = ? AND status = ?", false, "published")
+
+	// Apply cursor filter based on sort type
+	if cursor != nil {
+		switch sortBy {
+		case repositories.SortByHot:
+			// For hot sorting: (hot_score, created_at, id) < cursor values
+			query = query.Where("("+r.hotScoreSQL()+", posts.created_at, posts.id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.SortByTop:
+			// For top sorting: (votes, created_at, id) < cursor values
+			query = query.Where("(posts.votes, posts.created_at, posts.id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.SortByControversial:
+			// For controversial: (comment_count, created_at, id) < cursor values
+			query = query.Where("(posts.comment_count, posts.created_at, posts.id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.SortByNew:
+			// For new sorting: only use (created_at, id) < cursor values
+			query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		default:
+			// Default to new sorting
+			query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		}
+	}
+
+	// Apply sorting
+	switch sortBy {
+	case repositories.SortByHot:
+		query = query.Order(r.hotScoreSQL() + " DESC, posts.created_at DESC, posts.id DESC")
+	case repositories.SortByNew:
+		query = query.Order("posts.created_at DESC, posts.id DESC")
+	case repositories.SortByTop:
+		query = query.Order("posts.votes DESC, posts.created_at DESC, posts.id DESC")
+	case repositories.SortByControversial:
+		query = query.Order("posts.comment_count DESC, ABS(posts.votes) DESC, posts.created_at DESC, posts.id DESC")
+	default:
+		query = query.Order("posts.created_at DESC, posts.id DESC")
+	}
+
+	err := query.Limit(limit).Find(&posts).Error
+	return posts, err
 }
 
 func (r *PostRepositoryImpl) ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
-	// TODO: Implement cursor-based pagination
-	return r.ListByAuthor(ctx, authorID, 0, limit)
+	var posts []*models.Post
+	query := r.db.WithContext(ctx).
+		Preload("Author.Profile").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Where("author_id = ? AND is_deleted = ?", authorID, false)
+
+	// Apply cursor filter (sort by created_at DESC by default)
+	if cursor != nil {
+		query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	err := query.Order("posts.created_at DESC, posts.id DESC").Limit(limit).Find(&posts).Error
+	return posts, err
 }
 
 func (r *PostRepositoryImpl) ListByTagWithCursor(ctx context.Context, tagName string, cursor *utils.PostCursor, limit int, sortBy repositories.PostSortBy) ([]*models.Post, error) {
-	// TODO: Implement cursor-based pagination
-	return r.ListByTag(ctx, tagName, 0, limit, sortBy)
+	var posts []*models.Post
+
+	query := r.db.WithContext(ctx).
+		Preload("Author.Profile").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Joins("JOIN post_tags ON post_tags.post_id = posts.id").
+		Joins("JOIN tags ON tags.id = post_tags.tag_id").
+		Where("LOWER(TRIM(tags.name)) = LOWER(TRIM(?)) AND posts.is_deleted = ? AND posts.status = ?", tagName, false, "published")
+
+	// Apply cursor filter based on sort type
+	if cursor != nil {
+		switch sortBy {
+		case repositories.SortByHot:
+			query = query.Where("("+r.hotScoreSQL()+", posts.created_at, posts.id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.SortByTop:
+			query = query.Where("(posts.votes, posts.created_at, posts.id) < (?, ?, ?)", *cursor.SortValue, cursor.CreatedAt, cursor.ID)
+		case repositories.SortByNew:
+			query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		default:
+			query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		}
+	}
+
+	// Apply sorting
+	switch sortBy {
+	case repositories.SortByHot:
+		query = query.Order(r.hotScoreSQL() + " DESC, posts.created_at DESC, posts.id DESC")
+	case repositories.SortByNew:
+		query = query.Order("posts.created_at DESC, posts.id DESC")
+	case repositories.SortByTop:
+		query = query.Order("posts.votes DESC, posts.created_at DESC, posts.id DESC")
+	default:
+		query = query.Order("posts.created_at DESC, posts.id DESC")
+	}
+
+	err := query.Limit(limit).Find(&posts).Error
+	return posts, err
 }
 
 func (r *PostRepositoryImpl) ListFollowingFeedWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Post, error) {
-	// TODO: Implement cursor-based pagination following feed
 	var posts []*models.Post
-	return posts, nil
+
+	// Get posts from users that the current user is following
+	query := r.db.WithContext(ctx).
+		Preload("Author.Profile").
+		Preload("Media").
+		Preload("Tags").
+		Preload("SourcePost").
+		Preload("SourcePost.Author").
+		Preload("SourcePost.Media").
+		Preload("SourcePost.Tags").
+		Joins("JOIN follows ON follows.following_id = posts.author_id").
+		Where("follows.follower_id = ? AND posts.is_deleted = ? AND posts.status = ?", userID, false, "published")
+
+	// Apply cursor filter (sort by created_at DESC)
+	if cursor != nil {
+		query = query.Where("(posts.created_at, posts.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	// Order by created_at DESC (newest posts first)
+	err := query.Order("posts.created_at DESC, posts.id DESC").
+		Limit(limit).
+		Find(&posts).Error
+
+	return posts, err
 }

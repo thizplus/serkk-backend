@@ -82,7 +82,7 @@ func (r *VoteRepositoryImpl) GetVoteCount(ctx context.Context, targetID uuid.UUI
 func (r *VoteRepositoryImpl) ListByUser(ctx context.Context, userID uuid.UUID, targetType string, offset, limit int) ([]*models.Vote, error) {
 	var votes []*models.Vote
 	query := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Where("user_id = ?", userID)
 
 	if targetType != "" {
@@ -99,7 +99,7 @@ func (r *VoteRepositoryImpl) ListByUser(ctx context.Context, userID uuid.UUID, t
 func (r *VoteRepositoryImpl) ListByTarget(ctx context.Context, targetID uuid.UUID, targetType string, offset, limit int) ([]*models.Vote, error) {
 	var votes []*models.Vote
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Where("target_id = ? AND target_type = ?", targetID, targetType).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).

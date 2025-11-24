@@ -2,7 +2,9 @@ package di
 
 import (
 	"context"
+	"gofiber-template/application/eventhandlers"
 	"gofiber-template/application/serviceimpl"
+	"gofiber-template/domain/ports"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
 	"gofiber-template/infrastructure/postgres"
@@ -73,8 +75,12 @@ type Container struct {
 	AutoPostSettingRepository repositories.AutoPostSettingRepository
 	AutoPostLogRepository     repositories.AutoPostLogRepository
 
-	// Services - Legacy
-	UserService services.UserService
+	// Repositories - Users Identity & Profile
+	UsersIdentityRepository repositories.UsersIdentityRepository
+	UserProfileRepository   repositories.UserProfileRepository
+
+	// Services - Legacy (Tasks, Files, Jobs)
+	// UserService REMOVED - moved to Auth Service
 	TaskService services.TaskService
 	FileService services.FileService
 	JobService  services.JobService
@@ -90,7 +96,8 @@ type Container struct {
 	TagService          services.TagService
 	SearchService       services.SearchService
 	MediaService        services.MediaService
-	OAuthService        services.OAuthService
+	UserProfileService  services.UserProfileService
+	// OAuthService REMOVED - moved to Auth Service
 
 	// Services - Chat System
 	ConversationService services.ConversationService
@@ -103,6 +110,16 @@ type Container struct {
 	// Services - Auto-Post
 	AutoPostService       services.AutoPostService
 	SimpleAutoPostService services.SimpleAutoPostService
+
+	// Services - Users Identity
+	UsersIdentityService *services.UsersIdentityService
+
+	// Event Bus
+	EventPublisher  ports.EventPublisher
+	EventSubscriber ports.EventSubscriber
+
+	// Event Handlers
+	AuthServiceEventHandler *eventhandlers.AuthServiceEventHandler // V2 (production)
 }
 
 func NewContainer() *Container {
@@ -323,18 +340,24 @@ func (c *Container) initRepositories() error {
 	c.AutoPostSettingRepository = postgres.NewAutoPostSettingRepository(c.DB)
 	c.AutoPostLogRepository = postgres.NewAutoPostLogRepository(c.DB)
 
-	log.Println("✓ Repositories initialized (20 repositories)")
+	// Users identity repository
+	c.UsersIdentityRepository = postgres.NewUsersIdentityRepository(c.DB)
+
+	log.Println("✓ Repositories initialized (22 repositories)")
 	return nil
 }
 
 func (c *Container) initServices() error {
-	// Legacy services
-	c.UserService = serviceimpl.NewUserService(c.UserRepository, c.FollowRepository, c.Config.JWT.Secret)
+	// Legacy services (Tasks, Files, Jobs only)
+	// UserService REMOVED - moved to Auth Service
 	c.TaskService = serviceimpl.NewTaskService(c.TaskRepository, c.UserRepository)
 	c.FileService = serviceimpl.NewFileService(c.FileRepository, c.UserRepository, c.BunnyStorage)
 
-	// OAuth service
-	c.OAuthService = serviceimpl.NewOAuthService(c.UserRepository, c.Config)
+	// OAuth service REMOVED - moved to Auth Service
+
+	// User Profile Service (social-specific data)
+	c.UserProfileRepository = postgres.NewUserProfileRepository(c.DB)
+	c.UserProfileService = serviceimpl.NewUserProfileService(c.UserProfileRepository)
 
 	// Social media services (order matters due to dependencies)
 	// 1. No service dependencies
@@ -447,12 +470,15 @@ func (c *Container) initServices() error {
 		c.PostService,
 	)
 
+	// 8. Users identity service
+	c.UsersIdentityService = services.NewUsersIdentityService(c.UsersIdentityRepository)
+
 	// Set push service for notification service (to avoid circular dependency)
 	if notifService, ok := c.NotificationService.(*serviceimpl.NotificationServiceImpl); ok {
 		notifService.SetPushService(c.PushService)
 	}
 
-	log.Println("✓ Services initialized (20 services)")
+	log.Println("✓ Services initialized (22 services)")
 	return nil
 }
 
@@ -624,8 +650,10 @@ func (c *Container) Cleanup() error {
 	return nil
 }
 
-func (c *Container) GetServices() (services.UserService, services.TaskService, services.FileService, services.JobService) {
-	return c.UserService, c.TaskService, c.FileService, c.JobService
+// GetServices is DEPRECATED - use GetHandlerServices() instead
+// Keeping for backward compatibility but UserService is removed
+func (c *Container) GetServices() (services.TaskService, services.FileService, services.JobService) {
+	return c.TaskService, c.FileService, c.JobService
 }
 
 func (c *Container) GetConfig() *config.Config {
@@ -634,8 +662,8 @@ func (c *Container) GetConfig() *config.Config {
 
 func (c *Container) GetHandlerServices() *handlers.Services {
 	return &handlers.Services{
-		// Legacy services
-		UserService: c.UserService,
+		// Legacy services (Tasks, Files, Jobs only)
+		// UserService REMOVED - moved to Auth Service
 		TaskService: c.TaskService,
 		FileService: c.FileService,
 		JobService:  c.JobService,
@@ -651,7 +679,8 @@ func (c *Container) GetHandlerServices() *handlers.Services {
 		TagService:          c.TagService,
 		SearchService:       c.SearchService,
 		MediaService:        c.MediaService,
-		OAuthService:        c.OAuthService,
+		UserProfileService:  c.UserProfileService,
+		// OAuthService REMOVED - moved to Auth Service
 
 		// Chat system services
 		ConversationService: c.ConversationService,
@@ -663,6 +692,9 @@ func (c *Container) GetHandlerServices() *handlers.Services {
 
 		// Auto-Post services
 		AutoPostService: c.AutoPostService,
+
+		// Users identity service
+		UsersIdentityService: c.UsersIdentityService,
 	}
 }
 

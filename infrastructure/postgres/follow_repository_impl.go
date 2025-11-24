@@ -44,7 +44,7 @@ func (r *FollowRepositoryImpl) IsFollowing(ctx context.Context, followerID uuid.
 func (r *FollowRepositoryImpl) GetFollowers(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.User, error) {
 	var users []*models.User
 	err := r.db.WithContext(ctx).
-		Joins("JOIN follows ON follows.follower_id = users.id").
+		Joins("JOIN follows ON follows.follower_id = users_identity.id").
 		Where("follows.following_id = ?", userID).
 		Offset(offset).Limit(limit).
 		Find(&users).Error
@@ -63,7 +63,7 @@ func (r *FollowRepositoryImpl) CountFollowers(ctx context.Context, userID uuid.U
 func (r *FollowRepositoryImpl) GetFollowing(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.User, error) {
 	var users []*models.User
 	err := r.db.WithContext(ctx).
-		Joins("JOIN follows ON follows.following_id = users.id").
+		Joins("JOIN follows ON follows.following_id = users_identity.id").
 		Where("follows.follower_id = ?", userID).
 		Offset(offset).Limit(limit).
 		Find(&users).Error
@@ -104,8 +104,8 @@ func (r *FollowRepositoryImpl) GetMutualFollows(ctx context.Context, userID uuid
 	var users []*models.User
 	// Find users who follow userID and are followed by userID
 	err := r.db.WithContext(ctx).
-		Joins("JOIN follows f1 ON f1.following_id = users.id").
-		Joins("JOIN follows f2 ON f2.follower_id = users.id").
+		Joins("JOIN follows f1 ON f1.following_id = users_identity.id").
+		Joins("JOIN follows f2 ON f2.follower_id = users_identity.id").
 		Where("f1.follower_id = ? AND f2.following_id = ?", userID, userID).
 		Offset(offset).Limit(limit).
 		Find(&users).Error
@@ -114,15 +114,15 @@ func (r *FollowRepositoryImpl) GetMutualFollows(ctx context.Context, userID uuid
 
 func (r *FollowRepositoryImpl) UpdateFollowerCount(ctx context.Context, userID uuid.UUID, delta int) error {
 	return r.db.WithContext(ctx).
-		Model(&models.User{}).
-		Where("id = ?", userID).
+		Model(&models.UserProfile{}).
+		Where("user_id = ?", userID).
 		UpdateColumn("followers_count", gorm.Expr("followers_count + ?", delta)).Error
 }
 
 func (r *FollowRepositoryImpl) UpdateFollowingCount(ctx context.Context, userID uuid.UUID, delta int) error {
 	return r.db.WithContext(ctx).
-		Model(&models.User{}).
-		Where("id = ?", userID).
+		Model(&models.UserProfile{}).
+		Where("user_id = ?", userID).
 		UpdateColumn("following_count", gorm.Expr("following_count + ?", delta)).Error
 }
 
@@ -132,7 +132,7 @@ var _ repositories.FollowRepository = (*FollowRepositoryImpl)(nil)
 func (r *FollowRepositoryImpl) GetFollowersWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.User, error) {
 	var users []*models.User
 	query := r.db.WithContext(ctx).
-		Joins("JOIN follows ON follows.follower_id = users.id").
+		Joins("JOIN follows ON follows.follower_id = users_identity.id").
 		Where("follows.following_id = ?", userID)
 
 	// Apply cursor filter using follows.created_at
@@ -151,7 +151,7 @@ func (r *FollowRepositoryImpl) GetFollowersWithCursor(ctx context.Context, userI
 func (r *FollowRepositoryImpl) GetFollowingWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.User, error) {
 	var users []*models.User
 	query := r.db.WithContext(ctx).
-		Joins("JOIN follows ON follows.following_id = users.id").
+		Joins("JOIN follows ON follows.following_id = users_identity.id").
 		Where("follows.follower_id = ?", userID)
 
 	// Apply cursor filter using follows.created_at

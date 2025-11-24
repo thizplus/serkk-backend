@@ -1,52 +1,11 @@
 package models
 
-import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"time"
-)
-
-type User struct {
-	// Core Fields
-	ID       uuid.UUID `gorm:"primaryKey;type:uuid"`
-	Email    string    `gorm:"uniqueIndex;not null"`
-	Username string    `gorm:"uniqueIndex;not null"`
-	Password string    // Optional for OAuth users
-
-	// OAuth Fields
-	OAuthProvider string `gorm:"index"` // google, facebook, github, etc.
-	OAuthID       string `gorm:"index"` // OAuth provider's user ID
-	IsOAuthUser   bool   `gorm:"default:false"`
-
-	// Profile Fields
-	DisplayName string `gorm:"not null"`
-	Avatar      string
-	Bio         string `gorm:"type:text"`
-	Location    string
-	Website     string
-
-	// Social Stats
-	Karma          int `gorm:"default:0;index"`
-	FollowersCount int `gorm:"default:0"`
-	FollowingCount int `gorm:"default:0"`
-
-	// Status
-	Role     string `gorm:"default:'user'"` // user, admin
-	IsActive bool   `gorm:"default:true"`
-
-	// Timestamps
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-func (User) TableName() string {
-	return "users"
-}
-
-// BeforeCreate hook to generate UUID before creating user
-func (u *User) BeforeCreate(tx *gorm.DB) error {
-	if u.ID == uuid.Nil {
-		u.ID = uuid.New()
-	}
-	return nil
-}
+// User is DEPRECATED in Backend Service
+// User management belongs to Auth Service (gofiber_auth DB)
+// Backend Service only has identity data (UsersIdentity)
+//
+// This is an alias to UsersIdentity for backward compatibility
+// Gradually refactor code to use UsersIdentity directly
+//
+// Social-specific data (bio, karma, followers_count) is in UserProfile model
+type User = UsersIdentity

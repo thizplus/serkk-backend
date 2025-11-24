@@ -8,9 +8,9 @@ import (
 )
 
 type Media struct {
-	ID     uuid.UUID `gorm:"primaryKey;type:uuid"`
-	UserID uuid.UUID `gorm:"not null;index"`
-	User   User      `gorm:"foreignKey:UserID"`
+	ID     uuid.UUID   `gorm:"primaryKey;type:uuid"`
+	UserID uuid.UUID      `gorm:"not null;index"`
+	User   UsersIdentity `gorm:"foreignKey:UserID"`
 
 	// File info
 	Type      string `gorm:"not null;index"` // image, video, file

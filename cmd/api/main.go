@@ -46,6 +46,25 @@ func main() {
 		log.Fatal("Failed to initialize container:", err)
 	}
 
+	// ✅ Setup Event Bus (NATS JetStream)
+	log.Println("🔄 Setting up Event Bus...")
+	if err := container.SetupEventBus(); err != nil {
+		log.Printf("⚠️  Failed to setup event bus: %v", err)
+		log.Println("⚠️  Continuing without event bus (events will not be processed)")
+	} else {
+		// Setup Event Handlers
+		if err := container.SetupEventHandlers(); err != nil {
+			log.Fatal("Failed to setup event handlers:", err)
+		}
+
+		// Subscribe to events
+		if err := container.SetupEventSubscriptions(); err != nil {
+			log.Fatal("Failed to setup event subscriptions:", err)
+		}
+
+		log.Println("✅ Event Bus setup completed successfully!")
+	}
+
 	// Setup graceful shutdown
 	setupGracefulShutdown(container)
 
@@ -125,6 +144,14 @@ func main() {
 	}
 
 	// Cleanup resources
+	log.Println("🧹 Cleaning up resources...")
+
+	// Cleanup Event Bus
+	if err := container.CleanupEventBus(); err != nil {
+		log.Printf("⚠️  Error cleaning up event bus: %v", err)
+	}
+
+	// Cleanup other resources
 	if err := container.Cleanup(); err != nil {
 		log.Printf("❌ Error during cleanup: %v", err)
 	}

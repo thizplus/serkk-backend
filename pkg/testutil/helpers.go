@@ -10,41 +10,34 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateTestUser creates a test user
+// CreateTestUser creates a test user (now UsersIdentity)
+// Note: User is now an alias to UsersIdentity
+// For full user data with profile, create both UsersIdentity and UserProfile
 func CreateTestUser() *models.User {
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-
 	return &models.User{
-		ID:          uuid.New(),
-		Email:       faker.Email(),
-		Username:    faker.Username(),
-		Password:    string(hashedPassword),
-		DisplayName: faker.Name(),
-		Bio:         faker.Sentence(),
-		Avatar:      "https://example.com/avatar.jpg",
-		IsActive:    true,
-		Role:        "user",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:        uuid.New(),
+		Email:     faker.Email(),
+		Username:  faker.Username(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		// Note: Password, DisplayName, Bio, Avatar, IsActive, Role no longer exist
+		// They're either in Auth Service (Password, Role, IsActive) or UserProfile (DisplayName, Bio, Avatar)
 	}
 }
 
-// CreateTestUserWithData creates a test user with specific data
+// CreateTestUserWithData creates a test user with specific data (now UsersIdentity)
+// Note: User is now an alias to UsersIdentity
+// For full user data with profile, create both UsersIdentity and UserProfile
 func CreateTestUserWithData(email, username, password string) *models.User {
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
+	// Note: password is no longer stored in backend (managed by Auth Service)
 	return &models.User{
-		ID:          uuid.New(),
-		Email:       email,
-		Username:    username,
-		Password:    string(hashedPassword),
-		DisplayName: faker.Name(),
-		Bio:         faker.Sentence(),
-		Avatar:      "https://example.com/avatar.jpg",
-		IsActive:    true,
-		Role:        "user",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:        uuid.New(),
+		Email:     email,
+		Username:  username,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		// Note: Password, DisplayName, Bio, Avatar, IsActive, Role no longer exist
+		// They're either in Auth Service (Password, Role, IsActive) or UserProfile (DisplayName, Bio, Avatar)
 	}
 }
 

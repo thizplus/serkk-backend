@@ -4,34 +4,42 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT NOT NULL UNIQUE,
-    username TEXT NOT NULL UNIQUE,
-    password TEXT,
-    o_auth_provider TEXT,
-    o_auth_id TEXT,
-    is_o_auth_user BOOLEAN DEFAULT FALSE,
-    display_name TEXT NOT NULL,
-    avatar TEXT,
-    bio TEXT,
-    location TEXT,
-    website TEXT,
-    karma INTEGER DEFAULT 0,
-    followers_count INTEGER DEFAULT 0,
-    following_count INTEGER DEFAULT 0,
-    role TEXT DEFAULT 'user',
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_users_karma ON users(karma);
-CREATE INDEX IF NOT EXISTS idx_users_o_auth_provider ON users(o_auth_provider);
-CREATE INDEX IF NOT EXISTS idx_users_o_auth_id ON users(o_auth_id);
+-- ⚠️ DEPRECATED: Users table removed - replaced by users_identity + user_profiles
+-- Users table has been migrated to:
+--   - users_identity (migration 026) - for auth data (id, email, username)
+--   - user_profiles (migration 027) - for social data (bio, karma, followers, etc.)
+-- Auth data is managed by separate Auth Service (gofiber_auth database)
+--
+-- Keeping this commented out for reference only
+-- Uncomment if you need to recreate for testing/development
+--
+-- CREATE TABLE IF NOT EXISTS users (
+--     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     email TEXT NOT NULL UNIQUE,
+--     username TEXT NOT NULL UNIQUE,
+--     password TEXT,
+--     o_auth_provider TEXT,
+--     o_auth_id TEXT,
+--     is_o_auth_user BOOLEAN DEFAULT FALSE,
+--     display_name TEXT NOT NULL,
+--     avatar TEXT,
+--     bio TEXT,
+--     location TEXT,
+--     website TEXT,
+--     karma INTEGER DEFAULT 0,
+--     followers_count INTEGER DEFAULT 0,
+--     following_count INTEGER DEFAULT 0,
+--     role TEXT DEFAULT 'user',
+--     is_active BOOLEAN DEFAULT TRUE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+--
+-- CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+-- CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+-- CREATE INDEX IF NOT EXISTS idx_users_karma ON users(karma);
+-- CREATE INDEX IF NOT EXISTS idx_users_o_auth_provider ON users(o_auth_provider);
+-- CREATE INDEX IF NOT EXISTS idx_users_o_auth_id ON users(o_auth_id);
 
 -- Posts table
 CREATE TABLE IF NOT EXISTS posts (

@@ -13,12 +13,15 @@ type CreateUserRequest struct {
 	DisplayName string `json:"displayName" validate:"required,min=1,max=100"`
 }
 
+// UpdateUserRequest is used to update complete user profile
+// Previously: displayName/avatar went to Auth Service, bio/location/website went to Backend Service
+// Now: ALL fields are handled by Backend Service (user_profiles table) for simpler updates
 type UpdateUserRequest struct {
-	DisplayName string `json:"displayName" validate:"omitempty,min=1,max=100"`
+	DisplayName string `json:"displayName" validate:"omitempty,min=1,max=100"` // ⭐ Now in user_profiles
+	Avatar      string `json:"avatar" validate:"omitempty,max=500"`            // ⭐ Now in user_profiles
 	Bio         string `json:"bio" validate:"omitempty,max=500"`
 	Location    string `json:"location" validate:"omitempty,max=100"`
 	Website     string `json:"website" validate:"omitempty,url,max=255"`
-	Avatar      string `json:"avatar" validate:"omitempty,max=500"`
 }
 
 type UserResponse struct {

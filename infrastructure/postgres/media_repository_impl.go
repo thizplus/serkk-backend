@@ -25,7 +25,7 @@ func (r *MediaRepositoryImpl) Create(ctx context.Context, media *models.Media) e
 func (r *MediaRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Media, error) {
 	var media models.Media
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Where("id = ?", id).
 		First(&media).Error
 	if err != nil {
@@ -37,7 +37,7 @@ func (r *MediaRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model
 func (r *MediaRepositoryImpl) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]*models.Media, error) {
 	var mediaList []*models.Media
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Where("id IN ?", ids).
 		Find(&mediaList).Error
 	return mediaList, err

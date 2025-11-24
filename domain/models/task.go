@@ -14,8 +14,8 @@ type Task struct {
 	Status      string `gorm:"default:'pending'"`
 	Priority    int    `gorm:"default:1"`
 	DueDate     *time.Time
-	UserID      uuid.UUID `gorm:"not null"`
-	User        User      `gorm:"foreignKey:UserID"`
+	UserID      uuid.UUID      `gorm:"not null"`
+	User        UsersIdentity `gorm:"foreignKey:UserID"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

@@ -22,7 +22,7 @@ func (r *FileRepositoryImpl) Create(ctx context.Context, file *models.File) erro
 
 func (r *FileRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.File, error) {
 	var file models.File
-	err := r.db.WithContext(ctx).Preload("User").Where("id = ?", id).First(&file).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Where("id = ?", id).First(&file).Error
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (r *FileRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models
 
 func (r *FileRepositoryImpl) GetByUserID(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.File, error) {
 	var files []*models.File
-	err := r.db.WithContext(ctx).Preload("User").Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&files).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&files).Error
 	return files, err
 }
 
@@ -45,7 +45,7 @@ func (r *FileRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *FileRepositoryImpl) List(ctx context.Context, offset, limit int) ([]*models.File, error) {
 	var files []*models.File
-	err := r.db.WithContext(ctx).Preload("User").Offset(offset).Limit(limit).Find(&files).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Offset(offset).Limit(limit).Find(&files).Error
 	return files, err
 }
 

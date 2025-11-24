@@ -43,10 +43,10 @@ type Message struct {
 	Conversation   Conversation `gorm:"foreignKey:ConversationID"`
 
 	// Sender & Receiver
-	SenderID   uuid.UUID `gorm:"not null;index"`
-	Sender     User      `gorm:"foreignKey:SenderID"`
-	ReceiverID uuid.UUID `gorm:"not null;index"`
-	Receiver   User      `gorm:"foreignKey:ReceiverID"`
+	SenderID   uuid.UUID      `gorm:"not null;index"`
+	Sender     UsersIdentity `gorm:"foreignKey:SenderID"`
+	ReceiverID uuid.UUID      `gorm:"not null;index"`
+	Receiver   UsersIdentity `gorm:"foreignKey:ReceiverID"`
 
 	// Message Type (text, image, video, file)
 	Type MessageType `gorm:"type:varchar(20);not null;default:'text';index:idx_messages_type"`

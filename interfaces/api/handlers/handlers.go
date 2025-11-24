@@ -15,7 +15,8 @@ import (
 
 // Services contains all the services needed for handlers
 type Services struct {
-	UserService         services.UserService
+	// UserService REMOVED - user management belongs to Auth Service
+	// OAuthService REMOVED - OAuth belongs to Auth Service
 	TaskService         services.TaskService
 	FileService         services.FileService
 	JobService          services.JobService
@@ -28,19 +29,21 @@ type Services struct {
 	TagService          services.TagService
 	SearchService       services.SearchService
 	MediaService        services.MediaService
-	OAuthService        services.OAuthService
 	PushService         services.PushService
 	ConversationService services.ConversationService
 	MessageService      services.MessageService
 	BlockService        services.BlockService
 	FileUploadService   services.FileUploadService
-	AutoPostService     services.AutoPostService
+	AutoPostService      services.AutoPostService
+	UsersIdentityService *services.UsersIdentityService
+	UserProfileService   services.UserProfileService
 }
 
 // Handlers contains all HTTP handlers
 type Handlers struct {
-	UserHandler            *UserHandler
-	ProfileHandler         *ProfileHandler
+	// UserHandler REMOVED - use Auth Service API instead (for auth operations)
+	// OAuthHandler REMOVED - OAuth belongs to Auth Service
+	UserProfileHandler     *UserProfileHandler // Combines users_cache + user_profiles
 	TaskHandler            *TaskHandler
 	FileHandler            *FileHandler
 	JobHandler             *JobHandler
@@ -53,7 +56,6 @@ type Handlers struct {
 	TagHandler             *TagHandler
 	SearchHandler          *SearchHandler
 	MediaHandler           *MediaHandler
-	OAuthHandler           *OAuthHandler
 	SEOHandler             *SEOHandler
 	PushHandler            *PushHandler
 	ConversationHandler    *ConversationHandler
@@ -72,8 +74,8 @@ type Handlers struct {
 // NewHandlers creates a new instance of Handlers with all dependencies
 func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, notificationWSHandler *websocketHandler.NotificationWebSocketHandler, chatHub *chatWebsocket.ChatHub, notificationHub *chatWebsocket.NotificationHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService, r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository, redisService interface{}, feedCacheService *redis.FeedCacheService, db *gorm.DB) *Handlers {
 	return &Handlers{
-		UserHandler:            NewUserHandler(services.UserService),
-		ProfileHandler:         NewProfileHandler(services.UserService),
+		// UserHandler REMOVED - use Auth Service API (for auth operations)
+		UserProfileHandler:     NewUserProfileHandler(services.UsersIdentityService, services.UserProfileService),
 		TaskHandler:            NewTaskHandler(services.TaskService),
 		FileHandler:            NewFileHandler(services.FileService),
 		JobHandler:             NewJobHandler(services.JobService),
@@ -86,7 +88,7 @@ func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocke
 		TagHandler:             NewTagHandler(services.TagService),
 		SearchHandler:          NewSearchHandler(services.SearchService),
 		MediaHandler:           NewMediaHandler(services.MediaService),
-		OAuthHandler:           NewOAuthHandler(services.OAuthService, cfg),
+		// OAuthHandler REMOVED - OAuth belongs to Auth Service
 		SEOHandler:             NewSEOHandler(services.PostService, cfg),
 		PushHandler:            NewPushHandler(services.PushService),
 		ConversationHandler:    NewConversationHandler(services.ConversationService, conversationRepo, chatHub),

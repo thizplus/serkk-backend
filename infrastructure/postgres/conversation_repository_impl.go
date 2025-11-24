@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,8 +26,8 @@ func (r *ConversationRepositoryImpl) Create(ctx context.Context, conversation *m
 func (r *ConversationRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Conversation, error) {
 	var conversation models.Conversation
 	err := r.db.WithContext(ctx).
-		Preload("User1").
-		Preload("User2").
+		Preload("User1.Profile").
+		Preload("User2.Profile").
 		First(&conversation, "id = ?", id).Error
 	if err != nil {
 		return nil, err
@@ -54,8 +55,8 @@ func (r *ConversationRepositoryImpl) GetOrCreateByUsers(ctx context.Context, use
 	// Try to get existing conversation
 	var conversation models.Conversation
 	err := r.db.WithContext(ctx).
-		Preload("User1").
-		Preload("User2").
+		Preload("User1.Profile").
+		Preload("User2.Profile").
 		Where("user1_id = ? AND user2_id = ?", user1ID, user2ID).
 		First(&conversation).Error
 
@@ -80,19 +81,52 @@ func (r *ConversationRepositoryImpl) GetOrCreateByUsers(ctx context.Context, use
 	}
 
 	if err := r.db.WithContext(ctx).Create(&conversation).Error; err != nil {
+		// Check if error is due to unique constraint violation (race condition)
+		// If so, try to get the existing conversation that was created by another request
+		isDuplicate := isDuplicateKeyError(err)
+		if isDuplicate {
+			// Log for debugging
+			// Retry getting the conversation
+			retryErr := r.db.WithContext(ctx).
+				Preload("User1.Profile").
+				Preload("User2.Profile").
+				Where("user1_id = ? AND user2_id = ?", user1ID, user2ID).
+				First(&conversation).Error
+			if retryErr == nil {
+				// Found the conversation created by another request
+				return &conversation, false, nil
+			}
+			// If retry also failed, return the retry error
+			return nil, false, retryErr
+		}
+		// Other error (not duplicate key)
 		return nil, false, err
 	}
 
-	// Reload with preloaded users
+	// Reload with preloaded users and profiles
 	err = r.db.WithContext(ctx).
-		Preload("User1").
-		Preload("User2").
+		Preload("User1.Profile").
+		Preload("User2.Profile").
 		First(&conversation, "id = ?", conversation.ID).Error
 	if err != nil {
 		return nil, false, err
 	}
 
 	return &conversation, true, nil
+}
+
+// isDuplicateKeyError checks if the error is a PostgreSQL unique constraint violation
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := strings.ToLower(err.Error())
+	// PostgreSQL error code 23505 is unique_violation
+	// Check for various formats of unique constraint violation errors
+	return strings.Contains(errMsg, "23505") ||
+		strings.Contains(errMsg, "duplicate key") ||
+		(strings.Contains(errMsg, "unique") && strings.Contains(errMsg, "constraint")) ||
+		strings.Contains(errMsg, "conversations_user1_user2_unique")
 }
 
 func (r *ConversationRepositoryImpl) GetByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*models.Conversation, error) {
@@ -103,8 +137,8 @@ func (r *ConversationRepositoryImpl) GetByUsers(ctx context.Context, user1ID, us
 
 	var conversation models.Conversation
 	err := r.db.WithContext(ctx).
-		Preload("User1").
-		Preload("User2").
+		Preload("User1.Profile").
+		Preload("User2.Profile").
 		Where("user1_id = ? AND user2_id = ?", user1ID, user2ID).
 		First(&conversation).Error
 
@@ -116,8 +150,8 @@ func (r *ConversationRepositoryImpl) GetByUsers(ctx context.Context, user1ID, us
 
 func (r *ConversationRepositoryImpl) ListByUser(ctx context.Context, userID uuid.UUID, cursor *time.Time, limit int) ([]*models.Conversation, error) {
 	query := r.db.WithContext(ctx).
-		Preload("User1").
-		Preload("User2").
+		Preload("User1.Profile").
+		Preload("User2.Profile").
 		Where("user1_id = ? OR user2_id = ?", userID, userID).
 		Order("last_message_at DESC")
 

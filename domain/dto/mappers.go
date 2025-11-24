@@ -7,49 +7,119 @@ import (
 	"gofiber-template/domain/models"
 )
 
+// UserToUserResponse is DEPRECATED
+// Since User is now an alias to UsersIdentity, use UsersIdentityToUserResponse instead
+// This is kept for backward compatibility only
 func UserToUserResponse(user *models.User) *UserResponse {
-	if user == nil {
+	return UsersIdentityToUserResponse(user)
+}
+
+// IdentityWithProfileToUserResponse combines UsersIdentity and UserProfile data
+// This is the new mapper for V2 architecture (uses users_identity instead of users_cache)
+func IdentityWithProfileToUserResponse(identity *models.UsersIdentity, profile *models.UserProfile) *UserResponse {
+	if identity == nil {
 		return nil
 	}
-	return &UserResponse{
-		ID:             user.ID,
-		Email:          user.Email,
-		Username:       user.Username,
-		DisplayName:    user.DisplayName,
-		Avatar:         user.Avatar,
-		Bio:            user.Bio,
-		Location:       user.Location,
-		Website:        user.Website,
-		Karma:          user.Karma,
-		FollowersCount: user.FollowersCount,
-		FollowingCount: user.FollowingCount,
-		Role:           user.Role,
-		IsActive:       user.IsActive,
-		CreatedAt:      user.CreatedAt,
-		UpdatedAt:      user.UpdatedAt,
+
+	resp := &UserResponse{
+		ID:        identity.ID,
+		Email:     identity.Email,
+		Username:  identity.Username,
+		Role:      "user",  // Default role (Auth Service manages actual roles)
+		IsActive:  true,    // Default active (Auth Service manages actual status)
+		CreatedAt: identity.CreatedAt,
+		UpdatedAt: identity.UpdatedAt,
 	}
+
+	// All profile data (including displayName and avatar) comes from user_profiles
+	if profile != nil {
+		resp.DisplayName = profile.DisplayName
+		resp.Avatar = profile.Avatar
+		resp.Bio = profile.Bio
+		resp.Location = profile.Location
+		resp.Website = profile.Website
+		resp.Karma = profile.Karma
+		resp.FollowersCount = profile.FollowersCount
+		resp.FollowingCount = profile.FollowingCount
+	}
+
+	return resp
 }
 
+// UserWithProfileToUserResponse is DEPRECATED
+// Use IdentityWithProfileToUserResponse instead (V2 architecture)
+// This is kept for backward compatibility only
+func UserWithProfileToUserResponse(identity *models.UsersIdentity, profile *models.UserProfile) *UserResponse {
+	return IdentityWithProfileToUserResponse(identity, profile)
+}
+
+// UsersIdentityToUserResponse converts UsersIdentity to UserResponse
+// Automatically includes Profile data if it's preloaded
+// Used for mapping identity data from Auth Service (via users_identity table)
+func UsersIdentityToUserResponse(identity *models.UsersIdentity) *UserResponse {
+	if identity == nil {
+		return nil
+	}
+
+	resp := &UserResponse{
+		ID:        identity.ID,
+		Email:     identity.Email,
+		Username:  identity.Username,
+		Role:      "user",  // Default role (Auth Service manages actual roles)
+		IsActive:  true,    // Default active (Auth Service manages actual status)
+		CreatedAt: identity.CreatedAt,
+		UpdatedAt: identity.UpdatedAt,
+	}
+
+	// If Profile is preloaded, include it
+	if identity.Profile != nil {
+		resp.DisplayName = identity.Profile.DisplayName
+		resp.Avatar = identity.Profile.Avatar
+		resp.Bio = identity.Profile.Bio
+		resp.Location = identity.Profile.Location
+		resp.Website = identity.Profile.Website
+		resp.Karma = identity.Profile.Karma
+		resp.FollowersCount = identity.Profile.FollowersCount
+		resp.FollowingCount = identity.Profile.FollowingCount
+	}
+
+	return resp
+}
+
+// CreateUserRequestToUser is DEPRECATED
+// Backend Service should NOT create users - this belongs to Auth Service
+// Keeping for backward compatibility, but will be removed
 func CreateUserRequestToUser(req *CreateUserRequest) *models.User {
 	return &models.User{
-		Email:       req.Email,
-		Username:    req.Username,
-		Password:    req.Password,
-		DisplayName: req.DisplayName,
+		Email:    req.Email,
+		Username: req.Username,
+		// Note: DisplayName is now in UserProfile, not UsersIdentity
+		// Password field removed - Backend doesn't manage passwords
 	}
 }
 
+// UpdateUserRequestToUser is DEPRECATED
+// Use UpdateUserRequestToUserProfile for ALL profile updates instead
+// displayName and avatar are now in user_profiles (moved from Auth Service)
 func UpdateUserRequestToUser(req *UpdateUserRequest) *models.User {
-	return &models.User{
-		DisplayName: req.DisplayName,
+	// Since User is now UsersIdentity, and displayName/avatar are in user_profiles,
+	// this function effectively does nothing. Use UpdateUserRequestToUserProfile instead.
+	return &models.User{}
+}
+
+// UpdateUserRequestToUserProfile maps update request to UserProfile
+// Now includes displayName and avatar (moved from Auth Service)
+func UpdateUserRequestToUserProfile(req *UpdateUserRequest) *models.UserProfile {
+	return &models.UserProfile{
+		DisplayName: req.DisplayName, // ⭐ New: now in user_profiles
+		Avatar:      req.Avatar,      // ⭐ New: now in user_profiles
 		Bio:         req.Bio,
 		Location:    req.Location,
 		Website:     req.Website,
-		Avatar:      req.Avatar,
 	}
 }
 
-func TaskToTaskResponse(task *models.Task, user *models.User) *TaskResponse {
+func TaskToTaskResponse(task *models.Task, identity *models.UsersIdentity) *TaskResponse {
 	if task == nil {
 		return nil
 	}
@@ -64,8 +134,8 @@ func TaskToTaskResponse(task *models.Task, user *models.User) *TaskResponse {
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
 	}
-	if user != nil {
-		taskResp.User = *UserToUserResponse(user)
+	if identity != nil {
+		taskResp.User = *UsersIdentityToUserResponse(identity)
 	}
 	return taskResp
 }
@@ -151,7 +221,7 @@ func PostToPostResponse(post *models.Post) *PostResponse {
 		ID:           post.ID,
 		Title:        post.Title,
 		Content:      post.Content,
-		Author:       *UserToUserResponse(&post.Author),
+		Author:       *UsersIdentityToUserResponse(&post.Author),
 		Votes:        post.Votes,
 		CommentCount: post.CommentCount,
 		Type:         post.Type,
@@ -194,7 +264,7 @@ func CommentToCommentResponse(comment *models.Comment) *CommentResponse {
 		ID:        comment.ID,
 		PostID:    comment.PostID,
 		ParentID:  comment.ParentID,
-		Author:    *UserToUserResponse(&comment.Author),
+		Author:    *UsersIdentityToUserResponse(&comment.Author),
 		Content:   comment.Content,
 		Votes:     comment.Votes,
 		Depth:     comment.Depth,
@@ -220,7 +290,7 @@ func PostToPostSummaryResponse(post *models.Post) *PostSummaryResponse {
 	return &PostSummaryResponse{
 		ID:        post.ID,
 		Title:     post.Title,
-		Author:    *UserToUserResponse(&post.Author),
+		Author:    *UsersIdentityToUserResponse(&post.Author),
 		CreatedAt: post.CreatedAt,
 	}
 }
@@ -327,8 +397,8 @@ func NotificationToNotificationResponse(notification *models.Notification) *Noti
 
 	return &NotificationResponse{
 		ID:        notification.ID,
-		User:      *UserToUserResponse(&notification.User),
-		Sender:    *UserToUserResponse(&notification.Sender),
+		User:      *UsersIdentityToUserResponse(&notification.User),
+		Sender:    *UsersIdentityToUserResponse(&notification.Sender),
 		Type:      notification.Type,
 		Message:   notification.Message,
 		PostID:    notification.PostID,
@@ -381,8 +451,8 @@ func MessageToMessageResponse(message *models.Message) *MessageResponse {
 	resp := &MessageResponse{
 		ID:             message.ID,
 		ConversationID: message.ConversationID,
-		Sender:         *UserToUserResponse(&message.Sender),
-		Receiver:       *UserToUserResponse(&message.Receiver),
+		Sender:         *UsersIdentityToUserResponse(&message.Sender),
+		Receiver:       *UsersIdentityToUserResponse(&message.Receiver),
 		Type:           string(message.Type),
 		Content:        message.Content,
 		IsRead:         message.IsRead,
@@ -413,7 +483,7 @@ func ConversationToConversationResponse(conversation *models.Conversation, curre
 	}
 
 	// Determine who is the "other user" and get their unread count
-	var otherUser models.User
+	var otherUser models.UsersIdentity
 	var unreadCount int
 
 	if conversation.User1ID == currentUserID {
@@ -426,7 +496,7 @@ func ConversationToConversationResponse(conversation *models.Conversation, curre
 
 	resp := &ConversationResponse{
 		ID:            conversation.ID,
-		OtherUser:     *UserToUserResponse(&otherUser),
+		OtherUser:     *UsersIdentityToUserResponse(&otherUser),
 		LastMessageAt: conversation.LastMessageAt,
 		UnreadCount:   unreadCount,
 		CreatedAt:     conversation.CreatedAt,
@@ -443,7 +513,7 @@ func BlockToBlockedUserResponse(block *models.Block) *BlockedUserResponse {
 	}
 
 	return &BlockedUserResponse{
-		User:      *UserToUserResponse(&block.Blocked),
+		User:      *UsersIdentityToUserResponse(&block.Blocked),
 		BlockedAt: block.CreatedAt,
 	}
 }

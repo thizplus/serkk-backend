@@ -25,7 +25,7 @@ func (r *NotificationRepositoryImpl) Create(ctx context.Context, notification *m
 func (r *NotificationRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Notification, error) {
 	var notification models.Notification
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Preload("Sender").
 		Preload("Post").
 		Preload("Comment").
@@ -40,7 +40,7 @@ func (r *NotificationRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) 
 func (r *NotificationRepositoryImpl) ListByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.Notification, error) {
 	var notifications []*models.Notification
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Preload("Sender").
 		Preload("Post").
 		Preload("Comment").
@@ -54,7 +54,7 @@ func (r *NotificationRepositoryImpl) ListByUser(ctx context.Context, userID uuid
 func (r *NotificationRepositoryImpl) ListUnreadByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.Notification, error) {
 	var notifications []*models.Notification
 	err := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Preload("Sender").
 		Preload("Post").
 		Preload("Comment").
@@ -115,7 +115,7 @@ var _ repositories.NotificationRepository = (*NotificationRepositoryImpl)(nil)
 func (r *NotificationRepositoryImpl) ListByUserWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Notification, error) {
 	var notifications []*models.Notification
 	query := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Preload("Sender").
 		Preload("Post").
 		Preload("Comment").
@@ -137,7 +137,7 @@ func (r *NotificationRepositoryImpl) ListByUserWithCursor(ctx context.Context, u
 func (r *NotificationRepositoryImpl) ListUnreadByUserWithCursor(ctx context.Context, userID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Notification, error) {
 	var notifications []*models.Notification
 	query := r.db.WithContext(ctx).
-		Preload("User").
+		Preload("User.Profile").
 		Preload("Sender").
 		Preload("Post").
 		Preload("Comment").

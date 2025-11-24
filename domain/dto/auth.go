@@ -10,12 +10,14 @@ type LoginResponse struct {
 	User  UserResponse `json:"user"`
 }
 
+// DEPRECATED: RegisterRequest is no longer used in Backend Service
+// Registration belongs to Auth Service (gofiber-auth)
+// Keeping this for backward compatibility only
 type RegisterRequest struct {
-	Email     string `json:"email" validate:"required,email,max=255"`
-	Username  string `json:"username" validate:"required,min=3,max=20,alphanum"`
-	Password  string `json:"password" validate:"required,min=8,max=72"`
-	FirstName string `json:"firstName" validate:"required,min=1,max=50"`
-	LastName  string `json:"lastName" validate:"required,min=1,max=50"`
+	Email       string `json:"email" validate:"required,email,max=255"`
+	Username    string `json:"username" validate:"required,min=3,max=20,alphanum"`
+	Password    string `json:"password" validate:"required,min=8,max=72"`
+	DisplayName string `json:"displayName" validate:"required,min=1,max=100"`
 }
 
 type RegisterResponse struct {

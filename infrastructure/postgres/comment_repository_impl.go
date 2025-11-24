@@ -27,7 +27,7 @@ func (r *CommentRepositoryImpl) Create(ctx context.Context, comment *models.Comm
 func (r *CommentRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Comment, error) {
 	var comment models.Comment
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Post").
 		Where("id = ? AND is_deleted = ?", id, false).
 		First(&comment).Error
@@ -55,7 +55,7 @@ func (r *CommentRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error 
 func (r *CommentRepositoryImpl) ListByPost(ctx context.Context, postID uuid.UUID, offset, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("post_id = ? AND parent_id IS NULL AND is_deleted = ?", postID, false)
 
 	switch sortBy {
@@ -78,7 +78,7 @@ func (r *CommentRepositoryImpl) ListByPost(ctx context.Context, postID uuid.UUID
 func (r *CommentRepositoryImpl) ListByAuthor(ctx context.Context, authorID uuid.UUID, offset, limit int) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Post").
 		Preload("Post.Author").
 		Where("author_id = ? AND is_deleted = ?", authorID, false).
@@ -91,7 +91,7 @@ func (r *CommentRepositoryImpl) ListByAuthor(ctx context.Context, authorID uuid.
 func (r *CommentRepositoryImpl) ListReplies(ctx context.Context, parentID uuid.UUID, offset, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("parent_id = ? AND is_deleted = ?", parentID, false)
 
 	switch sortBy {
@@ -115,7 +115,7 @@ func (r *CommentRepositoryImpl) GetCommentTree(ctx context.Context, postID uuid.
 	var comments []*models.Comment
 	// Get all comments for the post up to maxDepth
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("post_id = ? AND is_deleted = ? AND depth <= ?", postID, false, maxDepth).
 		Order("depth ASC, created_at ASC").
 		Find(&comments).Error
@@ -128,7 +128,7 @@ func (r *CommentRepositoryImpl) GetParentChain(ctx context.Context, commentID uu
 
 	// Start with the current comment
 	err := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("id = ?", commentID).
 		First(&currentComment).Error
 	if err != nil {
@@ -141,7 +141,7 @@ func (r *CommentRepositoryImpl) GetParentChain(ctx context.Context, commentID uu
 	for currentComment.ParentID != nil {
 		var parent models.Comment
 		err := r.db.WithContext(ctx).
-			Preload("Author").
+			Preload("Author.Profile").
 			Where("id = ?", *currentComment.ParentID).
 			First(&parent).Error
 		if err != nil {
@@ -199,7 +199,7 @@ func (r *CommentRepositoryImpl) UpdateVoteCount(ctx context.Context, commentID u
 func (r *CommentRepositoryImpl) ListByPostWithCursor(ctx context.Context, postID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("post_id = ? AND parent_id IS NULL AND is_deleted = ?", postID, false)
 
 	if cursor != nil {
@@ -237,7 +237,7 @@ func (r *CommentRepositoryImpl) ListByPostWithCursor(ctx context.Context, postID
 func (r *CommentRepositoryImpl) ListByAuthorWithCursor(ctx context.Context, authorID uuid.UUID, cursor *utils.PostCursor, limit int) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Post").
 		Preload("Post.Author").
 		Where("author_id = ? AND is_deleted = ?", authorID, false)
@@ -253,7 +253,7 @@ func (r *CommentRepositoryImpl) ListByAuthorWithCursor(ctx context.Context, auth
 func (r *CommentRepositoryImpl) ListRepliesWithCursor(ctx context.Context, parentID uuid.UUID, cursor *utils.PostCursor, limit int, sortBy repositories.CommentSortBy) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	query := r.db.WithContext(ctx).
-		Preload("Author").
+		Preload("Author.Profile").
 		Where("parent_id = ? AND is_deleted = ?", parentID, false)
 
 	if cursor != nil {

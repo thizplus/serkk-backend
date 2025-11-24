@@ -13,8 +13,8 @@ type AutoPostSetting struct {
 	ID uuid.UUID `gorm:"primaryKey;type:uuid"`
 
 	// Bot User (the account that will create auto-posts)
-	BotUserID uuid.UUID `gorm:"not null;index;uniqueIndex:idx_auto_post_bot_user"`
-	BotUser   User      `gorm:"foreignKey:BotUserID"`
+	BotUserID uuid.UUID      `gorm:"not null;index;uniqueIndex:idx_auto_post_bot_user"`
+	BotUser   UsersIdentity `gorm:"foreignKey:BotUserID"`
 
 	// Settings
 	IsEnabled    bool   `gorm:"default:false;index"`

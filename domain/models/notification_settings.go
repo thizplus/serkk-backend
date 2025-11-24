@@ -7,8 +7,8 @@ import (
 )
 
 type NotificationSettings struct {
-	UserID uuid.UUID `gorm:"primaryKey"`
-	User   User      `gorm:"foreignKey:UserID"`
+	UserID uuid.UUID      `gorm:"primaryKey"`
+	User   UsersIdentity `gorm:"foreignKey:UserID"`
 
 	Replies            bool `gorm:"default:true"`
 	Mentions           bool `gorm:"default:true"`

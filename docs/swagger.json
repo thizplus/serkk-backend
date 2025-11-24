@@ -251,9 +251,14 @@
                 }
             }
         },
-        "/auth/exchange": {
-            "post": {
-                "description": "Exchange authorization code for JWT token",
+        "/auto-post/logs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List auto-post generation logs",
                 "consumes": [
                     "application/json"
                 ],
@@ -261,63 +266,218 @@
                     "application/json"
                 ],
                 "tags": [
-                    "OAuth"
+                    "auto-post"
                 ],
-                "summary": "Exchange authorization code for token",
+                "summary": "List auto-post logs",
                 "parameters": [
                     {
-                        "description": "Exchange code request",
+                        "type": "string",
+                        "description": "Filter by Setting ID",
+                        "name": "settingId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, success, failed)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AutoPostLogListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auto-post/logs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get auto-post log by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "Get auto-post log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Log ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AutoPostLogResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auto-post/settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all auto-post settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "List auto-post settings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new auto-post setting for AI-powered automatic posting",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "Create auto-post setting",
+                "parameters": [
+                    {
+                        "description": "Create auto-post setting request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ExchangeCodeRequest"
+                            "$ref": "#/definitions/dto.CreateAutoPostSettingRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.ExchangeCodeResponse"
+                            "$ref": "#/definitions/dto.AutoPostSettingResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
-                    }
-                }
-            }
-        },
-        "/auth/google": {
-            "get": {
-                "description": "Get Google OAuth authorization URL to start OAuth flow",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OAuth"
-                ],
-                "summary": "Get Google OAuth URL",
-                "responses": {
-                    "200": {
-                        "description": "OK",
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthURLResponse"
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             }
         },
-        "/auth/google/callback": {
+        "/auto-post/settings/{id}": {
             "get": {
-                "description": "Process Google OAuth callback and login/register user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get auto-post setting by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -325,22 +485,15 @@
                     "application/json"
                 ],
                 "tags": [
-                    "OAuth"
+                    "auto-post"
                 ],
-                "summary": "Handle Google OAuth Callback",
+                "summary": "Get auto-post setting",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Authorization code from Google",
-                        "name": "code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "State parameter for CSRF protection",
-                        "name": "state",
-                        "in": "query",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -348,22 +501,36 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthLoginResponse"
+                            "$ref": "#/definitions/dto.AutoPostSettingResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
-            }
-        },
-        "/auth/login": {
-            "post": {
-                "description": "Login with email and password",
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update auto-post setting by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -371,41 +538,61 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auto-post"
                 ],
-                "summary": "User login",
+                "summary": "Update auto-post setting",
                 "parameters": [
                     {
-                        "description": "Login credentials",
-                        "name": "credentials",
+                        "type": "string",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update auto-post setting request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginRequest"
+                            "$ref": "#/definitions/dto.UpdateAutoPostSettingRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Login successful with token",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.AutoPostSettingResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid credentials",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "description": "Register a new user account",
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete auto-post setting by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -413,33 +600,213 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "auto-post"
                 ],
-                "summary": "User registration",
+                "summary": "Delete auto-post setting",
                 "parameters": [
                     {
-                        "description": "User registration data",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
+                        "type": "string",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserRequest"
+                            "$ref": "#/definitions/utils.Response"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auto-post/settings/{id}/disable": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Disable auto-post setting by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "Disable auto-post setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User registered successfully",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Validation failed",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auto-post/settings/{id}/enable": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Enable auto-post setting by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "Enable auto-post setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auto-post/settings/{id}/trigger": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Manually trigger an auto-post generation for a specific setting",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auto-post"
+                ],
+                "summary": "Trigger auto-post manually",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Setting ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Trigger auto-post request",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TriggerAutoPostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TriggerAutoPostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -709,14 +1076,14 @@
                 }
             }
         },
-        "/users/profile": {
+        "/simple-auto-post/queue": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get authenticated user's profile",
+                "description": "Get paginated list of queue items",
                 "consumes": [
                     "application/json"
                 ],
@@ -724,33 +1091,54 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "simple-auto-post"
                 ],
-                "summary": "Get user profile",
+                "summary": "List queue items",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending/completed/failed)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Profile retrieved successfully",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
-                    "401": {
-                        "description": "User not authenticated",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/simple-auto-post/queue/status": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update authenticated user's profile",
+                "description": "Get statistics about the auto-post queue",
                 "consumes": [
                     "application/json"
                 ],
@@ -758,40 +1146,118 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "simple-auto-post"
                 ],
-                "summary": "Update user profile",
+                "summary": "Get queue status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/simple-auto-post/setup": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create the auto_post_queue table if it doesn't exist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simple-auto-post"
+                ],
+                "summary": "Setup auto-post queue table",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/simple-auto-post/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a CSV file with topics to add to auto-post queue",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simple-auto-post"
+                ],
+                "summary": "Upload CSV file to import topics",
                 "parameters": [
                     {
-                        "description": "Profile update data",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateUserRequest"
-                        }
+                        "type": "file",
+                        "description": "CSV file (format: category,topic,tone)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bot User ID (UUID)",
+                        "name": "botUserId",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Profile updated successfully",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/handlers.UploadCSVResponse"
                         }
                     },
                     "400": {
-                        "description": "Validation failed",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "401": {
-                        "description": "User not authenticated",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -799,6 +1265,151 @@
         }
     },
     "definitions": {
+        "dto.AutoPostLogListResponse": {
+            "type": "object",
+            "properties": {
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AutoPostLogResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/dto.PaginationMeta"
+                }
+            }
+        },
+        "dto.AutoPostLogResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "generatedTitle": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "post": {
+                    "$ref": "#/definitions/dto.PostResponse"
+                },
+                "postId": {
+                    "type": "string"
+                },
+                "settingId": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "pending, success, failed",
+                    "type": "string"
+                },
+                "tokensUsed": {
+                    "type": "integer"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AutoPostSettingResponse": {
+            "type": "object",
+            "properties": {
+                "botUser": {
+                    "$ref": "#/definitions/dto.UserResponse"
+                },
+                "botUserId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "cronSchedule": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "lastError": {
+                    "type": "string"
+                },
+                "lastGeneratedAt": {
+                    "type": "string"
+                },
+                "maxTokens": {
+                    "type": "integer"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "totalPostsGenerated": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateAutoPostSettingRequest": {
+            "type": "object",
+            "required": [
+                "botUserId",
+                "cronSchedule",
+                "topics"
+            ],
+            "properties": {
+                "botUserId": {
+                    "type": "string"
+                },
+                "cronSchedule": {
+                    "description": "Cron expression",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 9
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "maxTokens": {
+                    "type": "integer",
+                    "maximum": 4000,
+                    "minimum": 100
+                },
+                "model": {
+                    "type": "string",
+                    "enum": [
+                        "gpt-4",
+                        "gpt-4-turbo",
+                        "gpt-3.5-turbo",
+                        "gpt-4o",
+                        "gpt-4o-mini"
+                    ]
+                },
+                "topics": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "dto.CreatePostRequest": {
             "type": "object",
             "required": [
@@ -806,9 +1417,21 @@
                 "title"
             ],
             "properties": {
+                "clientPostId": {
+                    "description": "Client-generated unique ID for idempotency",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
                 "content": {
                     "type": "string",
                     "maxLength": 40000,
+                    "minLength": 1
+                },
+                "idempotencyKey": {
+                    "description": "Idempotency key for caching responses",
+                    "type": "string",
+                    "maxLength": 255,
                     "minLength": 1
                 },
                 "isDraft": {
@@ -816,7 +1439,9 @@
                     "type": "boolean"
                 },
                 "mediaIds": {
+                    "description": "Max 10 media files per post",
                     "type": "array",
+                    "maxItems": 10,
                     "items": {
                         "type": "string"
                     }
@@ -839,104 +1464,224 @@
                 }
             }
         },
-        "dto.CreateUserRequest": {
+        "dto.MediaResponse": {
             "type": "object",
-            "required": [
-                "displayName",
-                "email",
-                "password",
-                "username"
-            ],
             "properties": {
-                "displayName": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1
+                "createdAt": {
+                    "type": "string"
                 },
-                "email": {
-                    "type": "string",
-                    "maxLength": 255
+                "duration": {
+                    "description": "For videos",
+                    "type": "number"
                 },
-                "password": {
-                    "type": "string",
-                    "maxLength": 72,
-                    "minLength": 8
+                "fileName": {
+                    "type": "string"
                 },
-                "username": {
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "sourceId": {
+                    "description": "ID of source entity",
+                    "type": "string"
+                },
+                "sourceType": {
+                    "description": "\"post\", \"message\", \"reel\", \"comment\"",
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"image\", \"video\", \"file\"",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "Owner of the media",
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "description": "Whether more results exist (for search/filtered lists)",
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "Exact total count (only if counted from DB)",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PostResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/dto.UserResponse"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "hotScore": {
+                    "description": "For debugging/sorting",
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isSaved": {
+                    "description": "true/false",
+                    "type": "boolean"
+                },
+                "media": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.MediaResponse"
+                    }
+                },
+                "sourcePost": {
+                    "description": "For crossposts",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.PostResponse"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "\"draft\" or \"published\"",
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TagResponse"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"text\", \"image\", \"gallery\", \"video\"",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userVote": {
+                    "description": "User-specific fields (when authenticated)",
+                    "type": "string"
+                },
+                "votes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TagResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "postCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TriggerAutoPostRequest": {
+            "type": "object",
+            "properties": {
+                "topic": {
+                    "description": "If empty, randomly select from configured topics",
                     "type": "string",
-                    "maxLength": 20,
+                    "maxLength": 500,
                     "minLength": 3
                 }
             }
         },
-        "dto.ExchangeCodeRequest": {
+        "dto.TriggerAutoPostResponse": {
             "type": "object",
-            "required": [
-                "code"
-            ],
             "properties": {
-                "code": {
+                "error": {
                     "type": "string"
                 },
-                "state": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ExchangeCodeResponse": {
-            "type": "object",
-            "properties": {
-                "isNewUser": {
+                "log": {
+                    "$ref": "#/definitions/dto.AutoPostLogResponse"
+                },
+                "post": {
+                    "$ref": "#/definitions/dto.PostResponse"
+                },
+                "success": {
                     "type": "boolean"
-                },
-                "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "dto.LoginRequest": {
+        "dto.UpdateAutoPostSettingRequest": {
             "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
             "properties": {
-                "email": {
+                "cronSchedule": {
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 100,
+                    "minLength": 9
                 },
-                "password": {
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "maxTokens": {
+                    "type": "integer",
+                    "maximum": 4000,
+                    "minimum": 100
+                },
+                "model": {
                     "type": "string",
-                    "minLength": 1
-                }
-            }
-        },
-        "dto.OAuthLoginResponse": {
-            "type": "object",
-            "properties": {
-                "isNewUser": {
-                    "type": "boolean"
+                    "enum": [
+                        "gpt-4",
+                        "gpt-4-turbo",
+                        "gpt-3.5-turbo",
+                        "gpt-4o",
+                        "gpt-4o-mini"
+                    ]
                 },
-                "needsProfile": {
-                    "description": "True if user needs to complete profile (e.g., choose username)",
-                    "type": "boolean"
-                },
-                "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/dto.UserResponse"
-                }
-            }
-        },
-        "dto.OAuthURLResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
+                "topics": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -959,32 +1704,6 @@
                     "type": "string",
                     "maxLength": 300,
                     "minLength": 1
-                }
-            }
-        },
-        "dto.UpdateUserRequest": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "bio": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "displayName": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1
-                },
-                "location": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "website": {
-                    "type": "string",
-                    "maxLength": 255
                 }
             }
         },
@@ -1236,6 +1955,23 @@
                 }
             }
         },
+        "handlers.UploadCSVResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "totalFailed": {
+                    "type": "integer"
+                },
+                "totalImported": {
+                    "type": "integer"
+                }
+            }
+        },
         "health.CheckResult": {
             "type": "object",
             "properties": {
@@ -1339,6 +2075,38 @@
                 },
                 "uptime": {
                     "type": "string"
+                }
+            }
+        },
+        "utils.ErrorDetail": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "$ref": "#/definitions/utils.ErrorDetail"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         }

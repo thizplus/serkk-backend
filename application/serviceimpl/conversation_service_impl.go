@@ -285,11 +285,13 @@ func (s *ConversationServiceImpl) SearchUsersForChat(ctx context.Context, userID
 		}
 
 		users[i] = dto.ChatUserSearchResult{
-			ID:          user.ID,
-			Username:    user.Username,
-			DisplayName: user.DisplayName,
-			Avatar:      user.Avatar,
-			Bio:         user.Bio,
+			ID:       user.ID,
+			Username: user.Username,
+			// TODO: Fetch from user_profiles table
+			// DisplayName and Avatar are now in user_profiles, not users_identity
+			DisplayName: "", // FIXME: Join with user_profiles to get this
+			Avatar:      "", // FIXME: Join with user_profiles to get this
+			Bio:         "", // Bio is in UserProfile model, not fetched for chat search (performance)
 			IsFollowing: followStatusMap[user.ID],
 			IsOnline:    isOnline,
 			LastActive:  lastActive,
@@ -305,11 +307,13 @@ func (s *ConversationServiceImpl) SearchUsersForChat(ctx context.Context, userID
 		}
 
 		suggested[i] = dto.ChatUserSearchResult{
-			ID:          user.ID,
-			Username:    user.Username,
-			DisplayName: user.DisplayName,
-			Avatar:      user.Avatar,
-			Bio:         user.Bio,
+			ID:       user.ID,
+			Username: user.Username,
+			// TODO: Fetch from user_profiles table
+			// DisplayName and Avatar are now in user_profiles, not users_identity
+			DisplayName: "", // FIXME: Join with user_profiles to get this
+			Avatar:      "", // FIXME: Join with user_profiles to get this
+			Bio:         "", // Bio is in UserProfile model, not fetched for suggested users (performance)
 			IsFollowing: followStatusMap[user.ID],
 			IsOnline:    isOnline,
 			LastActive:  lastActive,

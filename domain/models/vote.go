@@ -7,8 +7,8 @@ import (
 )
 
 type Vote struct {
-	UserID uuid.UUID `gorm:"primaryKey"`
-	User   User      `gorm:"foreignKey:UserID"`
+	UserID uuid.UUID      `gorm:"primaryKey"`
+	User   UsersIdentity `gorm:"foreignKey:UserID"`
 
 	TargetID   uuid.UUID `gorm:"primaryKey;index"` // post_id or comment_id
 	TargetType string    `gorm:"primaryKey"`       // 'post' or 'comment'

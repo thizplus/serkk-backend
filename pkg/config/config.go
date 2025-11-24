@@ -16,6 +16,7 @@ type Config struct {
 	OAuth    OAuthConfig
 	VAPID    VAPIDConfig
 	OpenAI   OpenAIConfig
+	NATSURL  string // NATS JetStream URL
 }
 
 type AppConfig struct {
@@ -157,6 +158,7 @@ func LoadConfig() (*Config, error) {
 			Model:     getEnv("OPENAI_MODEL", "gpt-4o-mini"),
 			BotUserID: getEnv("AUTO_POST_BOT_USER_ID", ""),
 		},
+		NATSURL: getEnv("NATS_URL", "nats://localhost:4222"),
 	}
 
 	return config, nil

@@ -62,6 +62,15 @@ func RunSQLMigrations(db *gorm.DB) error {
 		"migrations/019_update_auto_post_tables_v2.sql",
 		"migrations/020_create_simple_auto_post_queue.sql",
 		"migrations/add_push_subscriptions_unique_constraint.sql",
+		// User migration to users_identity + user_profiles architecture
+		"migrations/023_create_users_cache_table.up.sql",
+		"migrations/024_drop_users_fk_constraints.up.sql",
+		"migrations/025_add_displayname_avatar_to_user_profiles.up.sql",
+		"migrations/026_create_users_identity.up.sql",
+		"migrations/027_create_user_profiles.up.sql",
+		"migrations/028_migrate_users_cache_to_identity.up.sql",
+		"migrations/029_drop_users_cache_table.up.sql",
+		"migrations/030_drop_users_table.up.sql",
 	}
 
 	// Execute each migration file

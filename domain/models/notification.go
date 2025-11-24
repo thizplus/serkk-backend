@@ -10,11 +10,11 @@ import (
 type Notification struct {
 	ID uuid.UUID `gorm:"primaryKey;type:uuid"`
 
-	UserID uuid.UUID `gorm:"not null;index"` // Recipient
-	User   User      `gorm:"foreignKey:UserID"`
+	UserID uuid.UUID      `gorm:"not null;index"` // Recipient
+	User   UsersIdentity `gorm:"foreignKey:UserID"`
 
-	SenderID uuid.UUID `gorm:"not null"` // Who triggered notification
-	Sender   User      `gorm:"foreignKey:SenderID"`
+	SenderID uuid.UUID      `gorm:"not null"` // Who triggered notification
+	Sender   UsersIdentity `gorm:"foreignKey:SenderID"`
 
 	Type    string `gorm:"not null;index"` // reply, vote, mention, follow
 	Message string `gorm:"not null"`

@@ -47,7 +47,7 @@ func (r *SavedPostRepositoryImpl) GetSavedPosts(ctx context.Context, userID uuid
 	var posts []*models.Post
 	err := r.db.WithContext(ctx).
 		Joins("JOIN saved_posts ON saved_posts.post_id = posts.id").
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").
@@ -99,7 +99,7 @@ func (r *SavedPostRepositoryImpl) GetSavedPostsWithCursor(ctx context.Context, u
 	var posts []*models.Post
 	query := r.db.WithContext(ctx).
 		Joins("JOIN saved_posts ON saved_posts.post_id = posts.id").
-		Preload("Author").
+		Preload("Author.Profile").
 		Preload("Media").
 		Preload("Tags").
 		Preload("SourcePost").

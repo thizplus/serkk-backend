@@ -11,9 +11,9 @@ type Post struct {
 	Title   string    `gorm:"not null;type:varchar(300);index"`
 	Content string    `gorm:"not null;type:text"`
 
-	// Author
-	AuthorID uuid.UUID `gorm:"not null;index"`
-	Author   User      `gorm:"foreignKey:AuthorID"`
+	// Author (references users_identity for V2 architecture)
+	AuthorID uuid.UUID      `gorm:"not null;index"`
+	Author   UsersIdentity `gorm:"foreignKey:AuthorID"`
 
 	// Stats
 	Votes        int `gorm:"default:0;index"`

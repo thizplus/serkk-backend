@@ -22,7 +22,7 @@ func (r *TaskRepositoryImpl) Create(ctx context.Context, task *models.Task) erro
 
 func (r *TaskRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models.Task, error) {
 	var task models.Task
-	err := r.db.WithContext(ctx).Preload("User").Where("id = ?", id).First(&task).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Where("id = ?", id).First(&task).Error
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (r *TaskRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*models
 
 func (r *TaskRepositoryImpl) GetByUserID(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.Task, error) {
 	var tasks []*models.Task
-	err := r.db.WithContext(ctx).Preload("User").Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&tasks).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&tasks).Error
 	return tasks, err
 }
 
@@ -45,7 +45,7 @@ func (r *TaskRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *TaskRepositoryImpl) List(ctx context.Context, offset, limit int) ([]*models.Task, error) {
 	var tasks []*models.Task
-	err := r.db.WithContext(ctx).Preload("User").Offset(offset).Limit(limit).Find(&tasks).Error
+	err := r.db.WithContext(ctx).Preload("User.Profile").Offset(offset).Limit(limit).Find(&tasks).Error
 	return tasks, err
 }
 

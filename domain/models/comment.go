@@ -11,8 +11,8 @@ type Comment struct {
 	PostID uuid.UUID `gorm:"not null;index"`
 	Post   Post      `gorm:"foreignKey:PostID"`
 
-	AuthorID uuid.UUID `gorm:"not null;index"`
-	Author   User      `gorm:"foreignKey:AuthorID"`
+	AuthorID uuid.UUID      `gorm:"not null;index"`
+	Author   UsersIdentity `gorm:"foreignKey:AuthorID"`
 
 	Content string `gorm:"not null;type:text"`
 	Votes   int    `gorm:"default:0;index"`
