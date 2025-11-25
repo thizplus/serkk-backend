@@ -46,6 +46,8 @@ func (r *FollowRepositoryImpl) GetFollowers(ctx context.Context, userID uuid.UUI
 	err := r.db.WithContext(ctx).
 		Joins("JOIN follows ON follows.follower_id = users_identity.id").
 		Where("follows.following_id = ?", userID).
+		Order("follows.created_at DESC, follows.follower_id DESC").
+		Preload("Profile").
 		Offset(offset).Limit(limit).
 		Find(&users).Error
 	return users, err
@@ -65,6 +67,8 @@ func (r *FollowRepositoryImpl) GetFollowing(ctx context.Context, userID uuid.UUI
 	err := r.db.WithContext(ctx).
 		Joins("JOIN follows ON follows.following_id = users_identity.id").
 		Where("follows.follower_id = ?", userID).
+		Order("follows.created_at DESC, follows.following_id DESC").
+		Preload("Profile").
 		Offset(offset).Limit(limit).
 		Find(&users).Error
 	return users, err
@@ -98,6 +102,15 @@ func (r *FollowRepositoryImpl) GetFollowStatus(ctx context.Context, followerID u
 	}
 
 	return statusMap, nil
+}
+
+func (r *FollowRepositoryImpl) GetFollowerIDs(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
+	var followerIDs []uuid.UUID
+	err := r.db.WithContext(ctx).
+		Model(&models.Follow{}).
+		Where("following_id = ?", userID).
+		Pluck("follower_id", &followerIDs).Error
+	return followerIDs, err
 }
 
 func (r *FollowRepositoryImpl) GetMutualFollows(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.User, error) {
@@ -142,6 +155,7 @@ func (r *FollowRepositoryImpl) GetFollowersWithCursor(ctx context.Context, userI
 
 	// Order by follow creation time (most recent followers first)
 	err := query.Order("follows.created_at DESC, follows.follower_id DESC").
+		Preload("Profile").
 		Limit(limit).
 		Find(&users).Error
 
@@ -161,6 +175,7 @@ func (r *FollowRepositoryImpl) GetFollowingWithCursor(ctx context.Context, userI
 
 	// Order by follow creation time (most recent following first)
 	err := query.Order("follows.created_at DESC, follows.following_id DESC").
+		Preload("Profile").
 		Limit(limit).
 		Find(&users).Error
 

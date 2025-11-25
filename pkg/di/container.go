@@ -378,6 +378,7 @@ func (c *Container) initServices() error {
 		c.UserRepository,
 		c.VoteRepository,
 		c.SavedPostRepository,
+		c.FollowRepository,
 		c.TagService,
 		c.MediaRepository,
 		c.NotificationHub,
@@ -398,6 +399,7 @@ func (c *Container) initServices() error {
 		c.CommentRepository,
 		c.UserRepository,
 		c.NotificationService,
+		c.UserProfileService,
 	)
 	c.FollowService = serviceimpl.NewFollowService(
 		c.FollowRepository,

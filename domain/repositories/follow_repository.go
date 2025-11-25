@@ -30,6 +30,9 @@ type FollowRepository interface {
 	// Batch check (for checking multiple users at once)
 	GetFollowStatus(ctx context.Context, followerID uuid.UUID, userIDs []uuid.UUID) (map[uuid.UUID]bool, error)
 
+	// Get follower IDs (for broadcasting, no user join needed)
+	GetFollowerIDs(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error)
+
 	// Mutual follows
 	GetMutualFollows(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.User, error)
 

@@ -13,16 +13,19 @@ import (
 type UserProfileHandler struct {
 	usersIdentityService *services.UsersIdentityService
 	userProfileService   services.UserProfileService
+	followService        services.FollowService
 }
 
 // NewUserProfileHandler creates a new user profile handler
 func NewUserProfileHandler(
 	usersIdentityService *services.UsersIdentityService,
 	userProfileService services.UserProfileService,
+	followService services.FollowService,
 ) *UserProfileHandler {
 	return &UserProfileHandler{
 		usersIdentityService: usersIdentityService,
 		userProfileService:   userProfileService,
+		followService:        followService,
 	}
 }
 
@@ -91,11 +94,12 @@ func (h *UserProfileHandler) GetProfile(c *fiber.Ctx) error {
 	response := dto.IdentityWithProfileToUserResponse(identity, profile)
 
 	// Add isFollowing if user is authenticated
-	if userID, ok := c.Locals("userID").(uuid.UUID); ok && userID != uuid.Nil {
-		// TODO: Check if current user is following this profile
-		// This requires FollowService
-		isFollowing := false
-		response.IsFollowing = &isFollowing
+	if userID, ok := c.Locals("userID").(uuid.UUID); ok && userID != uuid.Nil && userID != identity.ID {
+		// Check if current user is following this profile
+		followStatus, err := h.followService.IsFollowing(ctx, userID, identity.ID)
+		if err == nil {
+			response.IsFollowing = &followStatus.IsFollowing
+		}
 	}
 
 	return utils.SuccessResponse(c, response, "User profile retrieved")

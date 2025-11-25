@@ -24,6 +24,7 @@ type PostServiceImpl struct {
 	userRepo        repositories.UserRepository
 	voteRepo        repositories.VoteRepository
 	savedPostRepo   repositories.SavedPostRepository
+	followRepo      repositories.FollowRepository
 	tagService      services.TagService
 	mediaRepo       repositories.MediaRepository
 	notificationHub *websocket.NotificationHub
@@ -36,6 +37,7 @@ func NewPostService(
 	userRepo repositories.UserRepository,
 	voteRepo repositories.VoteRepository,
 	savedPostRepo repositories.SavedPostRepository,
+	followRepo repositories.FollowRepository,
 	tagService services.TagService,
 	mediaRepo repositories.MediaRepository,
 	notificationHub *websocket.NotificationHub,
@@ -47,6 +49,7 @@ func NewPostService(
 		userRepo:        userRepo,
 		voteRepo:        voteRepo,
 		savedPostRepo:   savedPostRepo,
+		followRepo:      followRepo,
 		tagService:      tagService,
 		mediaRepo:       mediaRepo,
 		notificationHub: notificationHub,
@@ -259,6 +262,23 @@ func (s *PostServiceImpl) CreatePost(ctx context.Context, userID uuid.UUID, req 
 		}
 	}
 
+	// ============================================
+	// STEP 10: Broadcast post:new event via WebSocket (only for published posts)
+	// ============================================
+	if response.Status == "published" {
+		// Get author's followers
+		followers, err := s.followRepo.GetFollowerIDs(ctx, userID)
+		if err == nil && len(followers) > 0 {
+			// Broadcast to each follower
+			for _, followerID := range followers {
+				websocket.Manager.BroadcastToUser(followerID, "post:new", map[string]interface{}{
+					"post": response,
+				})
+			}
+			log.Printf("📢 Broadcasted post:new to %d followers for post %s", len(followers), response.ID)
+		}
+	}
+
 	return response, nil
 }
 
@@ -384,7 +404,19 @@ func (s *PostServiceImpl) UpdatePost(ctx context.Context, postID uuid.UUID, user
 		}
 	}
 
-	return s.GetPost(ctx, postID, &userID)
+	// Get updated post with relations
+	response, err := s.GetPost(ctx, postID, &userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Broadcast post:updated event via WebSocket (to author only)
+	websocket.Manager.BroadcastToUser(userID, "post:updated", map[string]interface{}{
+		"post": response,
+	})
+	log.Printf("📢 Broadcasted post:updated to author %s for post %s", userID, postID)
+
+	return response, nil
 }
 
 func (s *PostServiceImpl) DeletePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
@@ -413,6 +445,12 @@ func (s *PostServiceImpl) DeletePost(ctx context.Context, postID uuid.UUID, user
 			log.Printf("[CACHE] Feed caches invalidated after post deletion")
 		}
 	}
+
+	// Broadcast post:deleted event via WebSocket (to author only)
+	websocket.Manager.BroadcastToUser(userID, "post:deleted", map[string]interface{}{
+		"postId": postID.String(),
+	})
+	log.Printf("📢 Broadcasted post:deleted to author %s for post %s", userID, postID)
 
 	return nil
 }

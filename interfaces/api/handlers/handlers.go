@@ -75,7 +75,7 @@ type Handlers struct {
 func NewHandlers(services *Services, cfg *config.Config, chatWSHandler *websocketHandler.ChatWebSocketHandler, notificationWSHandler *websocketHandler.NotificationWebSocketHandler, chatHub *chatWebsocket.ChatHub, notificationHub *chatWebsocket.NotificationHub, conversationRepo repositories.ConversationRepository, mediaUploadService *storage.MediaUploadService, r2Storage storage.R2Storage, mediaRepo repositories.MediaRepository, redisService interface{}, feedCacheService *redis.FeedCacheService, db *gorm.DB) *Handlers {
 	return &Handlers{
 		// UserHandler REMOVED - use Auth Service API (for auth operations)
-		UserProfileHandler:     NewUserProfileHandler(services.UsersIdentityService, services.UserProfileService),
+		UserProfileHandler:     NewUserProfileHandler(services.UsersIdentityService, services.UserProfileService, services.FollowService),
 		TaskHandler:            NewTaskHandler(services.TaskService),
 		FileHandler:            NewFileHandler(services.FileService),
 		JobHandler:             NewJobHandler(services.JobService),

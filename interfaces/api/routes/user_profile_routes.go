@@ -9,11 +9,11 @@ import (
 // SetupUserProfileRoutes sets up user profile routes
 // These routes handle user profile operations (combining users_cache + user_profiles)
 func SetupUserProfileRoutes(api fiber.Router, h *handlers.Handlers) {
-	// Public routes
+	// Public routes (with optional authentication)
 	profiles := api.Group("/profiles")
 	{
-		// Get user profile by username (public)
-		profiles.Get("/:username", h.UserProfileHandler.GetProfile)
+		// Get user profile by username (public, with optional auth for isFollowing)
+		profiles.Get("/:username", middleware.Optional(), h.UserProfileHandler.GetProfile)
 	}
 
 	// Protected routes (require authentication)

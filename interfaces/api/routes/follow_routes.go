@@ -10,9 +10,9 @@ func SetupFollowRoutes(api fiber.Router, h *handlers.Handlers) {
 	follows := api.Group("/follows")
 
 	// Public routes (with optional authentication)
-	follows.Get("/user/:userId/followers", h.FollowHandler.GetFollowers)
-	follows.Get("/user/:userId/following", h.FollowHandler.GetFollowing)
-	follows.Get("/user/:userId/status", h.FollowHandler.IsFollowing)
+	follows.Get("/user/:userId/followers", middleware.Optional(), h.FollowHandler.GetFollowers)
+	follows.Get("/user/:userId/following", middleware.Optional(), h.FollowHandler.GetFollowing)
+	follows.Get("/user/:userId/status", middleware.Optional(), h.FollowHandler.IsFollowing)
 
 	// Protected routes (require authentication)
 	follows.Use(middleware.Protected())

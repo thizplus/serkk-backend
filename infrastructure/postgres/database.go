@@ -71,6 +71,7 @@ func RunSQLMigrations(db *gorm.DB) error {
 		"migrations/028_migrate_users_cache_to_identity.up.sql",
 		"migrations/029_drop_users_cache_table.up.sql",
 		"migrations/030_drop_users_table.up.sql",
+		// Note: migration 031 (import old users) is manual - run in pgAdmin
 	}
 
 	// Execute each migration file

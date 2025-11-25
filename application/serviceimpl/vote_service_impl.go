@@ -2,6 +2,7 @@ package serviceimpl
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,14 +10,16 @@ import (
 	"gofiber-template/domain/models"
 	"gofiber-template/domain/repositories"
 	"gofiber-template/domain/services"
+	"gofiber-template/infrastructure/websocket"
 )
 
 type VoteServiceImpl struct {
-	voteRepo     repositories.VoteRepository
-	postRepo     repositories.PostRepository
-	commentRepo  repositories.CommentRepository
-	userRepo     repositories.UserRepository
-	notifService services.NotificationService
+	voteRepo       repositories.VoteRepository
+	postRepo       repositories.PostRepository
+	commentRepo    repositories.CommentRepository
+	userRepo       repositories.UserRepository
+	notifService   services.NotificationService
+	profileService services.UserProfileService
 }
 
 func NewVoteService(
@@ -25,13 +28,15 @@ func NewVoteService(
 	commentRepo repositories.CommentRepository,
 	userRepo repositories.UserRepository,
 	notifService services.NotificationService,
+	profileService services.UserProfileService,
 ) services.VoteService {
 	return &VoteServiceImpl{
-		voteRepo:     voteRepo,
-		postRepo:     postRepo,
-		commentRepo:  commentRepo,
-		userRepo:     userRepo,
-		notifService: notifService,
+		voteRepo:       voteRepo,
+		postRepo:       postRepo,
+		commentRepo:    commentRepo,
+		userRepo:       userRepo,
+		notifService:   notifService,
+		profileService: profileService,
 	}
 }
 
@@ -76,9 +81,54 @@ func (s *VoteServiceImpl) Vote(ctx context.Context, userID uuid.UUID, req *dto.V
 		if req.TargetType == "post" {
 			_ = s.postRepo.UpdateVoteCount(ctx, req.TargetID, voteChange)
 
+			// Get updated vote count and broadcast via WebSocket
+			post, err := s.postRepo.GetByID(ctx, req.TargetID)
+			if err == nil && post != nil {
+				// Broadcast vote:updated event to post owner only
+				websocket.Manager.BroadcastToUser(post.AuthorID, "vote:updated", map[string]interface{}{
+					"targetId":   req.TargetID.String(),
+					"targetType": "post",
+					"voteCount":  post.Votes,
+					"voteType":   req.VoteType,
+				})
+				log.Printf("📢 Broadcasted vote:updated to post owner %s for post %s (new count: %d)", post.AuthorID, req.TargetID, post.Votes)
+
+				// ✅ NEW: Update author's karma
+				if post.AuthorID != userID {
+					karmaDelta := 0
+
+					// Calculate karma change based on vote type and existing vote
+					if existingVote == nil {
+						// New vote
+						if req.VoteType == "up" {
+							karmaDelta = +10 // New upvote = +10
+						} else {
+							karmaDelta = -2 // New downvote = -2
+						}
+					} else if existingVote.VoteType != req.VoteType {
+						// Vote changed
+						if req.VoteType == "up" {
+							karmaDelta = +12 // Changed from down to up (+10 + 2)
+						} else {
+							karmaDelta = -12 // Changed from up to down (-10 - 2)
+						}
+					}
+
+					// Update karma (only if not voting on own post)
+					if karmaDelta != 0 {
+						err := s.profileService.UpdateKarma(ctx, post.AuthorID, karmaDelta)
+						if err != nil {
+							log.Printf("⚠️ Failed to update karma for user %s: %v", post.AuthorID, err)
+							// Don't fail the vote, just log
+						} else {
+							log.Printf("✅ Karma updated: User %s got %+d karma (post vote)", post.AuthorID, karmaDelta)
+						}
+					}
+				}
+			}
+
 			// Send notification to post author (only for upvotes, and only if new vote)
 			if req.VoteType == "up" && existingVote == nil {
-				post, _ := s.postRepo.GetByID(ctx, req.TargetID)
 				if post != nil && post.AuthorID != userID {
 					_ = s.notifService.CreateNotification(
 						ctx,
@@ -94,9 +144,54 @@ func (s *VoteServiceImpl) Vote(ctx context.Context, userID uuid.UUID, req *dto.V
 		} else if req.TargetType == "comment" {
 			_ = s.commentRepo.UpdateVoteCount(ctx, req.TargetID, voteChange)
 
+			// Get updated vote count and broadcast via WebSocket
+			comment, err := s.commentRepo.GetByID(ctx, req.TargetID)
+			if err == nil && comment != nil {
+				// Broadcast vote:updated event to comment owner only
+				websocket.Manager.BroadcastToUser(comment.AuthorID, "vote:updated", map[string]interface{}{
+					"targetId":   req.TargetID.String(),
+					"targetType": "comment",
+					"voteCount":  comment.Votes,
+					"voteType":   req.VoteType,
+				})
+				log.Printf("📢 Broadcasted vote:updated to comment owner %s for comment %s (new count: %d)", comment.AuthorID, req.TargetID, comment.Votes)
+
+				// ✅ NEW: Update author's karma
+				if comment.AuthorID != userID {
+					karmaDelta := 0
+
+					// Calculate karma change based on vote type and existing vote
+					if existingVote == nil {
+						// New vote
+						if req.VoteType == "up" {
+							karmaDelta = +5 // New upvote = +5
+						} else {
+							karmaDelta = -1 // New downvote = -1
+						}
+					} else if existingVote.VoteType != req.VoteType {
+						// Vote changed
+						if req.VoteType == "up" {
+							karmaDelta = +6 // Changed from down to up (+5 + 1)
+						} else {
+							karmaDelta = -6 // Changed from up to down (-5 - 1)
+						}
+					}
+
+					// Update karma (only if not voting on own comment)
+					if karmaDelta != 0 {
+						err := s.profileService.UpdateKarma(ctx, comment.AuthorID, karmaDelta)
+						if err != nil {
+							log.Printf("⚠️ Failed to update karma for user %s: %v", comment.AuthorID, err)
+							// Don't fail the vote, just log
+						} else {
+							log.Printf("✅ Karma updated: User %s got %+d karma (comment vote)", comment.AuthorID, karmaDelta)
+						}
+					}
+				}
+			}
+
 			// Send notification to comment author (only for upvotes, and only if new vote)
 			if req.VoteType == "up" && existingVote == nil {
-				comment, _ := s.commentRepo.GetByID(ctx, req.TargetID)
 				if comment != nil && comment.AuthorID != userID {
 					_ = s.notifService.CreateNotification(
 						ctx,
@@ -144,8 +239,68 @@ func (s *VoteServiceImpl) Unvote(ctx context.Context, userID uuid.UUID, req *dto
 	// Update vote count on target
 	if req.TargetType == "post" {
 		_ = s.postRepo.UpdateVoteCount(ctx, req.TargetID, voteChange)
+
+		// Get updated vote count and broadcast via WebSocket
+		post, err := s.postRepo.GetByID(ctx, req.TargetID)
+		if err == nil && post != nil {
+			// Broadcast vote:updated event to post owner only
+			websocket.Manager.BroadcastToUser(post.AuthorID, "vote:updated", map[string]interface{}{
+				"targetId":   req.TargetID.String(),
+				"targetType": "post",
+				"voteCount":  post.Votes,
+				"voteType":   "",
+			})
+			log.Printf("📢 Broadcasted vote:updated (unvote) to post owner %s for post %s (new count: %d)", post.AuthorID, req.TargetID, post.Votes)
+
+			// ✅ NEW: Reverse karma change
+			if post.AuthorID != userID {
+				karmaDelta := 0
+				if existingVote.VoteType == "up" {
+					karmaDelta = -10 // Remove upvote = -10
+				} else {
+					karmaDelta = +2 // Remove downvote = +2 (reverse penalty)
+				}
+
+				err := s.profileService.UpdateKarma(ctx, post.AuthorID, karmaDelta)
+				if err != nil {
+					log.Printf("⚠️ Failed to reverse karma for user %s: %v", post.AuthorID, err)
+				} else {
+					log.Printf("✅ Karma reversed: User %s got %+d karma (post unvote)", post.AuthorID, karmaDelta)
+				}
+			}
+		}
 	} else if req.TargetType == "comment" {
 		_ = s.commentRepo.UpdateVoteCount(ctx, req.TargetID, voteChange)
+
+		// Get updated vote count and broadcast via WebSocket
+		comment, err := s.commentRepo.GetByID(ctx, req.TargetID)
+		if err == nil && comment != nil {
+			// Broadcast vote:updated event to comment owner only
+			websocket.Manager.BroadcastToUser(comment.AuthorID, "vote:updated", map[string]interface{}{
+				"targetId":   req.TargetID.String(),
+				"targetType": "comment",
+				"voteCount":  comment.Votes,
+				"voteType":   "",
+			})
+			log.Printf("📢 Broadcasted vote:updated (unvote) to comment owner %s for comment %s (new count: %d)", comment.AuthorID, req.TargetID, comment.Votes)
+
+			// ✅ NEW: Reverse karma change
+			if comment.AuthorID != userID {
+				karmaDelta := 0
+				if existingVote.VoteType == "up" {
+					karmaDelta = -5 // Remove upvote = -5
+				} else {
+					karmaDelta = +1 // Remove downvote = +1 (reverse penalty)
+				}
+
+				err := s.profileService.UpdateKarma(ctx, comment.AuthorID, karmaDelta)
+				if err != nil {
+					log.Printf("⚠️ Failed to reverse karma for user %s: %v", comment.AuthorID, err)
+				} else {
+					log.Printf("✅ Karma reversed: User %s got %+d karma (comment unvote)", comment.AuthorID, karmaDelta)
+				}
+			}
+		}
 	}
 
 	return nil

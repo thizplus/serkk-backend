@@ -131,9 +131,13 @@ func (s *NotificationServiceImpl) MarkAsRead(ctx context.Context, notificationID
 	}
 
 	// Send real-time update via WebSocket
-	websocket.Manager.BroadcastToUser(userID, "notification_read", map[string]interface{}{
-		"notificationId": notificationID,
-		"unreadCount":    s.getUnreadCount(ctx, userID),
+	websocket.Manager.BroadcastToUser(userID, "notification:read", map[string]interface{}{
+		"notificationId": notificationID.String(),
+	})
+
+	// Send separate unread count update
+	websocket.Manager.BroadcastToUser(userID, "notification:count_updated", map[string]interface{}{
+		"unreadCount": s.getUnreadCount(ctx, userID),
 	})
 
 	return nil
@@ -146,7 +150,10 @@ func (s *NotificationServiceImpl) MarkAllAsRead(ctx context.Context, userID uuid
 	}
 
 	// Send real-time update via WebSocket
-	websocket.Manager.BroadcastToUser(userID, "notification_read_all", map[string]interface{}{
+	websocket.Manager.BroadcastToUser(userID, "notification:read_all", map[string]interface{}{})
+
+	// Send unread count update
+	websocket.Manager.BroadcastToUser(userID, "notification:count_updated", map[string]interface{}{
 		"unreadCount": 0,
 	})
 
@@ -271,9 +278,13 @@ func (s *NotificationServiceImpl) CreateNotification(ctx context.Context, userID
 	notificationDTO := dto.NotificationToNotificationResponse(createdNotification)
 
 	// Send real-time notification via WebSocket
-	websocket.Manager.BroadcastToUser(userID, "notification", map[string]interface{}{
+	websocket.Manager.BroadcastToUser(userID, "notification:new", map[string]interface{}{
 		"notification": notificationDTO,
-		"unreadCount":  s.getUnreadCount(ctx, userID),
+	})
+
+	// Send separate unread count update event
+	websocket.Manager.BroadcastToUser(userID, "notification:count_updated", map[string]interface{}{
+		"unreadCount": s.getUnreadCount(ctx, userID),
 	})
 
 	log.Printf("📬 Real-time notification sent to user %s: %s", userID.String(), message)
