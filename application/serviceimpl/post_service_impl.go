@@ -857,6 +857,42 @@ func (s *PostServiceImpl) buildPostListResponseWithHasMore(ctx context.Context, 
 func (s *PostServiceImpl) buildPostListCursorResponse(ctx context.Context, posts []*models.Post, limit int, sortBy repositories.PostSortBy, userID *uuid.UUID) (*dto.PostListCursorResponse, error) {
 	// Determine if there are more pages (limit+1 pattern)
 	hasMore := len(posts) > limit
+
+	// Generate next cursor BEFORE trimming posts (use the extra post that will be trimmed)
+	var nextCursor *string
+	if hasMore && len(posts) > 0 {
+		// Use the last post (index limit) which is the extra post we fetched
+		// This post will be trimmed, but we need it to create the cursor
+		lastPost := posts[limit]  // ✅ FIX: Use post at index 'limit' (the +1 post)
+
+		// Determine sort value based on sort type
+		var sortValue *float64
+		switch sortBy {
+		case repositories.SortByTop:
+			// For top sorting, use votes
+			votes := float64(lastPost.Votes)
+			sortValue = &votes
+		case repositories.SortByHot:
+			// For hot sorting, use hot score
+			hoursSinceCreation := time.Since(lastPost.CreatedAt).Hours()
+			hotScore := float64(lastPost.Votes) / math.Pow(hoursSinceCreation+2, 1.5)
+			sortValue = &hotScore
+		case repositories.SortByNew:
+			// For new sorting, no sort value needed (only created_at and id)
+			sortValue = nil
+		default:
+			sortValue = nil
+		}
+
+		// Encode cursor
+		encoded, err := utils.EncodePostCursor(sortValue, lastPost.CreatedAt, lastPost.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &encoded
+	}
+
+	// Now trim posts to actual limit
 	if hasMore {
 		posts = posts[:limit] // Trim to actual limit
 	}
@@ -899,38 +935,6 @@ func (s *PostServiceImpl) buildPostListCursorResponse(ctx context.Context, posts
 		}
 
 		responses[i] = *resp
-	}
-
-	// Generate next cursor from last item if there are more pages
-	var nextCursor *string
-	if hasMore && len(posts) > 0 {
-		lastPost := posts[len(posts)-1]
-
-		// Determine sort value based on sort type
-		var sortValue *float64
-		switch sortBy {
-		case repositories.SortByTop:
-			// For top sorting, use votes
-			votes := float64(lastPost.Votes)
-			sortValue = &votes
-		case repositories.SortByHot:
-			// For hot sorting, use hot score
-			hoursSinceCreation := time.Since(lastPost.CreatedAt).Hours()
-			hotScore := float64(lastPost.Votes) / math.Pow(hoursSinceCreation+2, 1.5)
-			sortValue = &hotScore
-		case repositories.SortByNew:
-			// For new sorting, no sort value needed (only created_at and id)
-			sortValue = nil
-		default:
-			sortValue = nil
-		}
-
-		// Encode cursor
-		encoded, err := utils.EncodePostCursor(sortValue, lastPost.CreatedAt, lastPost.ID)
-		if err != nil {
-			return nil, err
-		}
-		nextCursor = &encoded
 	}
 
 	return &dto.PostListCursorResponse{
