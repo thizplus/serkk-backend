@@ -148,7 +148,7 @@ jobs:
         run: go build -v -o bin/api ./cmd/api
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: api-binary
           path: bin/api
